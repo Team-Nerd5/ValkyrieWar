@@ -1,6 +1,10 @@
 [*]
-charset = utf8
+charset = utf-8-bom
+insert_final_newline = true
+trim_trailing_whitespace = true
+
 [*.{cpp,h}]
+charset = utf-8-bom
 
 # Naming convention rules (note: currently need to be ordered from more to less specific)
 
