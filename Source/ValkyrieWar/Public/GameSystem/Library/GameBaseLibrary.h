@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameBaseLibrary.generated.h"
 
-class UWorldEventSystem;
 /**
  * 
  */
