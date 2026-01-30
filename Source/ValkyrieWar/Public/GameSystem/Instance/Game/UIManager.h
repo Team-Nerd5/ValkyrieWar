@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Engine/GameInstance.h"
+
 #include "GameSystem/Base/BaseWidget.h"
+#include "GameSystem/Instance/Game/GameManager.h"
+
+#include "Data/Enums.h"
 #include "UIManager.generated.h"
 
 /**
@@ -25,13 +30,25 @@ private:
     void NotifyInputModeChange();
 
     /**
-     * 실제 UI 닫기 작업을 수행하는 내부 헬퍼 함수
-     * - 템플릿 CloseUI와 오버로드 CloseUI가 모두 사용
-     * - 중복 로직 방지 및 유지보수성 향상
+     * 위젯을 캐시에서 가져오거나 없으면 새로 생성
+     * - 성능 최적화: 자주 열리는 UI의 생성 비용 절감
+     * - 위젯 상태 유지: 닫았다 다시 열어도 이전 상태 보존
+     *
+     * @param WidgetClass 가져올/생성할 위젯 클래스
+     * @return 캐싱된 또는 새로 생성된 위젯 (실패 시 nullptr)
      */
-    void CloseUIInternal(UBaseWidget* Widget);
+    template<typename T>
+    T* GetOrCreateWidgetInternal(TSubclassOf<T> WidgetClassFactory);
 
-public:
+    /**
+     * 특정 타입의 UI를 닫고 뷰포트에서 제거 (타입 기반)
+     * - Persistent: 맵에서 제거
+     * - Popup: 스택에서 제거하고 새로운 Top에 FocusGained 알림
+     * - 주의: 위젯은 캐시에 유지되므로 완전히 파괴되지 않음
+     */
+    template<typename T>
+    void CloseUIInternal(TSubclassOf<T> targetClassFactory);
+
     /**
      * UI를 열고 뷰포트에 추가
      * - 이미 열려있으면 기존 인스턴스 반환
@@ -42,27 +59,27 @@ public:
      * @return 열린 UI 위젯 인스턴스 (실패 시 nullptr)
      */
     template<typename T>
-    T* OpenUI(TSubclassOf<T> TargetClassFactory);
+    T* OpenUIInternal(TSubclassOf<T> TargetClassFactory);
 
     /**
-     * 위젯을 캐시에서 가져오거나 없으면 새로 생성
-     * - 성능 최적화: 자주 열리는 UI의 생성 비용 절감
-     * - 위젯 상태 유지: 닫았다 다시 열어도 이전 상태 보존
-     *
-     * @param WidgetClass 가져올/생성할 위젯 클래스
-     * @return 캐싱된 또는 새로 생성된 위젯 (실패 시 nullptr)
+     * 실제 UI 닫기 작업을 수행하는 내부 헬퍼 함수
+     * - 템플릿 CloseUI와 오버로드 CloseUI가 모두 사용
+     * - 중복 로직 방지 및 유지보수성 향상
      */
-    template<typename T>
-    T* GetOrCreateWidget(TSubclassOf<T> WidgetClassFactory);
+    void CloseUIInternal(UBaseWidget* Widget);
 
-    /**
-     * 특정 타입의 UI를 닫고 뷰포트에서 제거 (타입 기반)
-     * - Persistent: 맵에서 제거
-     * - Popup: 스택에서 제거하고 새로운 Top에 FocusGained 알림
-     * - 주의: 위젯은 캐시에 유지되므로 완전히 파괴되지 않음
-     */
     template<typename T>
-    void CloseUI(TSubclassOf<T> targetClassFactory);
+    TSubclassOf<T> GetUIClassInternal(E_UITYPE InUIType);
+
+public:
+    template<typename T>
+    T* OpenUI(E_UITYPE InUIType);
+
+    template<typename T>
+    T* GetOrCreateWidget(E_UITYPE InUIType);
+
+    template<typename T>
+    void CloseUI(E_UITYPE InUIType);
 
     /**
      * 위젯 인스턴스를 직접 받아서 닫기 (인스턴스 기반)
@@ -122,8 +139,21 @@ private:
 };
 
 // 템플릿 함수 구현
+
 template<typename T>
-T* UUIManager::GetOrCreateWidget(TSubclassOf<T> WidgetClassFactory)
+inline T* UUIManager::GetOrCreateWidget(E_UITYPE InUIType)
+{
+    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    if (TargetClass)
+    {
+        return GetOrCreateWidgetInternal(TargetClass);
+    }
+
+    return nullptr;
+}
+
+template<typename T>
+T* UUIManager::GetOrCreateWidgetInternal(TSubclassOf<T> WidgetClassFactory)
 {
     TSubclassOf<UBaseWidget> TargetClassFactory = WidgetClassFactory;
 
@@ -149,7 +179,32 @@ T* UUIManager::GetOrCreateWidget(TSubclassOf<T> WidgetClassFactory)
 }
 
 template<typename T>
-T* UUIManager::OpenUI(TSubclassOf<T> TargetClassFactory)
+TSubclassOf<T> UUIManager::GetUIClassInternal(E_UITYPE InUIType)
+{
+    UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
+
+    if (GameManager)
+    {
+        return GameManager->GetUIClass(InUIType);
+    }
+
+    return nullptr;
+}
+
+template<typename T>
+T* UUIManager::OpenUI(E_UITYPE InUIType)
+{
+    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    if (TargetClass)
+    {
+        return OpenUIInternal(TargetClass);
+    }
+
+    return nullptr;
+}
+
+template<typename T>
+T* UUIManager::OpenUIInternal(TSubclassOf<T> TargetClassFactory)
 {
     if (!TargetClassFactory)
     {
@@ -207,7 +262,17 @@ T* UUIManager::OpenUI(TSubclassOf<T> TargetClassFactory)
 }
 
 template<typename T>
-void UUIManager::CloseUI(TSubclassOf<T> targetClassFactory)
+inline void UUIManager::CloseUI(E_UITYPE InUIType)
+{
+    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    if (TargetClass)
+    {
+        CloseUIInternal(TargetClass);
+    }
+}
+
+template<typename T>
+void UUIManager::CloseUIInternal(TSubclassOf<T> targetClassFactory)
 {
     if (!targetClassFactory)
     {
