@@ -7,6 +7,8 @@
 #include "AbilitySystemInterface.h"
 #include "BaseCharacter.generated.h"
 
+class UAbilitySystemComponent;
+
 UCLASS()
 class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface
 {

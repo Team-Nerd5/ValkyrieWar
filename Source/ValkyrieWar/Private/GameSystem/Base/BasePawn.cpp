@@ -2,6 +2,7 @@
 
 
 #include "GameSystem/Base/BasePawn.h"
+#include "AbilitySystemComponent.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
