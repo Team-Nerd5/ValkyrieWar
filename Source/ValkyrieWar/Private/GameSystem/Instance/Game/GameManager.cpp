@@ -4,7 +4,7 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/Widget/WidgetClassTableData.h"
 
-TSubclassOf<UBaseWidget> UGameManager::GetUIClass(E_UITYPE InUIType)
+TSubclassOf<UBaseWidget> UGameManager::GetUIClass(EUIType InUIType)
 {
     if (WidgetClassTable)
     {

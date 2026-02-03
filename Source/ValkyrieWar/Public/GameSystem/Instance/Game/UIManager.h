@@ -69,17 +69,17 @@ private:
     void CloseUIInternal(UBaseWidget* Widget);
 
     template<typename T>
-    TSubclassOf<T> GetUIClassInternal(E_UITYPE InUIType);
+    TSubclassOf<T> GetUIClassInternal(EUIType InUIType);
 
 public:
     template<typename T>
-    T* OpenUI(E_UITYPE InUIType);
+    T* OpenUI(EUIType InUIType);
 
     template<typename T>
-    T* GetOrCreateWidget(E_UITYPE InUIType);
+    T* GetOrCreateWidget(EUIType InUIType);
 
     template<typename T>
-    void CloseUI(E_UITYPE InUIType);
+    void CloseUI(EUIType InUIType);
 
     /**
      * 위젯 인스턴스를 직접 받아서 닫기 (인스턴스 기반)
@@ -141,7 +141,7 @@ private:
 // 템플릿 함수 구현
 
 template<typename T>
-inline T* UUIManager::GetOrCreateWidget(E_UITYPE InUIType)
+inline T* UUIManager::GetOrCreateWidget(EUIType InUIType)
 {
     TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
     if (TargetClass)
@@ -179,7 +179,7 @@ T* UUIManager::GetOrCreateWidgetInternal(TSubclassOf<T> WidgetClassFactory)
 }
 
 template<typename T>
-TSubclassOf<T> UUIManager::GetUIClassInternal(E_UITYPE InUIType)
+TSubclassOf<T> UUIManager::GetUIClassInternal(EUIType InUIType)
 {
     UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
 
@@ -192,7 +192,7 @@ TSubclassOf<T> UUIManager::GetUIClassInternal(E_UITYPE InUIType)
 }
 
 template<typename T>
-T* UUIManager::OpenUI(E_UITYPE InUIType)
+T* UUIManager::OpenUI(EUIType InUIType)
 {
     TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
     if (TargetClass)
@@ -262,7 +262,7 @@ T* UUIManager::OpenUIInternal(TSubclassOf<T> TargetClassFactory)
 }
 
 template<typename T>
-inline void UUIManager::CloseUI(E_UITYPE InUIType)
+inline void UUIManager::CloseUI(EUIType InUIType)
 {
     TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
     if (TargetClass)
