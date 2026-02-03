@@ -20,7 +20,7 @@ class VALKYRIEWAR_API UGameManager : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	TSubclassOf<UBaseWidget> GetUIClass(E_UITYPE InUIType);
+	TSubclassOf<UBaseWidget> GetUIClass(EUIType InUIType);
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Widget")
