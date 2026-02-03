@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 UENUM(BlueprintType)
-enum class E_UITYPE : uint8
+enum class EUIType : uint8
 {
 	//HUD
 	Login,
