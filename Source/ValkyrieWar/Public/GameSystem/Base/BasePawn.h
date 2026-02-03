@@ -7,6 +7,8 @@
 #include "AbilitySystemInterface.h"
 #include "BasePawn.generated.h"
 
+class UAbilitySystemComponent;
+
 UCLASS()
 class VALKYRIEWAR_API ABasePawn : public APawn, public IAbilitySystemInterface
 {
@@ -15,7 +17,6 @@ class VALKYRIEWAR_API ABasePawn : public APawn, public IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override {
 		return AbilitySystemComponent;
 	}
-
 public:
 	// Sets default values for this pawn's properties
 	ABasePawn();
