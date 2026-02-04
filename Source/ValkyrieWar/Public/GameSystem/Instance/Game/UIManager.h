@@ -143,7 +143,7 @@ private:
 template<typename T>
 inline T* UUIManager::GetOrCreateWidget(EUIType InUIType)
 {
-    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    TSubclassOf<T> TargetClass = GetUIClassInternal<T>(InUIType);
     if (TargetClass)
     {
         return GetOrCreateWidgetInternal(TargetClass);
@@ -194,7 +194,7 @@ TSubclassOf<T> UUIManager::GetUIClassInternal(EUIType InUIType)
 template<typename T>
 T* UUIManager::OpenUI(EUIType InUIType)
 {
-    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    TSubclassOf<T> TargetClass = GetUIClassInternal<T>(InUIType);
     if (TargetClass)
     {
         return OpenUIInternal(TargetClass);
@@ -264,7 +264,7 @@ T* UUIManager::OpenUIInternal(TSubclassOf<T> TargetClassFactory)
 template<typename T>
 inline void UUIManager::CloseUI(EUIType InUIType)
 {
-    TSubclassOf<T> TargetClass = GetUIClass<T>(InUIType);
+    TSubclassOf<T> TargetClass = GetUIClassInternal<T>(InUIType);
     if (TargetClass)
     {
         CloseUIInternal(TargetClass);
