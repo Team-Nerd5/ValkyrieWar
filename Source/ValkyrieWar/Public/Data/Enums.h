@@ -15,3 +15,12 @@ enum class EUIType : uint8
 	//Popup
 	
 };
+
+UENUM(BlueprintType)
+enum class EMapType : uint8
+{
+	Login,
+	Lobby,
+	Battle,
+	Loading,
+};
