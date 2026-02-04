@@ -24,3 +24,14 @@ enum class EMapType : uint8
 	Battle,
 	Loading,
 };
+
+UENUM(BlueprintType)
+enum class ELoginState : uint8
+{
+	Init,
+	LoadData,
+	CheckAccount,
+	CreateAccount,
+	MakeSaveData,
+	MoveToLobby,
+};
