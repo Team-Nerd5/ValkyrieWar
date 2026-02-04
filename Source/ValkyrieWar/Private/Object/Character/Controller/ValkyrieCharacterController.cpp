@@ -24,6 +24,33 @@ void AValkyrieCharacterController::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
+		{
+			TargetCameraLocation = SpringArm->GetRelativeLocation();
+		}
+	}
+}
+
+void AValkyrieCharacterController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+	GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Cyan, FString::Printf(TEXT("Target: %s"), *TargetCameraLocation.ToString()));
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		// 캐릭터의 SpringArm을 찾아서 부드럽게 이동
+		if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
+		{
+			FVector CurrentLoc = SpringArm->GetRelativeLocation();
+
+			// 현재 위치에서 목표 위치로 DeltaTime 동안 LagSpeed 속도로 보간
+			FVector SmoothLoc = FMath::VInterpTo(CurrentLoc, TargetCameraLocation, DeltaTime, LagSpeed);
+
+			SpringArm->SetRelativeLocation(SmoothLoc);
+		}
+	}
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
@@ -115,7 +142,7 @@ void AValkyrieCharacterController::OnTouchTriggered()
 					FVector CameraRight = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
 
 					FVector MoveDirection = (CameraForward * -Delta.Y) + (CameraRight * Delta.X); // 여기서 반전
-					SpringArm->AddWorldOffset(MoveDirection * CameraPanSpeed);
+					TargetCameraLocation = SpringArm->GetRelativeLocation() + (MoveDirection * CameraPanSpeed);
 				}
 			}
 		}

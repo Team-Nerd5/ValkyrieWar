@@ -56,6 +56,8 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+	virtual void PlayerTick(float DeltaTime) override;
+
 	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
@@ -70,4 +72,7 @@ private:
 	float FollowTime; // For how long it has been pressed
 	bool bIsDragging = false;
 	FVector2D PrevTouchLocation;
+	FVector TargetCameraLocation;
+	float LagSpeed = 10.0f;
+
 };
