@@ -3,6 +3,7 @@
 
 #include "Object/Character/Controller/ValkyrieCharacterController.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -46,6 +47,7 @@ void AValkyrieCharacterController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationClickAction, ETriggerEvent::Canceled, this, &AValkyrieCharacterController::OnSetDestinationReleased);
 
 		// Setup touch input events
+		UE_LOG(LogTemp, Warning, TEXT("✅ [Setup] DragAction 바인딩 성공!"));
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnInputStarted);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AValkyrieCharacterController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnTouchReleased);
@@ -60,6 +62,65 @@ void AValkyrieCharacterController::SetupInputComponent()
 void AValkyrieCharacterController::OnInputStarted()
 {
 	StopMovement();
+
+	float X, Y;
+
+	GetInputTouchState(ETouchIndex::Touch1, X, Y, bIsDragging);
+
+	if (bIsDragging)
+	{
+		PrevTouchLocation = FVector2D(X, Y);
+	}
+}
+
+void AValkyrieCharacterController::OnTouchTriggered()
+{
+
+	float X, Y;
+	bool bFoundInput = false;
+
+	GetInputTouchState(ETouchIndex::Touch1, X, Y, bFoundInput);
+
+	
+	if (!bFoundInput || (X == 0.0f && Y == 0.0f))
+	{
+		if (GetMousePosition(X, Y))
+		{
+			bFoundInput = true;
+		}
+	}
+
+	if (bFoundInput)
+	{
+		FVector2D CurrentTouchLocation = FVector2D(X, Y);
+
+		if (!bIsDragging)
+		{
+			PrevTouchLocation = CurrentTouchLocation;
+			bIsDragging = true;
+			return;
+		}
+		FVector2D Delta = PrevTouchLocation - CurrentTouchLocation;
+
+		if (Delta.SizeSquared() > 0.1f) // 손떨방
+		{
+			if (APawn* ControlledPawn = GetPawn())
+			{
+				if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
+				{
+					FRotator CameraRot = SpringArm->GetComponentRotation();
+					CameraRot.Roll = 0.0f; CameraRot.Pitch = 0.0f;
+
+					FVector CameraForward = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::X);
+					FVector CameraRight = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
+
+					FVector MoveDirection = (CameraForward * -Delta.Y) + (CameraRight * Delta.X); // 여기서 반전
+					SpringArm->AddWorldOffset(MoveDirection * CameraPanSpeed);
+				}
+			}
+		}
+		PrevTouchLocation = CurrentTouchLocation;
+	}
 }
 
 // Triggered every frame when the input is held down
@@ -109,14 +170,10 @@ void AValkyrieCharacterController::OnSetDestinationReleased()
 }
 
 // Triggered every frame when the input is held down
-void AValkyrieCharacterController::OnTouchTriggered()
-{
-	bIsTouch = true;
-	OnSetDestinationTriggered();
-}
+
 
 void AValkyrieCharacterController::OnTouchReleased()
 {
 	bIsTouch = false;
-	OnSetDestinationReleased();
+	bIsDragging = false;
 }

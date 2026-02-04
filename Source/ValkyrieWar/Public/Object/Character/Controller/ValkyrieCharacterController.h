@@ -40,6 +40,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationTouchAction;
 
+	//카메라 이동속도
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
+	float CameraPanSpeed = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DragAction;
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -61,4 +68,6 @@ private:
 
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
+	bool bIsDragging = false;
+	FVector2D PrevTouchLocation;
 };
