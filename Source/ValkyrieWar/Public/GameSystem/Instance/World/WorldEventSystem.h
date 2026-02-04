@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+
 #include "Data/Event/WidgetEventData.h"
+#include "Data/Event/ValkyrieEventData.h"
+#include "Data/Event/UnitEventData.h"
+
 #include "WorldEventSystem.generated.h"
 
 /**
@@ -16,4 +20,6 @@ class VALKYRIEWAR_API UWorldEventSystem : public UWorldSubsystem
 	GENERATED_BODY()
 public:
 	FWidgetEventData Widget;
+	FValkyrieEventData Valkyrie;
+	FUnitEventData Unit;
 };

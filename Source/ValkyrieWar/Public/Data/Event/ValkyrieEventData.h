@@ -3,15 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WidgetEventData.generated.h"
+#include "ValkyrieEventData.generated.h"
 
 /**
- * 위젯 관련 이벤트 구조체
+ * 발키리 캐릭터 관련 이벤트 데이터 구조체
  */
 USTRUCT(BlueprintType)
-struct VALKYRIEWAR_API FWidgetEventData
+struct VALKYRIEWAR_API FValkyrieEventData
 {
 	GENERATED_BODY()
-
-	//위젯 이벤트 Delegate 모음
+public:
 };
