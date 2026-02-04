@@ -3,19 +3,40 @@
 
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/Widget/WidgetClassTableData.h"
+#include "Data/Table/Map/MapLinkTableData.h"
+#include <Kismet/GameplayStatics.h>
 
 TSubclassOf<UBaseWidget> UGameManager::GetUIClass(EUIType InUIType)
 {
     if (WidgetClassTable)
     {
         TArray<FWidgetClassTableData*> Rows;
-        WidgetClassTable->GetAllRows(TEXT("SpawnInit"), Rows);
+        WidgetClassTable->GetAllRows(TEXT("WidgeInit"), Rows);
 
         for (FWidgetClassTableData* row : Rows)
         {
             if (row->UIType == InUIType)
             {
                 return row->WidgetClass.LoadSynchronous();
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+TSoftObjectPtr<UWorld> UGameManager::GetMapObject(EMapType InMapType)
+{
+    if (MapDataTable)
+    {
+        TArray<FMapLinkTableData*> Rows;
+        WidgetClassTable->GetAllRows(TEXT("MapInit"), Rows);
+
+        for (FMapLinkTableData* row : Rows)
+        {
+            if (row->UIType == InMapType)
+            {
+                return row->Map.LoadSynchronous();
             }
         }
     }

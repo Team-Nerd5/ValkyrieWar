@@ -21,8 +21,11 @@ class VALKYRIEWAR_API UGameManager : public UGameInstance
 
 public:
 	TSubclassOf<UBaseWidget> GetUIClass(EUIType InUIType);
+	TSoftObjectPtr<UWorld> GetMapObject(EMapType InMapType);
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Widget")
 	TObjectPtr<UDataTable> WidgetClassTable = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "Data|Map")
+	TObjectPtr<UDataTable> MapDataTable = nullptr;
 };
