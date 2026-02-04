@@ -30,6 +30,8 @@ void AValkyrieCharacterController::BeginPlay()
 		if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
 		{
 			TargetCameraLocation = SpringArm->GetRelativeLocation();
+
+			TargetZoomLength = SpringArm->TargetArmLength;// 줌
 		}
 	}
 }
@@ -49,6 +51,8 @@ void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 			FVector SmoothLoc = FMath::VInterpTo(CurrentLoc, TargetCameraLocation, DeltaTime, LagSpeed);
 
 			SpringArm->SetRelativeLocation(SmoothLoc);
+
+			SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, TargetZoomLength, DeltaTime, ZoomSpeed);
 		}
 	}
 }
@@ -148,6 +152,63 @@ void AValkyrieCharacterController::OnTouchTriggered()
 		}
 		PrevTouchLocation = CurrentTouchLocation;
 	}
+	float T1X, T1Y, T2X, T2Y;
+	bool bTouch1, bTouch2;
+
+	// 1. 첫 번째 터치(마우스 클릭) 상태 가져오기
+	GetInputTouchState(ETouchIndex::Touch1, T1X, T1Y, bTouch1);
+	if (!bTouch1) GetMousePosition(T1X, T1Y); // 마우스 백업
+
+	// 2. [디버그용] Ctrl 키를 누르면 현재 위치에 Touch1을 고정!
+	static FVector2D FixedTouch1Pos;
+	static bool bIsTouch1Fixed = false;
+
+	if (IsInputKeyDown(EKeys::LeftControl))
+	{
+		if (!bIsTouch1Fixed)
+		{
+			FixedTouch1Pos = FVector2D(T1X, T1Y); // 키 누르는 순간 좌표 박제
+			bIsTouch1Fixed = true;
+			if (GEngine) GEngine->AddOnScreenDebugMessage(4, 2.f, FColor::Red, TEXT("📌 Touch1 Fixed!"));
+		}
+
+		// 고정된 좌표와 현재 마우스 좌표를 두 손가락으로 간주
+		T1X = FixedTouch1Pos.X;
+		T1Y = FixedTouch1Pos.Y;
+		GetMousePosition(T2X, T2Y); // 현재 마우스 위치를 Touch2로
+		bTouch1 = true;
+		bTouch2 = true;
+	}
+	else
+	{
+		bIsTouch1Fixed = false;
+		GetInputTouchState(ETouchIndex::Touch2, T2X, T2Y, bTouch2);
+	}
+
+	// 3. 줌 로직 (bTouch1 && bTouch2 일 때만 실행)
+	if (bTouch1 && bTouch2)
+	{
+		FVector2D Pos1(T1X, T1Y);
+		FVector2D Pos2(T2X, T2Y);
+		float CurrentDistance = FVector2D::Distance(Pos1, Pos2);
+
+		if (!bIsPinching)
+		{
+			PreviousPinchDistance = CurrentDistance;
+			bIsPinching = true;
+		}
+		else
+		{
+			float DistanceDelta = CurrentDistance - PreviousPinchDistance;
+			TargetZoomLength -= (DistanceDelta * PinchSenSitivity);
+			TargetZoomLength = FMath::Clamp(TargetZoomLength, MinZoomLength, MaxZoomLength);
+			PreviousPinchDistance = CurrentDistance;
+		}
+	}
+	else
+	{
+		bIsPinching = false;
+	}
 }
 
 // Triggered every frame when the input is held down
@@ -180,6 +241,16 @@ void AValkyrieCharacterController::OnSetDestinationTriggered()
 	{
 		FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
 		ControlledPawn->AddMovementInput(WorldDirection, 1.0, false);
+	}
+	float WheelValue = GetInputAxisValue(TEXT("MouseWheel")); // IMC에 등록된 이름
+
+	if (FMath::Abs(WheelValue) > 0.1f)
+	{
+		// 휠 굴리는 만큼 목표 줌 거리 조절
+		TargetZoomLength -= (WheelValue * 100.f);
+		TargetZoomLength = FMath::Clamp(TargetZoomLength, MinZoomLength, MaxZoomLength);
+
+		UE_LOG(LogTemp, Warning, TEXT("🎡 Wheel Zoom! Target: %.1f"), TargetZoomLength);
 	}
 }
 
