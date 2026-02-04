@@ -75,4 +75,15 @@ private:
 	FVector TargetCameraLocation;
 	float LagSpeed = 10.0f;
 
+private: //핀치 줌인 줌아웃
+	float TargetZoomLength;
+	float MinZoomLength = 300.0f;
+	float MaxZoomLength = 1500.0f;
+	float ZoomSpeed = 10.0f;
+	float PinchSenSitivity = 2.0f;
+
+	float PreviousPinchDistance;
+	bool bIsPinching = false;
+
+
 };
