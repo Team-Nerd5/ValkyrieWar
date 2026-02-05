@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Data/PlayerSaveData.h"
 #include "MainSaveGame.generated.h"
 
 /**
@@ -16,9 +17,6 @@ class VALKYRIEWAR_API UMainSaveGame : public USaveGame
 
 public:
 	UPROPERTY()
-	int32 SavedGold = 0;
-
-	UPROPERTY()
-	int32 SavedTicket = 0;
+	FPlayerSaveData PlayerData;
 
 };

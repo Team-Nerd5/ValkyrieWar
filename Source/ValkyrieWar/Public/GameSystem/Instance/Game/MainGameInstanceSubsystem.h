@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Data/PlayerSaveData.h"
 #include "MainGameInstanceSubsystem.generated.h"
 
 /**
@@ -32,21 +33,23 @@ public:
 	UFUNCTION()
 	void AddTicket(int32 InTicket);
 
+	UFUNCTION()
+	inline FPlayerSaveData GetPlayerData() const { return CurrentPlayerData; }
+
+	UFUNCTION()
+	void SetPlayerData(const FPlayerSaveData& InPlayerData);
+	 
 protected:
-	UPROPERTY()
-	int32 Gold = 0;
-
-	UPROPERTY()
-	int32 Ticket = 0;
-
 	UPROPERTY()
 	FString SaveSlotName = TEXT("PlayerSave01");
 
 	UPROPERTY()
 	int32 SaveIndex = 0;
 
-protected:
 	UPROPERTY()
 	TObjectPtr<class UMainSaveGame> CachedSaveGame = nullptr;
+
+	UPROPERTY()
+	FPlayerSaveData CurrentPlayerData;
 
 };

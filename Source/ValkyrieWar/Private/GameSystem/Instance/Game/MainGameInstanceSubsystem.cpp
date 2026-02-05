@@ -25,8 +25,7 @@ void UMainGameInstanceSubsystem::SaveGame()
 {
 	if (CachedSaveGame)
 	{
-		CachedSaveGame->SavedGold = Gold;
-		CachedSaveGame->SavedTicket = Ticket;
+		CachedSaveGame->PlayerData = CurrentPlayerData;
 
 		bool bSaveSuccess = UGameplayStatics::SaveGameToSlot(CachedSaveGame, SaveSlotName, SaveIndex);
 		if (bSaveSuccess)
@@ -50,11 +49,10 @@ void UMainGameInstanceSubsystem::LoadGame()
 
 		if (LoadedSaveGame)
 		{
-			Gold = LoadedSaveGame->SavedGold;
-			Ticket = LoadedSaveGame->SavedTicket;
+			CurrentPlayerData = LoadedSaveGame->PlayerData;
 
-			CachedSaveGame->SavedGold = Gold;
-			CachedSaveGame->SavedTicket = Ticket;
+			CachedSaveGame->PlayerData = CurrentPlayerData;
+
 			UE_LOG(LogTemp, Log, TEXT("저장파일 로딩 성공"));
 		}
 		else
@@ -71,14 +69,21 @@ void UMainGameInstanceSubsystem::LoadGame()
 
 void UMainGameInstanceSubsystem::AddGold(int32 InGold)
 {
-	Gold += InGold;
+	CurrentPlayerData.Gold += InGold;
 
 	SaveGame();
 }
 
 void UMainGameInstanceSubsystem::AddTicket(int32 InTicket)
 {
-	Ticket += InTicket;
+	CurrentPlayerData.Ticket += InTicket;
+
+	SaveGame();
+}
+
+void UMainGameInstanceSubsystem::SetPlayerData(const FPlayerSaveData& InPlayerData)
+{
+	CurrentPlayerData = InPlayerData;
 
 	SaveGame();
 }
