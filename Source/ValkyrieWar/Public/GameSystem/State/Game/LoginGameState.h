@@ -18,6 +18,9 @@ class VALKYRIEWAR_API ALoginGameState : public AGameStateBase
 public:
 	void ChangeGameState(ELoginState InState);
 
+	//현재 State 반환
+	FORCEINLINE ELoginState GetState() const { return State; }
+
 private:
 	ELoginState State = ELoginState::Init;
 };

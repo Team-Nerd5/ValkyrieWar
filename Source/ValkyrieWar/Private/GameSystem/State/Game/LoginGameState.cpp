@@ -45,6 +45,8 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 			UIManager->CloseAllPopupUI();
 			UIManager->ResetAllUIStates();
 		}
+
+		//레벨 전환
 		break;
 	}
 }
