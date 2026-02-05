@@ -86,15 +86,8 @@ void UMainGameInstanceSubsystem::LoadGame()
 	}
 	else
 	{
-		// 저장된 파일이 없다면 로그인 화면으로
-		if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
-		{
-			TSoftObjectPtr<UWorld> TargetMap = GameManager->GetMapObject(EMapType::Login);
-
-			CurrentMapType = EMapType::Login;
-			TransitLevel(EMapType::Login);
-		}
-
+		UE_LOG(LogTemp, Log, TEXT("저장파일 없음. 로그인으로 이동"));
+		TransitLevel(EMapType::Login);
 	}
 
 }
@@ -144,7 +137,6 @@ void UMainGameInstanceSubsystem::TransitLevel(EMapType MapType)
 
 			UGameplayStatics::OpenLevel(this, TargetMap.GetLongPackageFName());
 
-			// === Async Loading Screen 플러그인을 안 쓴다면 ===
 			// 타이머로 로딩 완료 체크
 			//GetWorld()->GetTimerManager().SetTimer(
 			//	LevelTransitCheckTimer,
@@ -170,7 +162,6 @@ void UMainGameInstanceSubsystem::TransitLevel(EMapType MapType)
 
 void UMainGameInstanceSubsystem::LevelTransitComplete()
 {
-	// === Async Loading Screen 플러그인을 안 쓴다면 ===
 	//if (레벨 로드 완료 조건)
 	//{
 	//	GetWorld()->GetTimerManager().ClearTimer(LevelTransitCheckTimer);
@@ -182,8 +173,12 @@ void UMainGameInstanceSubsystem::LevelTransitComplete()
 
 void UMainGameInstanceSubsystem::LoginPlayer(const FString& InPlayerName)
 {
-}
+	bIsLoggedIn = true;
 
-void UMainGameInstanceSubsystem::LogoutPlayer()
-{
+	CurrentPlayerData.PlayerName = InPlayerName;
+	CurrentPlayerData.bHasEverLoggedIn = true;
+	SaveGame();
+
+	TransitLevel(EMapType::Lobby);
+
 }

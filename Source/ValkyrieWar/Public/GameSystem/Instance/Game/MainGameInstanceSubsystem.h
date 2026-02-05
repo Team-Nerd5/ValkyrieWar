@@ -60,9 +60,6 @@ public: // 로그인 관리
 	UFUNCTION(BlueprintCallable, Category = "LoginSystem")
 	void LoginPlayer(const FString& InPlayerName);
 
-	UFUNCTION(BlueprintCallable, Category = "LoginSystem")
-	void LogoutPlayer();
-
 public: // 델리게이트
 	UPROPERTY()
 	FOnLevelTransitStarted OnLevelTransitStarted;
