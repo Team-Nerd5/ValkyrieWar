@@ -10,6 +10,7 @@
 class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
+struct FInputActionValue;
 /**
  * 
  */
@@ -25,27 +26,29 @@ public:
 	float ShortPressThreshold;
 
 	/** FX Class that we will spawn when clicking */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UNiagaraSystem* FXCursor;
-
+	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SetDestinationClickAction;
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SetDestinationTouchAction;
-
+	
 	//카메라 이동속도
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
 	float CameraPanSpeed = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DragAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Camera")
+	UInputAction* CameraDragAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Action")
+	class UInputAction* MoveAction;
+
+	// 조이스틱 부분 드래그 금지
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
+	float JoystickDeadZoneWidthRatio = 0.35f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
+	float JoystickDeadZoneHeightRatio = 0.4f;
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -60,11 +63,10 @@ protected:
 
 	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
 	void OnTouchTriggered();
 	void OnTouchReleased();
-
+	void OnMove(const FInputActionValue& Value);
+	bool bIsMoving = false;
 private:
 	FVector CachedDestination;
 
@@ -74,16 +76,6 @@ private:
 	FVector2D PrevTouchLocation;
 	FVector TargetCameraLocation;
 	float LagSpeed = 10.0f;
-
-private: //핀치 줌인 줌아웃
-	float TargetZoomLength;
-	float MinZoomLength = 300.0f;
-	float MaxZoomLength = 1500.0f;
-	float ZoomSpeed = 10.0f;
-	float PinchSenSitivity = 2.0f;
-
-	float PreviousPinchDistance;
-	bool bIsPinching = false;
 
 
 };
