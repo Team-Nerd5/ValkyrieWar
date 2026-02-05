@@ -1,15 +1,7 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Object/Character/Controller/ValkyrieCharacterController.h"
+﻿#include "Object/Character/Controller/ValkyrieCharacterController.h"
 #include "GameFramework/Pawn.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
-#include "Engine/World.h"
+#include "Camera/CameraComponent.h" // 카메라 컴포넌트 헤더 필수!
 #include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 
@@ -17,58 +9,54 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
-	CachedDestination = FVector::ZeroVector;
-	FollowTime = 0.f;
+
+	// 기본값 설정
+	CameraPanSpeed = 1.0f;
+	AutoCenterWaitTime = 2.0f;
+	AutoCenterInterpSpeed = 2.0f;
+	MovingCenterInterpSpeed = 5.0f;
 }
+
 void AValkyrieCharacterController::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
+
+	// 입력 모드 설정
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
+
 	FInputModeGameAndUI InputMode;
 	InputMode.SetHideCursorDuringCapture(false);
-
 	SetInputMode(InputMode);
-	if (APawn* ControlledPawn = GetPawn())
-	{
-		if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
-		{
-			TargetCameraLocation = SpringArm->GetRelativeLocation();
-		}
-	}
-}
 
-void AValkyrieCharacterController::PlayerTick(float DeltaTime)
-{
-	Super::PlayerTick(DeltaTime);
-	if (APawn* ControlledPawn = GetPawn())
-	{
-		if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
-		{
-			FVector CurrentLoc = SpringArm->GetRelativeLocation();
-			FVector SmoothLoc = FMath::VInterpTo(CurrentLoc, TargetCameraLocation, DeltaTime, LagSpeed);
-			SpringArm->SetRelativeLocation(SmoothLoc);
-		}
-	}
+	// 변수 초기화
+	DragOffset = FVector::ZeroVector;
+	bIsDragging = false;
+	bIsInputActive = false;
+
+	// ★ [카메라 기본 위치 강제 설정]
+	// 뒤로 600, 위로 900 (쿼터뷰 정석)
+	DefaultViewOffset = FVector(-600.0f, 0.0f, 900.0f);
+
+	UE_LOG(LogTemp, Warning, TEXT("카메라 강제 위치 설정 완료! :: %s"), *DefaultViewOffset.ToString());
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
 {
-	// set up gameplay key bindings
 	Super::SetupInputComponent();
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(DefaultMappingContext, 1);
-	}
 
-	
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		// 
+		// 이동 바인딩
 		if (MoveAction)
 		{
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AValkyrieCharacterController::OnMove);
-			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnMove);
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnMoveCompleted);
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AValkyrieCharacterController::OnMoveCompleted);
 		}
+		// 드래그 바인딩
 		if (CameraDragAction)
 		{
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnInputStarted);
@@ -76,119 +64,69 @@ void AValkyrieCharacterController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnTouchReleased);
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Canceled, this, &AValkyrieCharacterController::OnTouchReleased);
 		}
-		
-	
-		UE_LOG(LogTemp, Warning, TEXT("모든 액션 바인딩 완료!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("인핸스드 인풋 컴포넌트를 찾을 수 없음!"));
 	}
 }
 
-void AValkyrieCharacterController::OnInputStarted()
+void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 {
+	Super::PlayerTick(DeltaTime);
 
-	if (bIsMoving) return;
-	StopMovement();
-
-	float X, Y;
-	//데드존
-	bool bFoundInput = false;
-	GetInputTouchState(ETouchIndex::Touch1, X, Y, bFoundInput);
-	if (!bFoundInput)
-	{
-		if (GetMousePosition(X, Y)) bFoundInput = true;
-	}
-	if (bFoundInput)
-	{
-		int32 ScreenWidth, ScreenHeight;
-		GetViewportSize(ScreenWidth, ScreenHeight);
-
-		float DeadZoneXLimit = ScreenWidth * JoystickDeadZoneWidthRatio;
-		float DeadZoneYStart = ScreenHeight * (1.0f - JoystickDeadZoneHeightRatio);
-
-		if (X < DeadZoneXLimit && Y > DeadZoneYStart)
-		{
-			bIsDragging = false;
-			return;
-		}
-		PrevTouchLocation = FVector2D(X, Y);
-		bIsDragging = true;
-	}
+	// ★ 매 프레임 카메라 위치 갱신 (이게 없으면 안 움직임!)
+	UpdateCameraPosition(DeltaTime);
 }
 
-void AValkyrieCharacterController::OnTouchTriggered()
+void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 {
-	if (bIsMoving || !bIsDragging)
+	APawn* ControlledPawn = GetPawn();
+	if (!ControlledPawn) return;
+
+	// 캐릭터에 붙어있는 카메라 찾기 (스프링암 아님!)
+	UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>();
+	if (!CamComp) return;
+
+	// 1. 복귀 로직 (손 떼면 드래그 거리 줄이기)
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
+	bool bShouldRecenter = (bIsInputActive || bTimeExpired) && !bIsDragging;
+
+	if (bShouldRecenter)
 	{
-		return;
-	}
-	float X, Y;
-	bool bFoundInput = false;
-
-	GetInputTouchState(ETouchIndex::Touch1, X, Y, bFoundInput);
-	if (!bFoundInput || (X == 0.0f && Y == 0.0f))
-	{
-		if (GetMousePosition(X, Y)) bFoundInput = true;
+		float Speed = bIsInputActive ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
+		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, DeltaTime, Speed);
 	}
 
-	if (bFoundInput)
-	{
-		
-		FVector2D CurrentTouchLocation = FVector2D(X, Y);
-		FVector2D Delta = PrevTouchLocation - CurrentTouchLocation;
+	// 2. 목표 위치 계산
+	FVector CharLoc = ControlledPawn->GetActorLocation();
 
-		if (Delta.SizeSquared() > 10000.0f)
-		{
-			PrevTouchLocation = CurrentTouchLocation;
-			return;
-		}
+	// 최종 목표 = 캐릭터 + 기본 거리 + 드래그 오프셋
+	FVector FinalTargetLoc = CharLoc + DefaultViewOffset + DragOffset;
 
-		if (Delta.SizeSquared() > 1.0f) // 손떨방 수치를 더 낮춰봄
-		{
-			if (APawn* ControlledPawn = GetPawn())
-			{
-				if (USpringArmComponent* SpringArm = ControlledPawn->GetComponentByClass<USpringArmComponent>())
-				{
-					FRotator CameraRot = SpringArm->GetComponentRotation();
-					CameraRot.Roll = 0.0f; CameraRot.Pitch = 0.0f;
+	// 3. 부드럽게 이동 (Lag 효과)
+	FVector CurrentCamLoc = CamComp->GetComponentLocation();
+	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, DeltaTime, 10.0f); // 10.0f는 반응 속도
 
-					FVector CameraForward = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::X);
-					FVector CameraRight = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
+	// 4. ★ 강제 적용 (월드 좌표)
+	CamComp->SetWorldLocation(NewCamLoc);
 
-					FVector WorldDirection = (CameraForward * -Delta.Y) + (CameraRight * Delta.X);
-					FRotator ActorRot = ControlledPawn->GetActorRotation();
-					FVector LocalDirection = ActorRot.UnrotateVector(WorldDirection);
-					TargetCameraLocation += (LocalDirection * CameraPanSpeed);
-
-
-				}
-			}
-		}
-		PrevTouchLocation = CurrentTouchLocation;
-	}
-	
-}
-
-void AValkyrieCharacterController::OnTouchReleased()
-{
-	bIsTouch = false;
-	bIsDragging = false;
+	// 5. ★ 회전도 강제 적용! (하늘 보는 거 방지)
+	// 무조건 아래로 55도 내려다보기 (쿼터뷰 각도)
+	FRotator LookDownRot = FRotator(-55.0f, 0.0f, 0.0f);
+	CamComp->SetWorldRotation(LookDownRot);
 }
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	bIsMoving = MovementVector.SizeSquared() > 0.01f;
-
-	if (bIsMoving)
+	if (!MovementVector.IsNearlyZero())
 	{
-		bIsDragging = false;
+		bIsInputActive = true;
+		RefreshInteractionTime();
 	}
+
 	if (APawn* ControlledPawn = GetPawn())
 	{
+		// 카메라가 아니라 컨트롤러 회전 기준으로 이동 (일반적인 방식)
 		const FRotator Rotation = GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
@@ -198,4 +136,93 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
 		ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, MovementVector.X);
 	}
+}
+
+void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& Value)
+{
+	bIsInputActive = false;
+}
+
+void AValkyrieCharacterController::RefreshInteractionTime()
+{
+	LastInteractionTime = GetWorld()->GetTimeSeconds();
+}
+
+void AValkyrieCharacterController::OnInputStarted()
+{
+	if (bIsInputActive) return;
+
+	StopMovement(); // 이동 중이면 멈춤 (필요 없으면 삭제 가능)
+
+	float X, Y;
+	bool bFoundInput = false;
+	GetInputTouchState(ETouchIndex::Touch1, X, Y, bFoundInput);
+
+	if (!bFoundInput)
+	{
+		if (GetMousePosition(X, Y)) bFoundInput = true;
+	}
+
+	if (bFoundInput)
+	{
+		// 조이스틱 영역 체크 (데드존)
+		int32 ScreenWidth, ScreenHeight;
+		GetViewportSize(ScreenWidth, ScreenHeight);
+
+		float DeadZoneXLimit = ScreenWidth * JoystickDeadZoneWidthRatio;
+		float DeadZoneYStart = ScreenHeight * (1.0f - JoystickDeadZoneHeightRatio);
+
+		if (X < DeadZoneXLimit && Y > DeadZoneYStart)
+		{
+			bIsDragging = false;
+			return; // 조이스틱 영역이면 드래그 무시
+		}
+
+		PrevTouchLocation = FVector2D(X, Y);
+		bIsDragging = true;
+	}
+}
+
+void AValkyrieCharacterController::OnTouchTriggered()
+{
+	if (bIsInputActive || !bIsDragging) return;
+
+	float X, Y;
+	bool bFoundInput = false;
+	GetInputTouchState(ETouchIndex::Touch1, X, Y, bFoundInput);
+
+	if (!bFoundInput)
+	{
+		if (GetMousePosition(X, Y)) bFoundInput = true;
+	}
+
+	if (bFoundInput)
+	{
+		RefreshInteractionTime();
+		FVector2D CurrentTouchLocation = FVector2D(X, Y);
+		FVector2D Delta = PrevTouchLocation - CurrentTouchLocation;
+
+		// 너무 큰 델타(튀는 값) 무시
+		if (Delta.SizeSquared() > 10000.0f)
+		{
+			PrevTouchLocation = CurrentTouchLocation;
+			return;
+		}
+
+		// 손떨림 방지
+		if (Delta.SizeSquared() > 1.0f)
+		{
+			// ★ 드래그 적용
+			// Y축(좌우), X축(앞뒤) - 카메라 회전에 따라 방향 맞춤
+			DragOffset.Y += Delta.X * CameraPanSpeed;
+			DragOffset.X -= Delta.Y * CameraPanSpeed;
+		}
+		PrevTouchLocation = CurrentTouchLocation;
+	}
+}
+
+void AValkyrieCharacterController::OnTouchReleased()
+{
+	bIsTouch = false;
+	bIsDragging = false;
 }

@@ -1,81 +1,82 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Templates/SubclassOf.h"
 #include "GameFramework/PlayerController.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
+#include "InputActionValue.h"
 #include "ValkyrieCharacterController.generated.h"
 
-class UNiagaraSystem;
-class UInputMappingContext;
-class UInputAction;
-struct FInputActionValue;
-/**
- * 
- */
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 {
 	GENERATED_BODY()
+
 public:
 	AValkyrieCharacterController();
 
-	/** Time Threshold to know if it was a short press */
+	// ---------------------------------------------------
+	// [설정 변수] 에디터에서 조절 가능
+	// ---------------------------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	float ShortPressThreshold;
-
-	/** FX Class that we will spawn when clicking */
-	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-	
-	//카메라 이동속도
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
-	float CameraPanSpeed = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* DragAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* MoveAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Camera")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CameraDragAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Action")
-	class UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float CameraPanSpeed = 1.0f; // 드래그 속도
 
-	// 조이스틱 부분 드래그 금지
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float AutoCenterInterpSpeed = 2.0f; // 복귀 속도
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float MovingCenterInterpSpeed = 5.0f; // 이동 중 복귀 속도
+
+	// 조이스틱 데드존
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneWidthRatio = 0.35f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
 
 protected:
-	/** True if the controlled character should navigate to the mouse cursor. */
-	uint32 bMoveToMouseCursor : 1;
-
+	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
-
-	// To add mapping context
-	virtual void BeginPlay();
-
 	virtual void PlayerTick(float DeltaTime) override;
 
-	/** Input handlers for SetDestination action. */
+	// 입력 함수들
+	void OnMove(const FInputActionValue& Value);
+	void OnMoveCompleted(const FInputActionValue& Value);
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
-	void OnMove(const FInputActionValue& Value);
-	bool bIsMoving = false;
+
 private:
-	FVector CachedDestination;
+	// ---------------------------------------------------
+	// [내부 로직 변수]
+	// ---------------------------------------------------
+	// 1. 드래그로 이동한 거리 (오프셋)
+	FVector DragOffset;
 
-	bool bIsTouch; // Is it a touch device
-	float FollowTime; // For how long it has been pressed
+	// 2. 기본 뷰 오프셋 (캐릭터로부터 떨어진 거리)
+	FVector DefaultViewOffset;
+
+	// 3. 상태 관리
+	float LastInteractionTime = 0.0f;
+	bool bIsInputActive = false;
 	bool bIsDragging = false;
+	bool bIsTouch = false;
 	FVector2D PrevTouchLocation;
-	FVector TargetCameraLocation;
-	float LagSpeed = 10.0f;
 
+	// 타이머 리셋 헬퍼
+	void RefreshInteractionTime();
 
+	// ★ 카메라 위치 업데이트 함수
+	void UpdateCameraPosition(float DeltaTime);
 };
