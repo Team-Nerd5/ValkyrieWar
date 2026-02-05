@@ -92,6 +92,8 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 				LevelManager->LoadLevelAsync(GameManager->GetMapObject(EMapType::Lobby));
 			}
 		}
+
+		//레벨 전환
 		break;
 	}
 }
