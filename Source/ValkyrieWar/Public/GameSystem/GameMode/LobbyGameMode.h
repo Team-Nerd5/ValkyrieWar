@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Data/Enums.h"
 #include "LobbyGameMode.generated.h"
 
 /**
