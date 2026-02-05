@@ -59,3 +59,11 @@ enum class EBattleState : uint8
 	TimeOver,	//시간초과로 종료(패배)
 	MoveToLobby,//로비로 이동
 };
+
+UENUM(BlueprintType)
+enum class ELobbyState : uint8
+{
+	Init,			//로비 데이터 호출 시작
+	Ready,			//인벤토리 등 데이터 로드 완료, UI 호출
+	MoveToStage,	//스테이지로 레벨 전환
+};

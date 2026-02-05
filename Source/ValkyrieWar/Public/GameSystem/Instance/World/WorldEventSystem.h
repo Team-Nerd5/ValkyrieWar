@@ -9,6 +9,7 @@
 #include "Data/Event/ValkyrieEventData.h"
 #include "Data/Event/UnitEventData.h"
 #include "Data/Event/LoginEventData.h"
+#include "Data/Event/LobbyEventData.h"
 
 #include "WorldEventSystem.generated.h"
 
@@ -24,4 +25,5 @@ public:
 	FValkyrieEventData Valkyrie;
 	FUnitEventData Unit;
 	FLoginEventData Login;
+	FLobbyEventData Lobby;
 };
