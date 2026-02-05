@@ -30,7 +30,7 @@ TSoftObjectPtr<UWorld> UGameManager::GetMapObject(EMapType InMapType)
     if (MapDataTable)
     {
         TArray<FMapLinkTableData*> Rows;
-        WidgetClassTable->GetAllRows(TEXT("MapInit"), Rows);
+        MapDataTable->GetAllRows(TEXT("MapInit"), Rows);
 
         for (FMapLinkTableData* row : Rows)
         {
