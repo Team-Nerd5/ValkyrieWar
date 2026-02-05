@@ -24,31 +24,44 @@ protected:
 	virtual void Deinitialize() override;
 
 public: // 게터 / 세터
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
 	inline FPlayerSaveData GetPlayerData() const { return CurrentPlayerData; }
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "LevelSystem")
 	inline EMapType GetCurrentMapType() const { return CurrentMapType; }
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "LoginSystem")
+	bool GetIsLoggedIn() const { return bIsLoggedIn; }
+
+	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
 	void SetPlayerData(const FPlayerSaveData& InPlayerData);
 
 public: // 저장 / 로드
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
 	void SaveGame();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
 	void LoadGame();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void AddGold(int32 InGold);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void AddTicket(int32 InTicket);
 
 public: // 레벨 이동
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "LevelSystem")
 	void TransitLevel(EMapType MapType);
+
+	UFUNCTION()
+	void LevelTransitComplete();
+
+public: // 로그인 관리
+	UFUNCTION(BlueprintCallable, Category = "LoginSystem")
+	void LoginPlayer(const FString& InPlayerName);
+
+	UFUNCTION(BlueprintCallable, Category = "LoginSystem")
+	void LogoutPlayer();
 
 public: // 델리게이트
 	UPROPERTY()
@@ -72,5 +85,8 @@ protected: // 변수
 
 	UPROPERTY()
 	EMapType CurrentMapType = EMapType::Login;
+
+	UPROPERTY()
+	bool bIsLoggedIn = false;
 
 };

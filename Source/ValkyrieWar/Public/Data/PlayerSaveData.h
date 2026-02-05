@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerSaveData.generated.h"
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FPlayerSaveData
@@ -21,5 +22,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Currency")
     int32 Ticket = 0;
+
+    // 한번이라도 로그인을 성공했냐?
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+    bool bHasEverLoggedIn = false;
 
 };

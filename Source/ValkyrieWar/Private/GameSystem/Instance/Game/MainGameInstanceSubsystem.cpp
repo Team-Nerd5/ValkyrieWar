@@ -7,6 +7,8 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Engine/Engine.h"
+#include "UObject/Package.h"
 
 void UMainGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -18,7 +20,10 @@ void UMainGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection
 
 void UMainGameInstanceSubsystem::Deinitialize()
 {
-	SaveGame();
+	if (bIsLoggedIn)
+	{
+		SaveGame();
+	}
 	CachedSaveGame = nullptr;
 
 	Super::Deinitialize();
@@ -60,10 +65,19 @@ void UMainGameInstanceSubsystem::LoadGame()
 		if (LoadedSaveGame)
 		{
 			CurrentPlayerData = LoadedSaveGame->PlayerData;
-
 			CachedSaveGame->PlayerData = CurrentPlayerData;
 
-			UE_LOG(LogTemp, Log, TEXT("저장파일 로딩 성공"));
+			if (CurrentPlayerData.bHasEverLoggedIn)
+			{
+				bIsLoggedIn = true;
+				UE_LOG(LogTemp, Log, TEXT("로그인 기록 있음. 로비로 이동"));
+				TransitLevel(EMapType::Lobby);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("저장파일은 있는데 로그인 기록 없음. 로그인으로 이동"));
+				TransitLevel(EMapType::Login);
+			}
 		}
 		else
 		{
@@ -72,7 +86,15 @@ void UMainGameInstanceSubsystem::LoadGame()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("저장된 파일이 없다."));
+		// 저장된 파일이 없다면 로그인 화면으로
+		if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+		{
+			TSoftObjectPtr<UWorld> TargetMap = GameManager->GetMapObject(EMapType::Login);
+
+			CurrentMapType = EMapType::Login;
+			TransitLevel(EMapType::Login);
+		}
+
 	}
 
 }
@@ -104,6 +126,10 @@ void UMainGameInstanceSubsystem::TransitLevel(EMapType MapType)
 		// 모든 UI상태 초기화
 		UIManager->ResetAllUIStates();
 	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("UI매니저 불러오기 실패"));
+	}
 
 	// 게임매니저 가져오기 시도
 	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
@@ -116,21 +142,48 @@ void UMainGameInstanceSubsystem::TransitLevel(EMapType MapType)
 		{
 			CurrentMapType = MapType;
 
-			UWorld* CurrentWorld = GetWorld();
-			if (CurrentWorld)
-			{
-				FLatentActionInfo LatentInfo;
-				LatentInfo.CallbackTarget = this;
-				LatentInfo.ExecutionFunction = FName("OnLevelLoadComplete");
-				LatentInfo.Linkage = 0;
-				LatentInfo.UUID = FMath::Rand();
+			UGameplayStatics::OpenLevel(this, TargetMap.GetLongPackageFName());
 
-				
-
-			}
+			// === Async Loading Screen 플러그인을 안 쓴다면 ===
+			// 타이머로 로딩 완료 체크
+			//GetWorld()->GetTimerManager().SetTimer(
+			//	LevelTransitCheckTimer,
+			//	this,
+			//	&UMainGameInstanceSubsystem::LevelTransitComplete,
+			//	0.1f,
+			//	true
+			//);
 
 		}
-		
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("TargetMap 불러오기 실패"));
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("게임매니저 불러오기 실패"));
 	}
 
+}
+
+void UMainGameInstanceSubsystem::LevelTransitComplete()
+{
+	// === Async Loading Screen 플러그인을 안 쓴다면 ===
+	//if (레벨 로드 완료 조건)
+	//{
+	//	GetWorld()->GetTimerManager().ClearTimer(LevelTransitCheckTimer);
+	//	OnLevelTransitCompleted.Broadcast(CurrentMapType);
+	//	// 로딩화면 숨기기
+	//}
+
+}
+
+void UMainGameInstanceSubsystem::LoginPlayer(const FString& InPlayerName)
+{
+}
+
+void UMainGameInstanceSubsystem::LogoutPlayer()
+{
 }
