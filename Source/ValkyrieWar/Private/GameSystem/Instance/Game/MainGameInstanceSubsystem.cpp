@@ -2,13 +2,16 @@
 
 
 #include "GameSystem/Instance/Game/MainGameInstanceSubsystem.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameSystem/Instance/Game/MainSaveGame.h"
+#include "GameSystem/Instance/Game/GameManager.h"
+#include "GameSystem/Instance/Game/UIManager.h"
+
+#include "Kismet/GameplayStatics.h"
 
 void UMainGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	
+
 	CachedSaveGame = Cast<UMainSaveGame>(UGameplayStatics::CreateSaveGameObject(UMainSaveGame::StaticClass()));
 	LoadGame();
 }
@@ -19,6 +22,13 @@ void UMainGameInstanceSubsystem::Deinitialize()
 	CachedSaveGame = nullptr;
 
 	Super::Deinitialize();
+}
+
+void UMainGameInstanceSubsystem::SetPlayerData(const FPlayerSaveData& InPlayerData)
+{
+	CurrentPlayerData = InPlayerData;
+
+	SaveGame();
 }
 
 void UMainGameInstanceSubsystem::SaveGame()
@@ -81,9 +91,46 @@ void UMainGameInstanceSubsystem::AddTicket(int32 InTicket)
 	SaveGame();
 }
 
-void UMainGameInstanceSubsystem::SetPlayerData(const FPlayerSaveData& InPlayerData)
+void UMainGameInstanceSubsystem::TransitLevel(EMapType MapType)
 {
-	CurrentPlayerData = InPlayerData;
+	OnLevelTransitStarted.Broadcast(MapType);
 
+	// 일단 저장
 	SaveGame();
+
+	// UI매니저 가져오기 시도
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		// 모든 UI상태 초기화
+		UIManager->ResetAllUIStates();
+	}
+
+	// 게임매니저 가져오기 시도
+	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+	{
+		// 열고싶은 맵 찾기
+		TSoftObjectPtr<UWorld> TargetMap = GameManager->GetMapObject(MapType);
+
+		// 찾았을 때만
+		if (TargetMap)
+		{
+			CurrentMapType = MapType;
+
+			UWorld* CurrentWorld = GetWorld();
+			if (CurrentWorld)
+			{
+				FLatentActionInfo LatentInfo;
+				LatentInfo.CallbackTarget = this;
+				LatentInfo.ExecutionFunction = FName("OnLevelLoadComplete");
+				LatentInfo.Linkage = 0;
+				LatentInfo.UUID = FMath::Rand();
+
+				
+
+			}
+
+		}
+		
+	}
+
 }

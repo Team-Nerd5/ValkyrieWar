@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Data/PlayerSaveData.h"
+#include "Data/Enums.h"
 #include "MainGameInstanceSubsystem.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLevelTransitStarted, EMapType, TargetMapType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLevelTransitCompleted, EMapType, LoadedMapType);
+
+// 세이브 파일 저장경로 : ValkyrieWar/Saved/SaveGames 안에 있는 .sav 파일
+
 UCLASS()
 class VALKYRIEWAR_API UMainGameInstanceSubsystem : public UGameInstanceSubsystem
 {
@@ -20,7 +23,17 @@ protected:
 
 	virtual void Deinitialize() override;
 
-public:
+public: // 게터 / 세터
+	UFUNCTION()
+	inline FPlayerSaveData GetPlayerData() const { return CurrentPlayerData; }
+
+	UFUNCTION()
+	inline EMapType GetCurrentMapType() const { return CurrentMapType; }
+
+	UFUNCTION()
+	void SetPlayerData(const FPlayerSaveData& InPlayerData);
+
+public: // 저장 / 로드
 	UFUNCTION()
 	void SaveGame();
 
@@ -33,13 +46,18 @@ public:
 	UFUNCTION()
 	void AddTicket(int32 InTicket);
 
+public: // 레벨 이동
 	UFUNCTION()
-	inline FPlayerSaveData GetPlayerData() const { return CurrentPlayerData; }
+	void TransitLevel(EMapType MapType);
 
-	UFUNCTION()
-	void SetPlayerData(const FPlayerSaveData& InPlayerData);
-	 
-protected:
+public: // 델리게이트
+	UPROPERTY()
+	FOnLevelTransitStarted OnLevelTransitStarted;
+
+	UPROPERTY()
+	FOnLevelTransitCompleted OnLevelTransitCompleted;
+
+protected: // 변수
 	UPROPERTY()
 	FString SaveSlotName = TEXT("PlayerSave01");
 
@@ -51,5 +69,8 @@ protected:
 
 	UPROPERTY()
 	FPlayerSaveData CurrentPlayerData;
+
+	UPROPERTY()
+	EMapType CurrentMapType = EMapType::Login;
 
 };

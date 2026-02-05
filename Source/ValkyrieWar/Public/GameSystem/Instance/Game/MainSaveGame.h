@@ -7,9 +7,8 @@
 #include "Data/PlayerSaveData.h"
 #include "MainSaveGame.generated.h"
 
-/**
- * 
- */
+// 세이브 파일 저장경로 : ValkyrieWar/Saved/SaveGames 안에 있는 .sav 파일
+
 UCLASS()
 class VALKYRIEWAR_API UMainSaveGame : public USaveGame
 {
