@@ -11,10 +11,54 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 	DefaultMouseCursor = EMouseCursor::Default;
 
 	// 기본값 설정
-	CameraPanSpeed = 1.0f;
+	ManualPanSpeed = 1.0f;
+	AutoPanSpeed = 1.5f;
+
+	ManualLagSpeed = 6.0f;
+	AutoLagSpeed = 3.5f;
+
 	AutoCenterWaitTime = 2.0f;
 	AutoCenterInterpSpeed = 2.0f;
 	MovingCenterInterpSpeed = 5.0f;
+}
+
+void AValkyrieCharacterController::SetControlMode(EInputControlMode NewMode)
+{
+	if (CurrentControlMode == NewMode) return;
+
+	CurrentControlMode = NewMode;
+
+	if (CurrentControlMode == EInputControlMode::Manual)
+	{
+		CurrentTargetViewOffset = ManualViewOffset;
+		// 수동모드시에 조이스틱 주기
+		ActivateTouchInterface(MyTouchInterface);
+	}
+	else
+	{
+		CurrentTargetViewOffset = AutoViewOffset;
+		//드래그 초기화 시키기
+		DragOffset = FVector::ZeroVector;
+		//자동모드에선 가상조이스틱 샷따 내리기 
+		ActivateTouchInterface(nullptr);
+	}
+	OnControlModeChanged(CurrentControlMode);
+
+	StopMovement();
+	bIsDragging = false;
+	bIsInputActive = false;
+}
+
+void AValkyrieCharacterController::ToggleControlMode()
+{
+	if (CurrentControlMode == EInputControlMode::Manual)
+	{
+		SetControlMode(EInputControlMode::Auto);
+	}
+	else
+	{
+		SetControlMode(EInputControlMode::Manual);
+	}
 }
 
 void AValkyrieCharacterController::BeginPlay()
@@ -35,14 +79,23 @@ void AValkyrieCharacterController::BeginPlay()
 	DragOffset = FVector::ZeroVector;
 	bIsDragging = false;
 	bIsInputActive = false;
+	//수동모드일때 카메라
+	ManualViewOffset = FVector(-600.0f, 0.0f, 700.0f);
+	//자동모드일떄 카메라
+	AutoViewOffset = FVector(-1500.0f, 0.0f, 2000.0f);
 
-	DefaultViewOffset = FVector(-600.0f, 0.0f, 900.0f);
+	// 시작 모드는 수동모드로
+	CurrentControlMode = EInputControlMode::Manual;
+
+	// 현재 수동모드를 좌표로 설정하고있음
+	CurrentTargetViewOffset = ManualViewOffset;
+
 	if (APawn* ControlledPawn = GetPawn())
     {
         if (UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>())
         {
             CamComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-            CamComp->bUsePawnControlRotation = false; 
+            CamComp->bUsePawnControlRotation = false;
         }
     }
 }
@@ -90,7 +143,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
 	bool bShouldRecenter = (bIsInputActive || bTimeExpired) && !bIsDragging;
 
-	if (bShouldRecenter)
+	if (CurrentControlMode == EInputControlMode::Manual && bShouldRecenter)
 	{
 		float Speed = bIsInputActive ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
 		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, DeltaTime, Speed);
@@ -98,10 +151,21 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 
 	FVector CharLoc = ControlledPawn->GetActorLocation();
 
-	FVector FinalTargetLoc = CharLoc + DefaultViewOffset + DragOffset;
+	FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset + DragOffset;
 
 	FVector CurrentCamLoc = CamComp->GetComponentLocation();
-	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, DeltaTime, 10.0f); // 10.0f는 반응 속도
+	float CurrentLagSpeed;
+
+	if (CurrentControlMode == EInputControlMode::Manual)
+	{
+		CurrentLagSpeed = ManualLagSpeed;
+	}
+	else
+	{
+		CurrentLagSpeed = AutoLagSpeed;
+	}
+
+	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, DeltaTime, CurrentLagSpeed);
 
 	CamComp->SetWorldLocation(NewCamLoc);
 
@@ -112,6 +176,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
 {
+	if (CurrentControlMode == EInputControlMode::Auto) return;
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
@@ -146,6 +211,7 @@ void AValkyrieCharacterController::RefreshInteractionTime()
 
 void AValkyrieCharacterController::OnInputStarted()
 {
+	
 	if (bIsInputActive) return;
 
 	StopMovement(); // 이동 중이면 멈춤 (필요 없으면 삭제 가능)
@@ -161,19 +227,23 @@ void AValkyrieCharacterController::OnInputStarted()
 
 	if (bFoundInput)
 	{
-		// 조이스틱 영역 체크 (데드존)
-		int32 ScreenWidth, ScreenHeight;
-		GetViewportSize(ScreenWidth, ScreenHeight);
-
-		float DeadZoneXLimit = ScreenWidth * JoystickDeadZoneWidthRatio;
-		float DeadZoneYStart = ScreenHeight * (1.0f - JoystickDeadZoneHeightRatio);
-
-		if (X < DeadZoneXLimit && Y > DeadZoneYStart)
+		if (CurrentControlMode == EInputControlMode::Manual)
 		{
-			bIsDragging = false;
-			return; // 조이스틱 영역이면 드래그 무시
-		}
+			// 조이스틱 영역 체크 (데드존)
+			int32 ScreenWidth, ScreenHeight;
+			GetViewportSize(ScreenWidth, ScreenHeight);
 
+			float DeadZoneXLimit = ScreenWidth * JoystickDeadZoneWidthRatio;
+			float DeadZoneYStart = ScreenHeight * (1.0f - JoystickDeadZoneHeightRatio);
+
+			if (X < DeadZoneXLimit && Y > DeadZoneYStart)
+			{
+				bIsDragging = false;
+				return; // 조이스틱 영역이면 드래그 무시
+			}
+
+			
+		}
 		PrevTouchLocation = FVector2D(X, Y);
 		bIsDragging = true;
 	}
@@ -208,9 +278,10 @@ void AValkyrieCharacterController::OnTouchTriggered()
 		// 손떨림 방지
 		if (Delta.SizeSquared() > 1.0f)
 		{
+			float CurrentPanSpeed = (CurrentControlMode == EInputControlMode::Manual) ? ManualPanSpeed : AutoPanSpeed;
 			// Y축(좌우), X축(앞뒤) - 카메라 회전에 따라 방향 맞춤
-			DragOffset.Y += Delta.X * CameraPanSpeed;
-			DragOffset.X -= Delta.Y * CameraPanSpeed;
+			DragOffset.Y += Delta.X * CurrentPanSpeed;
+			DragOffset.X -= Delta.Y * CurrentPanSpeed;
 		}
 		PrevTouchLocation = CurrentTouchLocation;
 	}
