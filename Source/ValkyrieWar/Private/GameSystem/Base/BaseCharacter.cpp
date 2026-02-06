@@ -35,6 +35,9 @@ ABaseCharacter::ABaseCharacter()
 	// Create a camera...
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(RootComponent);
+
+	TopDownCameraComponent->SetUsingAbsoluteLocation(true);
+	TopDownCameraComponent->SetUsingAbsoluteRotation(true);
 	
 	TopDownCameraComponent->SetWorldRotation(FRotator(-45.0f, 0.0f, 0.0f));
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
