@@ -11,6 +11,7 @@ void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	CachedSaveGame = Cast<UValkyrieWarSaveGame>(UGameplayStatics::CreateSaveGameObject(UValkyrieWarSaveGame::StaticClass()));
 	LoadGame();
 }
 
@@ -25,7 +26,7 @@ void USaveManager::Deinitialize()
 void USaveManager::SetPlayerAccountData(const FPlayerAccountData& InPlayerAccountData)
 {
 	CurrentPlayerAccountData = InPlayerAccountData;
-
+	
 	SaveGame();
 }
 
