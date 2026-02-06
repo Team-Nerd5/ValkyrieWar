@@ -16,6 +16,7 @@ class VALKYRIEWAR_API UValkyrieWarSaveGame : public USaveGame
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
 	FPlayerAccountData PlayerAccountData;
 
 };
