@@ -7,6 +7,13 @@
 #include "InputActionValue.h"
 #include "ValkyrieCharacterController.generated.h"
 
+UENUM(BlueprintType)
+enum  class EInputControlMode : uint8
+{
+	Manual UMETA(DisplayName = "Manual Mode"),
+	Auto UMETA(DisplayName = "Auto Mode")
+};
+
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 {
@@ -14,7 +21,6 @@ class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 
 public:
 	AValkyrieCharacterController();
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
@@ -25,9 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CameraDragAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	float CameraPanSpeed = 1.0f; // 드래그 속도
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
 
@@ -37,11 +41,42 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float MovingCenterInterpSpeed = 5.0f; // 이동 중 복귀 속도
 
+	UFUNCTION(BlueprintCallable, Category = "Camera Control")
+	void SetControlMode(EInputControlMode NewMode);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Control")
+	void ToggleControlMode();
+
+	// 수동, 자동 모드 변환
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	FVector ManualViewOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	FVector AutoViewOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float ManualLagSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float AutoLagSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float ManualPanSpeed = 1.0f; // 수동 모드 드래그 속도
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float AutoPanSpeed = 1.0f; // 자동모드
+
+	//상태확인,변경
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Control | State")
+	EInputControlMode CurrentControlMode; // 현재
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	class UTouchInterface* MyTouchInterface; // 터치 인터페이스 킬거임? 끌꺼임?
+
+	
+
 	// 조이스틱 데드존
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneWidthRatio = 0.35f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
+
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,13 +89,15 @@ protected:
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
+	// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
+	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
+	void OnControlModeChanged(EInputControlMode NewMode);
 
 private:
 	
 	FVector DragOffset;
-
-	
-	FVector DefaultViewOffset;
+	//현재 좌표 저장
+	FVector CurrentTargetViewOffset;
 
 
 	float LastInteractionTime = 0.0f;
