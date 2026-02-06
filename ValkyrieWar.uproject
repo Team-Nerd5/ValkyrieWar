@@ -1,4 +1,4 @@
-{
+﻿{
 	"FileVersion": 3,
 	"EngineAssociation": "5.5",
 	"Category": "",
@@ -11,6 +11,16 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"UMG"
+			]
+		},
+		{
+			"Name": "LoadingScreenModule",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"AdditionalDependencies": [
+				"Slate",
+				"SlateCore",
+				"DeveloperSettings"
 			]
 		}
 	],

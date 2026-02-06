@@ -13,7 +13,7 @@ public class ValkyrieWar : ModuleRules
             "NavigationSystem", "AIModule", "Niagara", "EnhancedInput" });
         PrivateDependencyModuleNames.AddRange(new string[] {
             "GameplayAbilities", "GameplayTags", "GameplayTasks",
-            "UMG"
+            "UMG", "LoadingScreenModule"
         });
     }
 }
