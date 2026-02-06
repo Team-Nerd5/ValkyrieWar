@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -13,7 +13,7 @@ public class ValkyrieWar : ModuleRules
             "NavigationSystem", "AIModule", "Niagara", "EnhancedInput" });
         PrivateDependencyModuleNames.AddRange(new string[] {
             "GameplayAbilities", "GameplayTags", "GameplayTasks",
-            "UMG"
+            "UMG", "MoviePlayer"
         });
     }
 }
