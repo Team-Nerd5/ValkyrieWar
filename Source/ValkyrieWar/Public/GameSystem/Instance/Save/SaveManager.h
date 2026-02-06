@@ -44,5 +44,6 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UValkyrieWarSaveGame> CachedSaveGame = nullptr;
 
+protected: // 데이터
 	FPlayerAccountData CurrentPlayerAccountData;
 };
