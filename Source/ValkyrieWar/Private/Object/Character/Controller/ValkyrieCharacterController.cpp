@@ -36,11 +36,15 @@ void AValkyrieCharacterController::BeginPlay()
 	bIsDragging = false;
 	bIsInputActive = false;
 
-	// ★ [카메라 기본 위치 강제 설정]
-	// 뒤로 600, 위로 900 (쿼터뷰 정석)
 	DefaultViewOffset = FVector(-600.0f, 0.0f, 900.0f);
-
-	UE_LOG(LogTemp, Warning, TEXT("카메라 강제 위치 설정 완료! :: %s"), *DefaultViewOffset.ToString());
+	if (APawn* ControlledPawn = GetPawn())
+    {
+        if (UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>())
+        {
+            CamComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+            CamComp->bUsePawnControlRotation = false; 
+        }
+    }
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
@@ -71,7 +75,6 @@ void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	// ★ 매 프레임 카메라 위치 갱신 (이게 없으면 안 움직임!)
 	UpdateCameraPosition(DeltaTime);
 }
 
@@ -80,11 +83,9 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 	APawn* ControlledPawn = GetPawn();
 	if (!ControlledPawn) return;
 
-	// 캐릭터에 붙어있는 카메라 찾기 (스프링암 아님!)
 	UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>();
 	if (!CamComp) return;
 
-	// 1. 복귀 로직 (손 떼면 드래그 거리 줄이기)
 	float CurrentTime = GetWorld()->GetTimeSeconds();
 	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
 	bool bShouldRecenter = (bIsInputActive || bTimeExpired) && !bIsDragging;
@@ -95,23 +96,18 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, DeltaTime, Speed);
 	}
 
-	// 2. 목표 위치 계산
 	FVector CharLoc = ControlledPawn->GetActorLocation();
 
-	// 최종 목표 = 캐릭터 + 기본 거리 + 드래그 오프셋
 	FVector FinalTargetLoc = CharLoc + DefaultViewOffset + DragOffset;
 
-	// 3. 부드럽게 이동 (Lag 효과)
 	FVector CurrentCamLoc = CamComp->GetComponentLocation();
 	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, DeltaTime, 10.0f); // 10.0f는 반응 속도
 
-	// 4. ★ 강제 적용 (월드 좌표)
 	CamComp->SetWorldLocation(NewCamLoc);
 
-	// 5. ★ 회전도 강제 적용! (하늘 보는 거 방지)
-	// 무조건 아래로 55도 내려다보기 (쿼터뷰 각도)
 	FRotator LookDownRot = FRotator(-55.0f, 0.0f, 0.0f);
 	CamComp->SetWorldRotation(LookDownRot);
+
 }
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
@@ -212,7 +208,6 @@ void AValkyrieCharacterController::OnTouchTriggered()
 		// 손떨림 방지
 		if (Delta.SizeSquared() > 1.0f)
 		{
-			// ★ 드래그 적용
 			// Y축(좌우), X축(앞뒤) - 카메라 회전에 따라 방향 맞춤
 			DragOffset.Y += Delta.X * CameraPanSpeed;
 			DragOffset.X -= Delta.Y * CameraPanSpeed;
