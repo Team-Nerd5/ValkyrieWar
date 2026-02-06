@@ -67,3 +67,16 @@ enum class ELobbyState : uint8
 	Ready,			//인벤토리 등 데이터 로드 완료, UI 호출
 	MoveToStage,	//스테이지로 레벨 전환
 };
+
+UENUM(BlueprintType)
+enum class EPoolTypes : uint8
+{
+	// 캐릭터
+	BaseCharacter,
+
+	// 폰
+	BasePawn,
+
+	// 액터
+	BaseActor,
+};
