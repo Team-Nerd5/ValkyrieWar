@@ -14,3 +14,15 @@ UWorldEventSystem* UGameBaseLibrary::GetWorldEventSystem(const UObject* WorldCon
 
 	return World->GetSubsystem<UWorldEventSystem>();
 }
+
+UObjectPoolSubsystem* UGameBaseLibrary::GetObjectPoolSystem(const UObject* WorldContextObject)
+{
+	if (!WorldContextObject)
+		return nullptr;
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World)
+		return nullptr;
+
+	return World->GetSubsystem<UObjectPoolSubsystem>();
+}

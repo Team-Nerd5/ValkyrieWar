@@ -3,6 +3,7 @@
 #include "Test/OKM/TestCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 #include "Data/Enums.h"
 
 // Sets default values
@@ -18,7 +19,7 @@ void ATestCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SubSystem = GetWorld()->GetSubsystem<UObjectPoolSubsystem>();
+	SubSystem = UGameBaseLibrary::GetObjectPoolSystem(this);
 	if (!SubSystem.IsValid())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Character : 서브시스템이 없습니다"));
@@ -40,16 +41,16 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void ATestCharacter::Despawn()
 {
-	SubSystem->ReturnToPool<ABaseCharacter>(EPoolTypes::BaseCharacter, this);
+	SubSystem->Release<ABaseCharacter>(EPoolTypes::BaseCharacter, this);
 }
 
-void ATestCharacter::OnSpawnForPool_Implementation()
+void ATestCharacter::OnGet_Implementation()
 {
 	GetCapsuleComponent()->SetSimulatePhysics(true);
 	//UE_LOG(LogTemp, Log, TEXT("OnSpawnForPool"));
 }
 
-void ATestCharacter::OnReturnToPool_Implementation()
+void ATestCharacter::OnRelease_Implementation()
 {
 	GetCapsuleComponent()->SetSimulatePhysics(false);
 	//UE_LOG(LogTemp, Log, TEXT("OnReturnToPool"));

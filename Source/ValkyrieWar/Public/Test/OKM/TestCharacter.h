@@ -27,8 +27,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Despawn();
 
-	virtual void OnSpawnForPool_Implementation() override;
-	virtual void OnReturnToPool_Implementation() override;
+	virtual void OnGet_Implementation() override;
+	virtual void OnRelease_Implementation() override;
 
 private:
 	TWeakObjectPtr<UObjectPoolSubsystem> SubSystem;
