@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Data/Save/PlayerAccountData.h"
+#include "Data/Enums.h"
 #include "SaveManager.generated.h"
 
+class USaveGame;
 /**
  * 
  */
@@ -21,29 +23,50 @@ protected:
 	virtual void Deinitialize() override;
 
 public: // 게터 / 세터
-	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-	inline FPlayerAccountData GetPlayerAccountData() const { return CurrentPlayerAccountData; }
+//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
+//	inline FPlayerAccountData GetPlayerAccountData() const { return CurrentPlayerAccountData; }
+//
+//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
+//	void SetPlayerAccountData(const FPlayerAccountData& InPlayerData);
+//
+//public: // 저장 / 로드
+//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
+//	void SaveGame();
+//
+//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
+//	void LoadGame();
+//
+//protected:
+//	UPROPERTY()
+//	FString SaveSlotName = TEXT("PlayerSave01");
+//
+//	UPROPERTY()
+//	int32 SaveIndex = 0;
+//
+//	UPROPERTY()
+//	TObjectPtr<class UValkyrieWarSaveGame> CachedSaveGame = nullptr;
+//
+//protected: // 데이터
+//	FPlayerAccountData CurrentPlayerAccountData;
 
-	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-	void SetPlayerAccountData(const FPlayerAccountData& InPlayerData);
+public:
+	//음..다 따로 들고있다면?
+	TObjectPtr<class UCheckAccountSaveGame> CheckAccount = nullptr;
+private:
+	TMap <ESaveType, TFunction<void(USaveGame*)>> ActionSetData;
 
-public: // 저장 / 로드
-	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-	void SaveGame();
-
-	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-	void LoadGame();
 
 protected:
-	UPROPERTY()
-	FString SaveSlotName = TEXT("PlayerSave01");
 
-	UPROPERTY()
-	int32 SaveIndex = 0;
+	void InitSetDataAction();
 
-	UPROPERTY()
-	TObjectPtr<class UValkyrieWarSaveGame> CachedSaveGame = nullptr;
+	void LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
 
-protected: // 데이터
-	FPlayerAccountData CurrentPlayerAccountData;
+	UFUNCTION()
+	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
+
+public:
+	void LoadAllData();
+
+	void LoadCheckAccount();
 };

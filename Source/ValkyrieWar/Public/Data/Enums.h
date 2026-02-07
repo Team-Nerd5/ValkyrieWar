@@ -87,3 +87,10 @@ enum class EInputControlMode : uint8
 	Manual UMETA(DisplayName = "Manual Mode"),
 	Auto UMETA(DisplayName = "Auto Mode")
 };
+
+UENUM(BlueprintType)
+enum class ESaveType : uint8
+{
+	CheckAccount,
+	AccountInfo,
+};
