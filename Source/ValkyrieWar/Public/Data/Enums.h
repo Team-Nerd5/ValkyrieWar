@@ -24,3 +24,10 @@ enum class EMapType : uint8
 	Battle,
 	Loading,
 };
+
+UENUM(BlueprintType)
+enum  class EInputControlMode : uint8
+{
+	Manual UMETA(DisplayName = "Manual Mode"),
+	Auto UMETA(DisplayName = "Auto Mode")
+};
