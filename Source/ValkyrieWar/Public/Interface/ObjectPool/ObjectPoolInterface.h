@@ -22,8 +22,8 @@ class VALKYRIEWAR_API IObjectPoolInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ObjectPool")
-	void OnSpawnForPool();
+	void OnGet();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ObjectPool")
-	void OnReturnToPool(); 
+	void OnRelease(); 
 };

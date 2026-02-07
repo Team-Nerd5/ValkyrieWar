@@ -12,3 +12,10 @@ void UObjectPoolSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ObjectPoolMap.Empty();
 }
+
+void UObjectPoolSubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+
+	ObjectPoolMap.Empty();
+}

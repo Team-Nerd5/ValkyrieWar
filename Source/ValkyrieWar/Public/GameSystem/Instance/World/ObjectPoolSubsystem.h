@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "GameFramework/Actor.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 #include "Data/Pool/PoolTypes.h"
 #include "Data/Enums.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
@@ -20,16 +21,16 @@ class VALKYRIEWAR_API UObjectPoolSubsystem : public UWorldSubsystem
 	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-
+	virtual void Deinitialize() override;
 public:
 	template<typename T>
 	void InitPool(EPoolTypes InType, TSubclassOf<AActor> InClass, int32 InMaxSize);
 
 	template<typename T>
-	T* GetForPool(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation);
+	T* Get(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation);
 
 	template<typename T>
-	void ReturnToPool(EPoolTypes InType, T* InActor);
+	void Release(EPoolTypes InType, T* InActor);
 
 private:
 	// 풀을 생성하는 함수
@@ -56,14 +57,8 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 월드가 없습니다"));
 		return;
 	}
-	if (!InClass)
+	if (!UGameBaseLibrary::CheckClassImplements(InClass, UObjectPoolInterface::StaticClass()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 스폰할 액터가 없습니다"));
-		return;
-	}
-	if (!InClass->ImplementsInterface(UObjectPoolInterface::StaticClass()))
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 스폰할 액터의 인터페이스가 없습니다"));
 		return;
 	}
 #pragma endregion
@@ -81,7 +76,7 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 }
 
 template<typename T>
-inline T* UObjectPoolSubsystem::GetForPool(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation)
+inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation)
 {
 #pragma region 유효성 검사
 	UWorld* World = GetWorld();
@@ -90,14 +85,8 @@ inline T* UObjectPoolSubsystem::GetForPool(EPoolTypes InType, TSubclassOf<AActor
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 월드가 없습니다"));
 		return nullptr;
 	}
-	if (!InClass)
+	if (!UGameBaseLibrary::CheckClassImplements(InClass, UObjectPoolInterface::StaticClass()))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 스폰할 액터가 없습니다"));
-		return nullptr;
-	}
-	if (!InClass->ImplementsInterface(UObjectPoolInterface::StaticClass()))
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 스폰할 액터의 인터페이스가 없습니다"));
 		return nullptr;
 	}
 #pragma endregion
@@ -113,7 +102,7 @@ inline T* UObjectPoolSubsystem::GetForPool(EPoolTypes InType, TSubclassOf<AActor
 			if (SpawnedActor && SpawnedActor->GetClass()->ImplementsInterface(UObjectPoolInterface::StaticClass()))
 			{
 				// 인터페이스 콜
-				IObjectPoolInterface::Execute_OnSpawnForPool(SpawnedActor);
+				IObjectPoolInterface::Execute_OnGet(SpawnedActor);
 				// Spawn 액터 세팅
 				SpawnedActor->SetActorHiddenInGame(false);
 				SpawnedActor->SetActorEnableCollision(true);
@@ -141,7 +130,7 @@ inline T* UObjectPoolSubsystem::GetForPool(EPoolTypes InType, TSubclassOf<AActor
 		if (SpawnedActor && SpawnedActor->GetClass()->ImplementsInterface(UObjectPoolInterface::StaticClass()))
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Subsystem(Spawn)] 새로 생성"));
-			IObjectPoolInterface::Execute_OnSpawnForPool(SpawnedActor);
+			IObjectPoolInterface::Execute_OnGet(SpawnedActor);
 
 			SpawnedActor->SetActorHiddenInGame(false);
 			SpawnedActor->SetActorEnableCollision(true);
@@ -160,7 +149,7 @@ inline T* UObjectPoolSubsystem::GetForPool(EPoolTypes InType, TSubclassOf<AActor
 }
 
 template<typename T>
-inline void UObjectPoolSubsystem::ReturnToPool(EPoolTypes InType, T* InActor)
+inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 {
 #pragma region 유효성 검사
 	if (!InActor)
@@ -180,7 +169,7 @@ inline void UObjectPoolSubsystem::ReturnToPool(EPoolTypes InType, T* InActor)
 	UE_LOG(LogTemp, Log, TEXT("[Subsystem(Return)] 풀로 돌아감"));
 	if (InActor && InActor->GetClass()->ImplementsInterface(UObjectPoolInterface::StaticClass()))
 	{
-		IObjectPoolInterface::Execute_OnReturnToPool(InActor);
+		IObjectPoolInterface::Execute_OnRelease(InActor);
 		// Return 액터 세팅
 		InActor->SetActorHiddenInGame(true);
 		InActor->SetActorEnableCollision(false);
