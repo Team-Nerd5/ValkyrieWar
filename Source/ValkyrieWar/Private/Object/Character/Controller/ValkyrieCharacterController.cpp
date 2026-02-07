@@ -22,11 +22,11 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 	MovingCenterInterpSpeed = 5.0f;
 }
 
-void AValkyrieCharacterController::SetControlMode(EInputControlMode NewMode)
+void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 {
-	if (CurrentControlMode == NewMode) return;
+	if (CurrentControlMode == InNewMode) return;
 
-	CurrentControlMode = NewMode;
+	CurrentControlMode = InNewMode;
 
 	if (CurrentControlMode == EInputControlMode::Manual)
 	{
@@ -131,7 +131,7 @@ void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 	UpdateCameraPosition(DeltaTime);
 }
 
-void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
+void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 {
 	APawn* ControlledPawn = GetPawn();
 	if (!ControlledPawn) return;
@@ -146,7 +146,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 	if (CurrentControlMode == EInputControlMode::Manual && bShouldRecenter)
 	{
 		float Speed = bIsInputActive ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
-		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, DeltaTime, Speed);
+		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, InDeltaTime, Speed);
 	}
 
 	FVector CharLoc = ControlledPawn->GetActorLocation();
@@ -165,7 +165,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 		CurrentLagSpeed = AutoLagSpeed;
 	}
 
-	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, DeltaTime, CurrentLagSpeed);
+	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, InDeltaTime, CurrentLagSpeed);
 
 	CamComp->SetWorldLocation(NewCamLoc);
 
@@ -174,10 +174,10 @@ void AValkyrieCharacterController::UpdateCameraPosition(float DeltaTime)
 
 }
 
-void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
+void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
 	if (CurrentControlMode == EInputControlMode::Auto) return;
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	FVector2D MovementVector = InValue.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
 	{
@@ -199,7 +199,7 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& Value)
 	}
 }
 
-void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& Value)
+void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InValue)
 {
 	bIsInputActive = false;
 }

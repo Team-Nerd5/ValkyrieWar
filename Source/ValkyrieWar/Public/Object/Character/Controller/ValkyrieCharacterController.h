@@ -5,14 +5,9 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
+#include "Data/Enums.h"
 #include "ValkyrieCharacterController.generated.h"
 
-UENUM(BlueprintType)
-enum  class EInputControlMode : uint8
-{
-	Manual UMETA(DisplayName = "Manual Mode"),
-	Auto UMETA(DisplayName = "Auto Mode")
-};
 
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
@@ -84,14 +79,14 @@ protected:
 	virtual void PlayerTick(float DeltaTime) override;
 
 	// 입력 함수들
-	void OnMove(const FInputActionValue& Value);
-	void OnMoveCompleted(const FInputActionValue& Value);
+	void OnMove(const FInputActionValue& InValue);
+	void OnMoveCompleted(const FInputActionValue& InValue);
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
 	// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
 	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
-	void OnControlModeChanged(EInputControlMode NewMode);
+	void OnControlModeChanged(EInputControlMode InNewMode);
 
 private:
 	
@@ -109,5 +104,5 @@ private:
 	
 	void RefreshInteractionTime();
 
-	void UpdateCameraPosition(float DeltaTime);
+	void UpdateCameraPosition(float InDeltaTime);
 };

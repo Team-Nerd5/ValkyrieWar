@@ -80,3 +80,9 @@ enum class EPoolTypes : uint8
 	// 액터
 	BaseActor,
 };
+
+enum  class EInputControlMode : uint8
+{
+	Manual UMETA(DisplayName = "Manual Mode"),
+	Auto UMETA(DisplayName = "Auto Mode")UENUM(BlueprintType)
+};
