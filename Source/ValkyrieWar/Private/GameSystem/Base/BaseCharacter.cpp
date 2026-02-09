@@ -61,9 +61,9 @@ void ABaseCharacter::BeginPlay()
 }
 
 // Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
+void ABaseCharacter::Tick(float InDeltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(InDeltaTime);
 
 }
 
