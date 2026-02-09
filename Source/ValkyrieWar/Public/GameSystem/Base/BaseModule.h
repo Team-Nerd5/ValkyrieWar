@@ -10,13 +10,14 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class VALKYRIEWAR_API UBaseModule : public UObject
 {
 	GENERATED_BODY()
 public:
 	virtual void Initialize(UGameManager* InGameManager);
 
+	virtual void MakeData() {}
 protected:
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;

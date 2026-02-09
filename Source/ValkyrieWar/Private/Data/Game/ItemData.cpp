@@ -3,3 +3,7 @@
 
 #include "Data/Game/ItemData.h"
 
+void UItemData::Initialize(FItemDataRow* InTableData)
+{
+	TableData = InTableData;
+}
