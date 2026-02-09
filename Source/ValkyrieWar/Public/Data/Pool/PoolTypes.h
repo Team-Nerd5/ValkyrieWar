@@ -21,13 +21,14 @@ struct TPoolData : public IPoolData
 		DataInstance.Add(Instance);
 	}
 
-	inline UClass* GetInstanceClass() { return T::StaticClass(); }
+	// inline UClass* GetInstanceClass() { return T::StaticClass(); }
 
+	// Pop 호출
 	inline T* PopInstance()
 	{
 		if (DataInstance.IsEmpty() || DataInstance.Num() == 0)
 			return nullptr;
-		T* PopInstance = DataInstance.Pop();
+		T* PopInstance = DataInstance.Pop(EAllowShrinking::No);
 		return IsValid(PopInstance) ? PopInstance : nullptr;		
 	}
 
