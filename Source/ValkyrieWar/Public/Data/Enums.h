@@ -146,3 +146,21 @@ enum class ETargetType : uint8
 	HighHpInRange,
 	Camp,
 };
+
+UENUM(BlueprintType)
+enum class ETableDataType : uint8
+{
+	Character,
+	Attack,
+	Contents,
+	Goods,
+	Item,
+	Reward,
+	Skill,
+	SkillEffect,
+	Stage,
+	StageInfo,
+	StageReward,
+	StatGroup,
+	Unit,
+};
