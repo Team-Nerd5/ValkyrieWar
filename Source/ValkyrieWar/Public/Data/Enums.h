@@ -261,3 +261,37 @@ struct FWeaponData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TObjectPtr<UAnimMontage> AttackMontage;
 };
+
+UENUM(BlueprintType)
+enum class EUnitCombatType : uint8
+{
+	Melee,
+	Ranged
+};
+
+UENUM(BlueprintType)
+enum class ETeam : uint8
+{
+	TeamA,
+	TeamB
+};
+
+// 타깃 선택 룰셋(서브시스템은 attacker 제한/슬롯 정책을 유지하고,
+// 여기서는 "어떤 후보를 우선할지"만 결정한다)
+UENUM(BlueprintType)
+enum class ETargetingPolicy : uint8
+{
+	Auto,                       // 유닛 타입(근/원거리) 기반 자동 선택
+	NearWallEnemyThenBase,      // 내 성벽(또는 WallAnchor) 근처의 적을 우선, 없으면 적 기지
+	NearestEnemyThenBase,       // 가장 가까운 적, 없으면 적 기지
+	FarthestInAttackRangeThenBase // 공격 사거리(AttackRange) 안에서 가장 먼 적, 없으면 적 기지
+};
+
+UENUM(BlueprintType)
+enum class EReservationState : uint8
+{
+	None,
+	Reserved,        // 슬롯 확보 완료
+	MovingToTarget,  // 예약 타깃으로 이동 중
+	InCombat         // 공격 중
+};

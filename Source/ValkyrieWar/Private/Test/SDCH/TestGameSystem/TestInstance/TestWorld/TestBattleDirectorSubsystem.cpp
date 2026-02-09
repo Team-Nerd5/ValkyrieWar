@@ -53,6 +53,24 @@ void UTestBattleDirectorSubsystem::UnregisterUnit(ATestBaseUnit* Unit)
     GetTeamArray(Unit->Brain->Team).Remove(Unit);
 }
 
+void UTestBattleDirectorSubsystem::RegisterTeamBase(ETeam Team, AActor* BaseActor)
+{
+    if (Team == ETeam::TeamA) TeamABase = BaseActor;
+    else TeamBBase = BaseActor;
+
+    // 이미 등록된 유닛들의 EnemyBase도 갱신
+    for (TWeakObjectPtr<ATestBaseUnit> W : TeamAUnits)
+    {
+        if (ATestBaseUnit* U = W.Get())
+            if (U->Brain) U->Brain->EnemyBase = GetEnemyBaseFor(U);
+    }
+    for (TWeakObjectPtr<ATestBaseUnit> W : TeamBUnits)
+    {
+        if (ATestBaseUnit* U = W.Get())
+            if (U->Brain) U->Brain->EnemyBase = GetEnemyBaseFor(U);
+    }
+}
+
 void UTestBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
@@ -147,7 +165,6 @@ void UTestBattleDirectorSubsystem::CleanupInvalidReferences()
 
 ATestBaseUnit* UTestBattleDirectorSubsystem::FindBestTargetWithFreeSlot(ATestBaseUnit* Attacker, float Now) const
 {
-
     if (!Attacker || !Attacker->Brain) return nullptr;
 
     const ETeam MyTeam = Attacker->Brain->Team;
