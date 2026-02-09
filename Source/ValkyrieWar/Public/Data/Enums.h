@@ -99,6 +99,7 @@ enum class EGoodsType : uint8
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
+	None,
 	Goods,
 	Equip,
 	Item,
@@ -108,6 +109,7 @@ enum class EItemType : uint8
 UENUM(BlueprintType)
 enum class EItemGroup : uint8
 {
+	None,
 	Weapon,
 	Armor,
 	Helmet,
@@ -117,6 +119,7 @@ enum class EItemGroup : uint8
 UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
+	None,
 	Damage,
 	Heal,
 	Splash,
