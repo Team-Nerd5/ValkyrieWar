@@ -43,3 +43,8 @@ TSoftObjectPtr<UWorld> UGameManager::GetMapObject(EMapType InMapType)
 
     return nullptr;
 }
+
+UDataTable* UGameManager::GetGameData(ETableDataType InType)
+{
+    return *GameDataTables.Find(InType);
+}

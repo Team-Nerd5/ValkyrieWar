@@ -148,6 +148,24 @@ enum class ETargetType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ETableDataType : uint8
+{
+	Character,
+	Attack,
+	Contents,
+	Goods,
+	Item,
+	Reward,
+	Skill,
+	SkillEffect,
+	Stage,
+	StageInfo,
+	StageReward,
+	StatGroup,
+	Unit,
+};
+
+UENUM(BlueprintType)
 enum class ESaveType : uint8
 {
 	CheckAccount,
