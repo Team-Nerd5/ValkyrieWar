@@ -2,16 +2,25 @@
 
 
 #include "Object/Character/Controller/CameraBoundsVolume.h"
+#include "Components/BoxComponent.h"
+
+// Sets default values
 ACameraBoundsVolume::ACameraBoundsVolume()
 {
-	PrimaryActorTick.bCanEverTick = false; // 가만히 있는 놈이라 틱 필요 없음
+	PrimaryActorTick.bCanEverTick = false;
 
+	// 박스 컴포넌트 생성 및 루트로 설정
 	BoundsBox = CreateDefaultSubobject<UBoxComponent>(TEXT("BoundsBox"));
 	RootComponent = BoundsBox;
 
-	// 게임 중에는 안 부딪히게 설정
-	BoundsBox->SetCollisionProfileName(TEXT("NoCollision"));
+	BoundsBox->SetLineThickness(2.0f);
+	BoundsBox->ShapeColor = FColor::Red;
 
-	// 에디터에서는 보여줘
-	BoundsBox->SetHiddenInGame(true);
+	BoundsBox->SetCollisionProfileName(TEXT("NoCollision"));
 }
+
+void ACameraBoundsVolume::BeginPlay()
+{
+	Super::BeginPlay();
+}
+

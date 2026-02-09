@@ -82,7 +82,7 @@ enum class EPoolTypes : uint8
 };
 
 UENUM(BlueprintType)
-enum class EInputControlMode : uint8
+enum  class EInputControlMode : uint8
 {
 	Manual UMETA(DisplayName = "Manual Mode"),
 	Auto UMETA(DisplayName = "Auto Mode")
