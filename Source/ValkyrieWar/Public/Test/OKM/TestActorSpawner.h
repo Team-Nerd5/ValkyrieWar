@@ -22,7 +22,6 @@ protected:
 protected:
 	UFUNCTION(BlueprintCallable)
 	void SpawnActor();
-	void DespawnActor();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Test")
