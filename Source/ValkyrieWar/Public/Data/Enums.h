@@ -167,6 +167,7 @@ enum class ETableDataType : uint8
 	StatGroup,
 	Unit,
 };
+
 UENUM(BlueprintType)
 enum class ESaveType : uint8
 {
