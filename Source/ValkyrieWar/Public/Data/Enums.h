@@ -91,7 +91,7 @@ enum class EPoolTypes : uint8
 };
 
 UENUM(BlueprintType)
-enum  class EInputControlMode : uint8
+enum class EInputControlMode : uint8
 {
 	Manual UMETA(DisplayName = "Manual Mode"),
 	Auto UMETA(DisplayName = "Auto Mode")
@@ -129,4 +129,63 @@ enum class EReservationState : uint8
 	Reserved,        // 슬롯 확보 완료
 	MovingToTarget,  // 예약 타깃으로 이동 중
 	InCombat         // 공격 중
+};
+
+UENUM(BlueprintType)
+enum class EGoodsType : uint8
+{
+	Ticket,
+	Gem,
+	Gold,
+};
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	Goods,
+	Equip,
+	Item,
+};
+
+//아이템 필터용 그룹
+UENUM(BlueprintType)
+enum class EItemGroup : uint8
+{
+	Weapon,
+	Armor,
+	Helmet,
+	Growth,
+};
+
+UENUM(BlueprintType)
+enum class ESkillType : uint8
+{
+	Damage,
+	Heal,
+	Splash,
+};
+
+UENUM(BlueprintType)
+enum class EAttributeType : uint8
+{
+	Health,
+	Defence,
+	Attack,
+	MoveSpeed,
+};
+
+UENUM(BlueprintType)
+enum class ESkillApplyType : uint8
+{
+	Instant,
+	PerSec,
+};
+
+UENUM(BlueprintType)
+enum class ETargetType : uint8
+{
+	InRange,
+	LowHpInRange,
+	HighHpInRange,
+	Camp,
 };
