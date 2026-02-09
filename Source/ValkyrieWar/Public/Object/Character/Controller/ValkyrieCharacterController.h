@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Templates/SubclassOf.h"
@@ -15,9 +13,10 @@
 class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
-/**
- * 
- */
+class ACameraBoundsVolume;
+
+// [삭제됨] enum 정의는 팀장님 파일에 있으니까 여기서 지움!
+
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 {
@@ -25,70 +24,81 @@ class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 public:
 	AValkyrieCharacterController();
 
-	/** Time Threshold to know if it was a short press */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	float ShortPressThreshold;
 
-	/** FX Class that we will spawn when clicking */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UNiagaraSystem* FXCursor;
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationClickAction;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationTouchAction;
 
-	//카메라 이동속도
+	// 카메라 이동속도
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
 	float CameraPanSpeed = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DragAction;
 
+	// [형 기능] 바운드 볼륨
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
+	ACameraBoundsVolume* BoundsVolume;
+
+	// [복구] 카메라 복귀 속도
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
+	float MovingCenterInterpSpeed = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
+	float AutoCenterInterpSpeed = 2.0f;
+
 protected:
-	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
 
 	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
+	virtual void PlayerTick(float InDeltaTime) override;
 
-	// To add mapping context
-	virtual void BeginPlay();
-
-	virtual void PlayerTick(float DeltaTime) override;
-
-	/** Input handlers for SetDestination action. */
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
 	void OnSetDestinationReleased();
 	void OnTouchTriggered();
 	void OnTouchReleased();
 
+	void OnMove(const FInputActionValue& Value);
+	void OnMoveCompleted(const FInputActionValue& Value);
+
+	// [복구] 모드 변경 함수 (Enum 타입은 팀장님 거 씀)
+	void SetControlMode(EInputControlMode InNewMode);
+
 private:
 	FVector CachedDestination;
-
-	bool bIsTouch; // Is it a touch device
-	float FollowTime; // For how long it has been pressed
+	bool bIsTouch;
+	float FollowTime;
 	bool bIsDragging = false;
 	FVector2D PrevTouchLocation;
 	FVector TargetCameraLocation;
-	float LagSpeed = 10.0f;
 
-private: //핀치 줌인 줌아웃
-	float TargetZoomLength;
-	float MinZoomLength = 300.0f;
-	float MaxZoomLength = 1500.0f;
-	float ZoomSpeed = 10.0f;
-	float PinchSenSitivity = 2.0f;
+	// 드래그 및 모드 변수
+	FVector DragOffset;
+	FVector CurrentCamLoc;
+	FVector FinalTargetLoc;
 
-	float PreviousPinchDistance;
-	bool bIsPinching = false;
+	float CurrentLagSpeed;
+	float MovingLagSpeed = 10.0f;
+	float AutoLagSpeed = 2.0f;
 
+	bool bIsInputActive = false;
+	float LastInteractionTime;
 
+	// [복구] 현재 모드 상태
+	EInputControlMode CurrentControlMode;
+
+	void UpdateCameraPosition(float InDeltaTime);
+	void RefreshInteractionTime();
 };

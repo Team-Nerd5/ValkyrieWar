@@ -13,9 +13,9 @@ void AValkyrieCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AValkyrieCharacter::Tick(float DeltaTime)
+void AValkyrieCharacter::Tick(float InDeltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(InDeltaTime);
 }
 
 
