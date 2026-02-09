@@ -202,6 +202,23 @@ enum class EWeaponAnimType : uint8
 	Test_Magic UMETA(DisplayName = "Magic"), // 뭔가 마법무기
 };
 
+UENUM(BlueprintType)
+enum class ETableDataType : uint8
+{
+	Character,
+	Attack,
+	Contents,
+	Goods,
+	Item,
+	Reward,
+	Skill,
+	SkillEffect,
+	Stage,
+	StageInfo,
+	StageReward,
+	StatGroup,
+	Unit,
+};
 
 USTRUCT(BlueprintType)
 struct FWeaponData
