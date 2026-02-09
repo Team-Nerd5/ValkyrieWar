@@ -22,13 +22,17 @@ class VALKYRIEWAR_API UObjectPoolSubsystem : public UWorldSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+
 public:
+	// 초기화
 	template<typename T>
 	void InitPool(EPoolTypes InType, TSubclassOf<AActor> InClass, int32 InMaxSize);
 
+	// 풀링 시스템 Get함수
 	template<typename T>
 	T* Get(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation);
 
+	// 풀링 시스템 Release 함수
 	template<typename T>
 	void Release(EPoolTypes InType, T* InActor);
 
@@ -69,10 +73,11 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 	if (PoolData)
 	{
 		PoolData->DataInstance.Reserve(InMaxSize);
-
+	}
+#pragma region 풀링 시스템 확인 로그
 		UE_LOG(LogTemp, Warning, TEXT("[InitPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
 			*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
-	}
+#pragma endregion
 }
 
 template<typename T>
@@ -96,6 +101,7 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 	T* SpawnedActor = nullptr;	
 	if (PoolData && PoolData->NumInstance() > 0)
 	{
+		
 		SpawnedActor = PoolData->PopInstance();
 		if (SpawnedActor)
 		{
@@ -143,8 +149,11 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 			SpawnedActor->SetFolderPath(FName("Pool"));
 #endif
 	}
-	UE_LOG(LogTemp, Warning, TEXT("[InitPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
+#pragma region 풀링 시스템 확인 로그
+	UE_LOG(LogTemp, Warning, TEXT("[GetPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
 		*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
+#pragma endregion
+
 	return SpawnedActor;
 }
 
@@ -181,6 +190,10 @@ inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 			PoolData->AddInstance(InActor);
 		}
 	}
+#pragma region 풀링 시스템 확인 로그
+	UE_LOG(LogTemp, Warning, TEXT("[ReturnPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
+		*InActor->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
+#pragma endregion
 }
 
 template<typename T>
