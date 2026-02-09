@@ -6,6 +6,7 @@
 #include "InputAction.h"
 #include "InputActionValue.h"
 #include "Data/Enums.h"
+#include "CameraBoundsVolume.h"
 #include "ValkyrieCharacterController.generated.h"
 
 
@@ -71,7 +72,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
 
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Control|Bounds")
+	ACameraBoundsVolume* BoundsVolume;
 
 protected:
 	virtual void BeginPlay() override;

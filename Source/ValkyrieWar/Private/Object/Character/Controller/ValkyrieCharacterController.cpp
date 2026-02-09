@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h" // 카메라 컴포넌트 헤더 필수!
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
 
 AValkyrieCharacterController::AValkyrieCharacterController()
@@ -98,6 +99,16 @@ void AValkyrieCharacterController::BeginPlay()
             CamComp->bUsePawnControlRotation = false;
         }
     }
+	AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), ACameraBoundsVolume::StaticClass());
+	if (FoundActor)
+	{
+		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActor);
+		UE_LOG(LogTemp, Warning, TEXT("✅ Camera Bounds Found!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("⚠️ Warning: No CameraBoundsVolume in the level!"));
+	}
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
@@ -167,11 +178,24 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, InDeltaTime, CurrentLagSpeed);
 
-	CamComp->SetWorldLocation(NewCamLoc);
-
 	FRotator LookDownRot = FRotator(-55.0f, 0.0f, 0.0f);
-	CamComp->SetWorldRotation(LookDownRot);
+	// 볼륨으로 카메라 위치 제한 걸어두기
+	if (BoundsVolume)
+	{
+		FVector Origin = BoundsVolume->GetActorLocation();
+		FVector Extent = BoundsVolume->BoundsBox->GetScaledBoxExtent();
 
+		float MinX = Origin.X - Extent.X;
+		float MaxX = Origin.X + Extent.X;
+		float MinY = Origin.Y - Extent.Y;
+		float MaxY = Origin.Y + Extent.Y;
+
+		NewCamLoc.X = FMath::Clamp(NewCamLoc.X, MinX, MaxX);
+		NewCamLoc.Y = FMath::Clamp(NewCamLoc.Y, MinY, MaxY);
+		DrawDebugPoint(GetWorld(), NewCamLoc, 20.0f, FColor::Red, false, -1.0f);
+	}
+	CamComp->SetWorldLocation(NewCamLoc);
+	CamComp->SetWorldRotation(LookDownRot);
 }
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
