@@ -35,7 +35,7 @@ void UBTService_TestUpdateReservation::TickNode(UBehaviorTreeComponent& OwnerCom
 
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
     if (!BB) return;
-   
+
     BB->SetValueAsObject(ReservedTargetKey.SelectedKeyName, Unit->Brain->ReservedTarget.Get());
     BB->SetValueAsObject(EnemyBaseKey.SelectedKeyName, Unit->Brain->EnemyBase.Get());
 }
