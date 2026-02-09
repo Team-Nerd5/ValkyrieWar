@@ -21,7 +21,7 @@ void ATestActorSpawner::BeginPlay()
 	if (!SubSystem.IsValid())
 		return;
 
-	SubSystem->InitPool<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, 1000);
+	SubSystem->InitPool<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, 5);
 
 }
 
@@ -29,16 +29,5 @@ void ATestActorSpawner::SpawnActor()
 {
 	SpawnedActor = SubSystem->Get<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, GetActorLocation(), GetActorRotation());
 
-}
-
-void ATestActorSpawner::DespawnActor()
-{
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle2);
-
-	if (!SpawnedActor.IsValid())
-		return;
-
-	// 풀로 반환했으면 로컬 참조 해제
-	SpawnedActor = nullptr;
 }
 
