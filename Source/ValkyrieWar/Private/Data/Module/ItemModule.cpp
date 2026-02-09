@@ -9,16 +9,42 @@ void UItemModule::Initialize(UGameManager* InGameManager)
 
 	if (GameManager.IsValid())
 	{
-		Table = GameManager->GetGameData(ETableDataType::Item);
+		DataTable = GameManager->GetGameData(ETableDataType::Item);
+		MakeData();
+	}
+}
 
-		if (Table)
+void UItemModule::MakeData()
+{
+	if (DataTable)
+	{
+		TArray<FItemDataRow*> AllRows;
+		DataTable->GetAllRows<FItemDataRow>(TEXT("ItemManager_Init"), AllRows);
+
+		for (FItemDataRow* Item : AllRows)
 		{
-			//데이터 변환해서 자료형으로 보관..
-			//여기서 그냥 배열로만 들고있고
-			//인벤토리 따로 구현해서 관리해도 괜찮을 듯..?
-			//여기로 업데이트 하고 저장하는쪽으로 보내는 용도로 사용...
-			// 캐릭터도 비슷하게 사용가능은 할듯
-			// 나머지는 따로 안만들고 가능하긴 한데..			
+			TableDataByDataId.Add(Item->DataId, Item);
 		}
 	}
+}
+
+void UItemModule::AddItem(int32 InDataId, int32 Amount)
+{
+	FItemDataRow* TableData = GetTableDataById(InDataId);
+
+	if (TableData)
+	{
+		UItemData* NewItem = NewObject<UItemData>(this);
+
+		NewItem->Initialize(TableData);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Item Table Data is not Exist!"));
+	}
+}
+
+FItemDataRow* UItemModule::GetTableDataById(int32 InDataId)
+{
+	return *TableDataByDataId.Find(InDataId);
 }
