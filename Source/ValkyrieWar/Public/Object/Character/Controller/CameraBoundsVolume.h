@@ -4,19 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/BoxComponent.h"
 #include "CameraBoundsVolume.generated.h"
+
+
+class UBoxComponent;
 
 UCLASS()
 class VALKYRIEWAR_API ACameraBoundsVolume : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
+public:
 	ACameraBoundsVolume();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bounds")
+	// 영역을 표시할 박스 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Bounds")
 	UBoxComponent* BoundsBox;
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	// 박스 크기 가져오는 함수 (컨트롤러에서 쓸 거임)
+	UBoxComponent* GetBoundsBox() const { return BoundsBox; }
 
 };

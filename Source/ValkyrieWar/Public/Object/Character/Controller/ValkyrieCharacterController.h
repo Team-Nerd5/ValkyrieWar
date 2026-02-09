@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Templates/SubclassOf.h"
 #include "GameFramework/PlayerController.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
@@ -10,95 +9,101 @@
 #include "CameraBoundsVolume.h"
 #include "ValkyrieCharacterController.generated.h"
 
-class UNiagaraSystem;
-class UInputMappingContext;
-class UInputAction;
-class ACameraBoundsVolume;
-
-// [삭제됨] enum 정의는 팀장님 파일에 있으니까 여기서 지움!
 
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 {
 	GENERATED_BODY()
+
 public:
 	AValkyrieCharacterController();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	float ShortPressThreshold;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UNiagaraSystem* FXCursor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SetDestinationClickAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* MoveAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SetDestinationTouchAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* CameraDragAction;
 
-	// 카메라 이동속도
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
-	float CameraPanSpeed = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* DragAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float AutoCenterInterpSpeed = 2.0f; // 복귀 속도
 
-	// [형 기능] 바운드 볼륨
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float MovingCenterInterpSpeed = 5.0f; // 이동 중 복귀 속도
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Control")
+	void SetControlMode(EInputControlMode NewMode);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera Control")
+	void ToggleControlMode();
+
+	// 수동, 자동 모드 변환
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	FVector ManualViewOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	FVector AutoViewOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float ManualLagSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float AutoLagSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float ManualPanSpeed = 1.0f; // 수동 모드 드래그 속도
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float AutoPanSpeed = 1.0f; // 자동모드
+
+	//상태확인,변경
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Control | State")
+	EInputControlMode CurrentControlMode; // 현재
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	class UTouchInterface* MyTouchInterface; // 터치 인터페이스 킬거임? 끌꺼임?
+
+	// 조이스틱 데드존
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
+	float JoystickDeadZoneWidthRatio = 0.35f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
+	float JoystickDeadZoneHeightRatio = 0.4f;
+
+	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	ACameraBoundsVolume* BoundsVolume;
 
-	// [복구] 카메라 복귀 속도
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
-	float MovingCenterInterpSpeed = 5.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera Control")
-	float AutoCenterInterpSpeed = 2.0f;
-
 protected:
-	uint32 bMoveToMouseCursor : 1;
-
-	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
-	virtual void PlayerTick(float InDeltaTime) override;
+	virtual void SetupInputComponent() override;
+	virtual void PlayerTick(float DeltaTime) override;
 
+	// 입력 함수들
+	void OnMove(const FInputActionValue& InValue);
+	void OnMoveCompleted(const FInputActionValue& InValue);
 	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
 	void OnTouchTriggered();
 	void OnTouchReleased();
-
-	void OnMove(const FInputActionValue& Value);
-	void OnMoveCompleted(const FInputActionValue& Value);
-
-	// [복구] 모드 변경 함수 (Enum 타입은 팀장님 거 씀)
-	void SetControlMode(EInputControlMode InNewMode);
+	// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
+	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
+	void OnControlModeChanged(EInputControlMode InNewMode);
 
 private:
-	FVector CachedDestination;
-	bool bIsTouch;
-	float FollowTime;
-	bool bIsDragging = false;
-	FVector2D PrevTouchLocation;
-	FVector TargetCameraLocation;
-
-	// 드래그 및 모드 변수
+	
 	FVector DragOffset;
-	FVector CurrentCamLoc;
-	FVector FinalTargetLoc;
+	//현재 좌표 저장
+	FVector CurrentTargetViewOffset;
 
-	float CurrentLagSpeed;
-	float MovingLagSpeed = 10.0f;
-	float AutoLagSpeed = 2.0f;
 
+	float LastInteractionTime = 0.0f;
 	bool bIsInputActive = false;
-	float LastInteractionTime;
+	bool bIsDragging = false;
+	bool bIsTouch = false;
+	FVector2D PrevTouchLocation;
 
-	// [복구] 현재 모드 상태
-	EInputControlMode CurrentControlMode;
+	
+	void RefreshInteractionTime();
 
 	void UpdateCameraPosition(float InDeltaTime);
-	void RefreshInteractionTime();
 };
