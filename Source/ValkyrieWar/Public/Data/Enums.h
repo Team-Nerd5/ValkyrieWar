@@ -295,3 +295,21 @@ enum class EReservationState : uint8
 	MovingToTarget,  // 예약 타깃으로 이동 중
 	InCombat         // 공격 중
 };
+
+UENUM(BlueprintType)
+enum class ETableDataType : uint8
+{
+	Character,
+	Attack,
+	Contents,
+	Goods,
+	Item,
+	Reward,
+	Skill,
+	SkillEffect,
+	Stage,
+	StageInfo,
+	StageReward,
+	StatGroup,
+	Unit,
+};
