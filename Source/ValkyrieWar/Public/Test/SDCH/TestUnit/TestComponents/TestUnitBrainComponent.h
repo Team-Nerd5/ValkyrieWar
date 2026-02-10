@@ -34,6 +34,10 @@ class VALKYRIEWAR_API UTestUnitBrainComponent : public UActorComponent
 public:
     UTestUnitBrainComponent();
 
+    UFUNCTION(BlueprintCallable, Category = "Runtime")
+    void ResetRuntimeBrainState();
+
+public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Team")
     ETeam Team = ETeam::TeamA;
 

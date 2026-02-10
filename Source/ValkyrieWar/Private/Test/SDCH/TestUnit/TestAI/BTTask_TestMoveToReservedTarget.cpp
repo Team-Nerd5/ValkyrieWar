@@ -39,6 +39,6 @@ EBTNodeResult::Type UBTTask_TestMoveToReservedTarget::ExecuteTask(UBehaviorTreeC
     }
 
     const EPathFollowingRequestResult::Type R =
-        AIC->MoveToActor(Goal, Radius, true, true, true, nullptr, true);
+        AIC->MoveToActor(Goal, Radius, false, true, true, nullptr, false);
     return (R == EPathFollowingRequestResult::Failed) ? EBTNodeResult::Failed : EBTNodeResult::Succeeded;
 }
