@@ -103,7 +103,10 @@ void AValkyrieCharacterController::BeginPlay()
 
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraBoundsVolume::StaticClass(), FoundActors);
-
+	if (FoundActors.Num() > 0)
+	{
+		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
+	}
 	
 }
 
@@ -145,7 +148,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>();
 	if (!CamComp) return;
-
+	float CurrentLagSpeed;
 	float CurrentTime = GetWorld()->GetTimeSeconds();
 	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
 	bool bShouldRecenter = (bIsInputActive || bTimeExpired) && !bIsDragging;
@@ -157,11 +160,18 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 	}
 
 	FVector CharLoc = ControlledPawn->GetActorLocation();
+	FVector CharVelocity = ControlledPawn->GetVelocity();
+	CharVelocity.Z = 0.0f;
 
-	FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset + DragOffset;
+	FVector TargetLookAhead = CharVelocity * VelocityLeadScale;
+	TargetLookAhead = TargetLookAhead.GetClampedToMaxSize(MaxLeadDistance);
 
-	FVector CurrentCamLoc = CamComp->GetComponentLocation();
-	float CurrentLagSpeed;
+	CurrentLookAheadOffset = FMath::VInterpTo(
+		CurrentLookAheadOffset,
+		TargetLookAhead,
+		InDeltaTime,
+		LookAheadInterSpeed
+	);
 
 	if (CurrentControlMode == EInputControlMode::Manual)
 	{
@@ -171,7 +181,8 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 	{
 		CurrentLagSpeed = AutoLagSpeed;
 	}
-
+	FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset + DragOffset + CurrentLookAheadOffset;
+	FVector CurrentCamLoc = CamComp->GetComponentLocation();
 	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, InDeltaTime, CurrentLagSpeed);
 
 	
