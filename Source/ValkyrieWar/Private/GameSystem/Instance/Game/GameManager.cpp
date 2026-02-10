@@ -48,3 +48,9 @@ UDataTable* UGameManager::GetGameData(ETableDataType InType)
 {
     return *GameDataTables.Find(InType);
 }
+
+void UGameManager::UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID)
+{
+    ItemUID = InItemUID;
+    CharacterUID = InCharacterUID;
+}
