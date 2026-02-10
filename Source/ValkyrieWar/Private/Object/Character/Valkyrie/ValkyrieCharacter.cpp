@@ -23,4 +23,16 @@ void AValkyrieCharacter::Tick(float InDeltaTime)
 	Super::Tick(InDeltaTime);
 }
 
-
+void AValkyrieCharacter::Attack()
+{
+	TObjectPtr<UAnimMontage>* FoundMontage = WeaponMontageMap.Find(CurrentWeaponType);
+	if (FoundMontage && *FoundMontage)
+	{
+		PlayAnimMontage(*FoundMontage);
+		FString MontageName = (*FoundMontage)->GetName();
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Montage Playing: %s"), *MontageName));
+		}
+	}
+}

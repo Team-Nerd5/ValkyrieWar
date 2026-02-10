@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Enums.generated.h"
 
 UENUM(BlueprintType)
 enum class EUIType : uint8
@@ -199,4 +200,14 @@ enum class EWeaponAnimType : uint8
 	Test_Melee UMETA(DisplayName = "Melee"), // 뭔가 근접무기
 	Test_Range UMETA(DisplayName = "Range"), // 뭔가 원거리 무기
 	Test_Magic UMETA(DisplayName = "Magic"), // 뭔가 마법무기
+};
+
+
+USTRUCT(BlueprintType)
+struct FWeaponData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TObjectPtr<UAnimMontage> AttackMontage;
 };
