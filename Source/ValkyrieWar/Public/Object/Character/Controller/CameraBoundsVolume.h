@@ -19,7 +19,7 @@ public:
 
 	// 영역을 표시할 박스 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Bounds")
-	UBoxComponent* BoundsBox;
+	TObjectPtr<UBoxComponent> BoundsBox = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
