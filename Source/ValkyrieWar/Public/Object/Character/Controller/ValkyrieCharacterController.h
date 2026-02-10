@@ -73,6 +73,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
 
+	//카메라 리드
+	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
+	float LookAheaDistance = 400.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
+	float VelocityLeadScale = 0.78f;
+	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
+	float LookAheadInterSpeed = 5.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
+	float MaxLeadDistance = 400.0f;
+	FVector CurrentLookAheadOffset = FVector::ZeroVector;
+
+
 	
 
 
