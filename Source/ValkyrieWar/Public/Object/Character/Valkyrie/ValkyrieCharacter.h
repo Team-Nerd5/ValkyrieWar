@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
+#include "Data/Enums.h"
 #include "ValkyrieCharacter.generated.h"
 
 /**
@@ -16,6 +17,13 @@ class VALKYRIEWAR_API AValkyrieCharacter : public ABaseCharacter
 
 public:
 	AValkyrieCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
+
+	// 무기 바꾸는 함수 (테스트용)
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SetWeaponType(EWeaponAnimType InNewType);
 
 protected:
 	virtual void BeginPlay() override;

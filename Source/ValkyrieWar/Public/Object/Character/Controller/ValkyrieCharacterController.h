@@ -19,14 +19,17 @@ public:
 	AValkyrieCharacterController();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputMappingContext* DefaultMappingContext;
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* CameraDragAction;
+	TObjectPtr<UInputAction> CameraDragAction;
 
+	// 바운드 볼륨
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
+	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
@@ -45,13 +48,13 @@ public:
 
 	// 수동, 자동 모드 변환
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	FVector ManualViewOffset;
+	FVector ManualViewOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	FVector AutoViewOffset;
+	FVector AutoViewOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	float ManualLagSpeed;
+	float ManualLagSpeed = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	float AutoLagSpeed;
+	float AutoLagSpeed = 2.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	float ManualPanSpeed = 1.0f; // 수동 모드 드래그 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
@@ -59,10 +62,10 @@ public:
 
 	//상태확인,변경
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Control | State")
-	EInputControlMode CurrentControlMode; // 현재
+	EInputControlMode CurrentControlMode = EInputControlMode::Manual; // 현재
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	class UTouchInterface* MyTouchInterface; // 터치 인터페이스 킬거임? 끌꺼임?
+	TObjectPtr<UTouchInterface> MyTouchInterface; // 터치 인터페이스 킬거임? 끌꺼임?
 
 	// 조이스틱 데드존
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
@@ -70,9 +73,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
 
-	// 바운드 볼륨
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
-	ACameraBoundsVolume* BoundsVolume;
+	
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -91,19 +93,18 @@ protected:
 
 private:
 	
-	FVector DragOffset;
+	FVector DragOffset = FVector::ZeroVector;
 	//현재 좌표 저장
-	FVector CurrentTargetViewOffset;
+	FVector CurrentTargetViewOffset = FVector::ZeroVector;
+	FVector2D PrevTouchLocation = FVector2D::ZeroVector;
 
 
 	float LastInteractionTime = 0.0f;
 	bool bIsInputActive = false;
 	bool bIsDragging = false;
 	bool bIsTouch = false;
-	FVector2D PrevTouchLocation;
 
 	
 	void RefreshInteractionTime();
-
 	void UpdateCameraPosition(float InDeltaTime);
 };
