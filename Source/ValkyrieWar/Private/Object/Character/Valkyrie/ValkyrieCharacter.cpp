@@ -8,6 +8,11 @@ AValkyrieCharacter::AValkyrieCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
+{
+	CurrentWeaponType = InNewType;
+}
+
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
