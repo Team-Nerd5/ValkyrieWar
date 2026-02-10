@@ -16,10 +16,11 @@ void UItemModule::Initialize(UGameManager* InGameManager)
 
 void UItemModule::MakeData()
 {
+	//데이터 탐색 속도를 위해 Map으로 메모리에 올려둠
 	if (DataTable)
 	{
 		TArray<FItemDataRow*> AllRows;
-		DataTable->GetAllRows<FItemDataRow>(TEXT("ItemManager_Init"), AllRows);
+		DataTable->GetAllRows<FItemDataRow>(TEXT("ItemModule_Init"), AllRows);
 
 		for (FItemDataRow* Item : AllRows)
 		{
@@ -28,7 +29,7 @@ void UItemModule::MakeData()
 	}
 }
 
-void UItemModule::AddItem(int32 InDataId, int32 Amount)
+void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 {
 	FItemDataRow* TableData = GetTableDataById(InDataId);
 
@@ -36,11 +37,45 @@ void UItemModule::AddItem(int32 InDataId, int32 Amount)
 	{
 		UItemData* NewItem = NewObject<UItemData>(this);
 
-		NewItem->Initialize(TableData);
+		NewItem->Initialize(InUID, InAmount, TableData);
+
+		OwnItems.Add(InUID, NewItem);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Item Table Data is not Exist!"));
+		UE_LOG(LogTemp, Error, TEXT("%d Item Table Data is not Exist!"), InDataId);
+	}
+}
+
+//아이템류는 중복저장하면 안됨(장비는 가능)
+void UItemModule::AddItem(int32 InDataId, int32 InAmount)
+{
+	FItemDataRow* TableData = GetTableDataById(InDataId);
+
+	if (TableData && GameManager.IsValid())
+	{
+		UItemData* NewItem = NewObject<UItemData>(this);
+		uint64 UID = GameManager->GetItemUID();
+
+		NewItem->Initialize(UID, InAmount, TableData);
+
+		OwnItems.Add(UID, NewItem);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%d Item Table Data is not Exist!"), InDataId);
+	}
+}
+
+void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
+{
+	UItemData* TargetItem = *OwnItems.Find(InUID);
+
+	TargetItem->AddAmount(InAmount);
+
+	if (TargetItem->GetAmount() <= 0)
+	{
+		OwnItems.Remove(InUID);
 	}
 }
 

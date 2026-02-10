@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Data/Module/ItemModule.h"
+#include "Data/Module/ValkyrieModule.h"
 #include "DataManager.generated.h"
 
 /**
@@ -19,7 +20,10 @@ public:
 
 public:
 	FORCEINLINE UItemModule* GetItemModule() const { return ItemModule; }
+	FORCEINLINE UValkyrieModule* GetValkyrieModule() const { return ValkyrieModule; }
 private:
 	UPROPERTY()
 	TObjectPtr<UItemModule> ItemModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UValkyrieModule> ValkyrieModule = nullptr;
 };
