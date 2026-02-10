@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CharacterDataRow.generated.h"
+#include "ValkyrieDataRow.generated.h"
 
 /**
  * 
  */
 USTRUCT(BlueprintType)
-struct VALKYRIEWAR_API FCharacterDataRow : public FTableRowBase
+struct VALKYRIEWAR_API FValkyrieDataRow : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
