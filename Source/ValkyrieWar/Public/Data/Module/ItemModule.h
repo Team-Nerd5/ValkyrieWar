@@ -22,15 +22,37 @@ public:
 
 	virtual void MakeData() override;
 
-	//저장한 아이템 추가하는 함수 구현
-	void AddItem(int32 InDataId, int32 Amount);
+	/// <summary>
+	/// 저장 파일에서 아이템 로드할 때 사용
+	/// </summary>
+	/// <param name="InUID"></param>
+	/// <param name="InDataId"></param>
+	/// <param name="InAmount"></param>
+	void LoadItem(uint64 InUID, int32 InDataId, int32 InAmount);
+
+	/// <summary>
+	/// 아이템 새로 추가(획득)
+	/// </summary>
+	/// <param name="InDataId"></param>
+	/// <param name="InAmount"></param>
+	void AddItem(int32 InDataId, int32 InAmount = 1);
+
+	/// <summary>
+	/// 아이템 개수 변경(추가, 삭제)
+	/// </summary>
+	/// <param name="InUID"></param>
+	/// <param name="InAmount"></param>
+	void AddItemAmount(uint64 InUID, int32 InAmount);
+
+
+	FORCEINLINE TMap<uint64, UItemData*> GetItems() { return OwnItems; }
+	FORCEINLINE UItemData* GetItem(uint64 InUID) { return *OwnItems.Find(InUID); }
 
 private:
 	FItemDataRow* GetTableDataById(int32 InDataId);
 
 private:
-	UPROPERTY()
-	TObjectPtr<UDataTable> DataTable = nullptr;
+	TMap<uint64, UItemData*> OwnItems;
 
 	TMap<int32, FItemDataRow*> TableDataByDataId;
 };

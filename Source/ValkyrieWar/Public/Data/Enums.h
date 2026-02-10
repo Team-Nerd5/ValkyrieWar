@@ -163,7 +163,7 @@ enum class EWeaponAnimType : uint8
 UENUM(BlueprintType)
 enum class ETableDataType : uint8
 {
-	Character,
+	Valkyrie,
 	Attack,
 	Contents,
 	Goods,

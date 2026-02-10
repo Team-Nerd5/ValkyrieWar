@@ -3,7 +3,14 @@
 
 #include "Data/Game/ItemData.h"
 
-void UItemData::Initialize(FItemDataRow* InTableData)
+void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData)
 {
+	UID = InUID;
+	Amount = InAmount;
 	TableData = InTableData;
+}
+
+void UItemData::AddAmount(int32 InAmount)
+{
+	Amount += InAmount;
 }
