@@ -4,23 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "CheckAccountSaveGame.generated.h"
+#include "GachaSaveGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UCheckAccountSaveGame : public USaveGame
+class VALKYRIEWAR_API UGachaSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY()
-	uint64 UserId = 0;
+	int32 CeilValue = 0;
 
 	UPROPERTY()
-	uint64 ItemUID = 0;
-
-	UPROPERTY()
-	uint64 ValkyrieUID = 0;
+	uint64 GachaCount = 0;
 };

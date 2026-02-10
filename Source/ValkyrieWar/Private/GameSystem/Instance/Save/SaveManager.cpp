@@ -4,10 +4,19 @@
 #include "GameSystem/Instance/Save/SaveManager.h"
 
 #include "Object/Save/ValkyrieWarSaveGame.h"
+
 #include "Object/SaveGame/CheckAccountSaveGame.h"
+#include "Object/SaveGame/AccountSaveGame.h"
+#include "Object/SaveGame/GachaSaveGame.h"
+#include "Object/SaveGame/GoodsSaveGame.h"
+#include "Object/SaveGame/ItemSaveGame.h"
+#include "Object/SaveGame/StageSaveGame.h"
+#include "Object/SaveGame/UnitUpgradeSaveGame.h"
+#include "Object/SaveGame/ValkyrieSaveGame.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "GameSystem/Library/DataEncryptHelper.h"
+#include "GameSystem/Library/GameSaveHelper.h"
 
 
 void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -94,31 +103,95 @@ void USaveManager::LoadAllData()
 			OnLoadedDelegate.BindDynamic(this, &USaveManager::OnDataLoaded);
 
 			//데이터 암호화 로드 비동기...
-			UDataEncryptHelper::LoadGameEncryptedAsync(EnumName, OnLoadedDelegate, static_cast<ESaveType>(EnumPtr->GetValueByIndex(i)));
+			UDataEncryptHelper::LoadGameEncryptedAsync(OnLoadedDelegate, static_cast<ESaveType>(EnumPtr->GetValueByIndex(i)));
 		}
 	}
 }
 
-void USaveManager::LoadCheckAccount()
+uint64 USaveManager::GetUserId()
 {
-	FOnSaveGameLoaded OnLoadedDelegate;
-	OnLoadedDelegate.BindDynamic(this, &USaveManager::OnDataLoaded);
+	if (CheckAccount)
+		return CheckAccount->UserId;
 
-	//체크용 데이터는 동기식으로 로드
-	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(UEnum::GetValueAsString(ESaveType::CheckAccount));
+	//로드를 하고 없으면 UserID를 증가시켜서 새로 만들어줌
+	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(ESaveType::CheckAccount);
+	if (!LoadData)
+	{
+		LoadData = UGameSaveHelper::MakeSaveGame(ESaveType::CheckAccount);
+	}
+	CheckAccount = Cast<UCheckAccountSaveGame>(LoadData);
 
-	//TODO: 데이터 유무 및 아이디 존재에 따라 반환
-	//이후 로그인할 지 계정생성할 지 로직 탈 수 있도록 세팅
-	//저장 시 방식 설정..
-	//저장할 때 뭔가 Add/Remove 이런거로만 할 지
-	//직접 캐시된 데이터에 접근해서 세팅하고
-	//저장은 이후 해당 파일만 하는 형태로?
-	
+	CheckAccount->UserId++;
+
+	SaveInternal(ESaveType::CheckAccount);
+
+	return CheckAccount->UserId;
+}
+
+bool USaveManager::IsAcountExist()
+{
+	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(ESaveType::CheckAccount);
+
+	if (!LoadData)
+		return false;
+
+	CheckAccount = Cast<UCheckAccountSaveGame>(LoadData);
+
+	return CheckAccount && CheckAccount->UserId > 0;
+}
+
+void USaveManager::SaveData(ESaveType InSaveType)
+{
+	SaveInternal(InSaveType);
 }
 
 void USaveManager::InitSetDataAction()
 {
-	ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
+	//ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Account, [this](USaveGame* InData) { Account = Cast<UAccountSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Item, [this](USaveGame* InData) { Item = Cast<UItemSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData) { Valkyrie = Cast<UValkyrieSaveGame>(InData); });
+}
+
+void USaveManager::InitSaveDataAction()
+{
+	
+	ActionSaveData.Add(ESaveType::CheckAccount, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(CheckAccount,ESaveType::CheckAccount);
+		});
+	ActionSaveData.Add(ESaveType::Account, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Account,ESaveType::Account);
+		});
+	ActionSaveData.Add(ESaveType::Gacha, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Gacha, ESaveType::Gacha);
+		});
+	ActionSaveData.Add(ESaveType::Goods, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Goods, ESaveType::Goods);
+		});
+	ActionSaveData.Add(ESaveType::Item, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Item, ESaveType::Item);
+		});
+	ActionSaveData.Add(ESaveType::Stage, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Stage, ESaveType::Stage);
+		});
+	ActionSaveData.Add(ESaveType::UnitUpgrade, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(UnitUpgrade, ESaveType::UnitUpgrade);
+		});
+	ActionSaveData.Add(ESaveType::Valkyrie, [this]()
+		{
+			UDataEncryptHelper::SaveGameEncrypted(Valkyrie, ESaveType::Valkyrie);
+		});
 }
 
 void USaveManager::LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedData)
@@ -126,6 +199,14 @@ void USaveManager::LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedDat
 	if (ActionSetData.Contains(InSaveType))
 	{
 		ActionSetData[InSaveType](InLoadedData);
+	}
+}
+
+void USaveManager::SaveInternal(ESaveType InSaveType)
+{
+	if (ActionSaveData.Contains(InSaveType))
+	{
+		ActionSaveData[InSaveType]();
 	}
 }
 
@@ -138,7 +219,11 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 	}
 	else
 	{
-		//로드 실패
-		UE_LOG(LogTemp, Error, TEXT("Failed to load data : %s"), *UEnum::GetValueAsString(InSaveType));
+		//저장된 데이터가 없으면 새로 만들어준다.
+		USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
+		if (Data)
+		{
+			LoadDataInternal(InSaveType, Data);
+		}		
 	}
 }
