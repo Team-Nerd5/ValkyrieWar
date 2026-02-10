@@ -21,13 +21,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
 
-	// 무기 바꾸는 함수 (테스트용)
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
+
+	UPROPERTY(EditAnywhere, Category = "Combat") // 에디터에서 추가함
+	TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
+
+	UFUNCTION(BlueprintCallable, Category = "Attack Test")
+	void Attack();
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	virtual void Tick(float InDeltaTime) override;
+
+	
 };

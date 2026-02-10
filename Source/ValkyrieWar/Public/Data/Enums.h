@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Enums.generated.h"
 
 UENUM(BlueprintType)
 enum class EUIType : uint8
@@ -207,4 +208,13 @@ enum class ETableDataType : uint8
 	StageReward,
 	StatGroup,
 	Unit,
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TObjectPtr<UAnimMontage> AttackMontage;
 };
