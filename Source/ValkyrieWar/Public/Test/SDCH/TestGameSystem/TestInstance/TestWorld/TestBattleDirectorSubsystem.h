@@ -41,9 +41,6 @@ public:
     void RegisterUnit(ATestBaseUnit* Unit);
     void UnregisterUnit(ATestBaseUnit* Unit);
 
-    // 팀 베이스 등록
-    void RegisterTeamBase(ETeam Team, AActor* BaseActor);
-
     // 성벽(또는 성벽 라인) 앵커 등록
     void RegisterWallAnchor(ETeam Team, AActor* AnchorActor);
     void UnregisterWallAnchor(ETeam Team, AActor* AnchorActor);
@@ -75,7 +72,6 @@ private:
 
     UPROPERTY()
     TArray<TWeakObjectPtr<AActor>> TeamBWallAnchors;
-
 
 private:
     TArray<TWeakObjectPtr<ATestBaseUnit>>& GetTeamArray(ETeam Team);

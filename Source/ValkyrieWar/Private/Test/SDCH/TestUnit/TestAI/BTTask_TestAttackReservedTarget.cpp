@@ -18,6 +18,7 @@ EBTNodeResult::Type UBTTask_TestAttackReservedTarget::ExecuteTask(
 {
     AAIController* AIC = OwnerComp.GetAIOwner();
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+
     if (!AIC || !BB) return EBTNodeResult::Failed;
 
     ATestBaseUnit* Unit = Cast<ATestBaseUnit>(AIC->GetPawn());
@@ -44,15 +45,16 @@ EBTNodeResult::Type UBTTask_TestAttackReservedTarget::ExecuteTask(
 
     // 2D 거리 사용 (경사/단차 안정성)
     const float Dist2D = FVector::Dist2D(MyLoc, TargetLoc);
-    if (Dist2D > Unit->AttackRange + 30.f)
-    {
-        TryCount += 1;
-        BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, TryCount);
-        return EBTNodeResult::Failed;
-    }
+
+    //if (Dist2D > Unit->AttackRange + 30.f)
+    //{
+    //    TryCount += 1;
+    //    BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, TryCount);
+    //    return EBTNodeResult::Failed;
+    //}
 
     // 사거리 경계면 재접근
-    if (Dist2D > Unit->AttackRange * 0.95f)
+    if (Dist2D > Unit->AttackRange)
     {
         AIC->MoveToActor(Target, Unit->AttackRange * 0.85f);
         TryCount += 1;
@@ -64,6 +66,7 @@ EBTNodeResult::Type UBTTask_TestAttackReservedTarget::ExecuteTask(
     // 공격 실행
     // ============================
     BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, 0);
+
     Unit->PerformAttack(Target);
     return EBTNodeResult::Succeeded;
 }

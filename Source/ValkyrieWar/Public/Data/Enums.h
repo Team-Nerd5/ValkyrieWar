@@ -72,6 +72,9 @@ enum class ELobbyState : uint8
 UENUM(BlueprintType)
 enum class EPoolTypes : uint8
 {
+	// 디폴트(무효)
+	None,
+
 	// 캐릭터
 	BaseCharacter,
 
@@ -80,6 +83,12 @@ enum class EPoolTypes : uint8
 
 	// 액터
 	BaseActor,
+
+	// 아군 근딜
+	Melee_Friend,
+
+	// 적 근딜
+	Melee_Enemy,
 };
 
 UENUM(BlueprintType)

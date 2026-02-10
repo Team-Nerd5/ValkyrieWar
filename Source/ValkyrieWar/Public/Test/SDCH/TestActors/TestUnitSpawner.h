@@ -1,31 +1,64 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Data/Enums.h"
 #include "TestUnitSpawner.generated.h"
 
 class UObjectPoolSubsystem;
-class AActor;
-class ABaseCharacter;
+class ATestBaseUnit;
 
 USTRUCT(BlueprintType)
-struct FTestPoolSpawnEntry
+struct FTestPoolEntry
 {
 	GENERATED_BODY()
 
-	// "클래스마다 고유한 PoolType"을 써야 함 (현재 풀 구현 제약)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EPoolTypes PoolType;
+	EPoolTypes PoolType = EPoolTypes::None;
 
-	// 풀링할 유닛 클래스
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ABaseCharacter> UnitClass;
+	TSubclassOf<ATestBaseUnit> UnitClass;
 
-	// Reserve 용량 (실제 Max 제한이 아니라 Reserve임)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ReserveSize = 50;
+};
+
+USTRUCT(BlueprintType)
+struct FTestWaveOption
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EPoolTypes PoolType = EPoolTypes::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Weight = 1;
+};
+
+USTRUCT(BlueprintType)
+struct FTestWaveConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float StartDelay = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnInterval = 2.f;
+
+	// <= 0이면 무한 스폰
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 TotalToSpawn = 20;
+
+	// 이 스포너 기준 동시 생존 최대
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 MaxAlive = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FTestWaveOption> Options;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float EndDelay = 2.f;
 };
 
 UCLASS()
@@ -38,40 +71,104 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	// ====== 설정 ======
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawner|Pool")
-	TArray<FTestPoolSpawnEntry> PoolEntries;
+	// ===== Pool =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool")
+	TArray<FTestPoolEntry> PoolEntries;
 
-	// 스폰 기준 트랜스폼(비워두면 스포너 자신의 트랜스폼 사용)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawner|Spawn")
+	// ===== Spawn Transform =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	TObjectPtr<AActor> SpawnPointActor = nullptr;
 
-	// 스폰 오프셋(원형 랜덤)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawner|Spawn")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	float SpawnRadius = 200.f;
 
-	// ====== API ======
-	UFUNCTION(BlueprintCallable, Category = "Spawner")
-	ABaseCharacter* SpawnFromPool(EPoolTypes PoolType);
+	// ===== Waves =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	TArray<FTestWaveConfig> Waves;
 
-	UFUNCTION(BlueprintCallable, Category = "Spawner")
-	void DespawnToPool(EPoolTypes PoolType, ABaseCharacter* Unit);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	bool bAutoStart = true;
 
-	// 특정 PoolType의 클래스를 찾기
-	const FTestPoolSpawnEntry* FindEntry(EPoolTypes PoolType) const;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	bool bLoopWaves = true;
+
+	// 안전장치(NotifyUnitReleased를 못 받는 경우 대비)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	float CleanupInterval = 1.0f;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Wave")
+	void StartWaves();
+
+	UFUNCTION(BlueprintCallable, Category = "Wave")
+	void StopWaves();
+
+	// 유닛이 풀로 반환될 때(=OnRelease) 호출해주면 AliveCount가 정확해짐
+	UFUNCTION(BlueprintCallable, Category = "Wave")
+	void NotifyUnitReleased(ATestBaseUnit* Unit);
+
+	UFUNCTION(BlueprintPure, Category = "Wave")
+	int32 GetAliveCount() const { return AliveUnits.Num(); }
+
+	UFUNCTION(BlueprintPure, Category = "Wave")
+	int32 GetCurrentWaveIndex() const { return CurrentWaveIndex; }
 
 protected:
-	// 스폰 직후 유닛 세팅 훅(팀 설정/브레인 초기화/BT 재시작 등)
-	UFUNCTION(BlueprintImplementableEvent, Category = "Spawner|Hook")
-	void BP_OnUnitSpawned(ABaseCharacter* Unit);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
+	void BP_OnWaveStarted(int32 WaveIndex);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Spawner|Hook")
-	void BP_OnUnitDespawned(ABaseCharacter* Unit);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
+	void BP_OnWaveFinished(int32 WaveIndex);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
+	void BP_OnUnitSpawned(ATestBaseUnit* Unit, int32 WaveIndex, EPoolTypes PoolType);
 
 private:
-	UObjectPoolSubsystem* GetPoolSubsystem() const;
-	FTransform GetSpawnTransform() const;
+	// ---- Timer callbacks (람다 없음) ----
+	UFUNCTION()
+	void HandleWaveStart();
 
+	UFUNCTION()
+	void HandleSpawnTick();
+
+	UFUNCTION()
+	void HandleWaveEnd();
+
+	UFUNCTION()
+	void HandleCleanupTick();
+
+	UFUNCTION()
+	void HandleUnitDestroyed(AActor* DestroyedActor);
+
+private:
+	UObjectPoolSubsystem* GetPool() const;
+	const FTestPoolEntry* FindPoolEntry(EPoolTypes PoolType) const;
+
+	void StartWaveInternal(int32 WaveIndex);
+	void EndWaveInternal();
+
+	EPoolTypes PickWeightedPoolType(const FTestWaveConfig& Wave) const;
+	FTransform MakeSpawnTransform() const;
+
+	void RegisterAlive(ATestBaseUnit* Unit);
+	void UnregisterAlive(AActor* UnitActor);
+	void CompactAliveUnits();
+
+	// 풀 반환 상태(휴리스틱) 판정: Notify 누락 대비
+	bool IsReturnedToPoolHeuristic(const ATestBaseUnit* Unit) const;
+
+private:
+	int32 CurrentWaveIndex = INDEX_NONE;
+	int32 SpawnedThisWave = 0;
+
+	FTimerHandle WaveStartHandle;
+	FTimerHandle SpawnTickHandle;
+	FTimerHandle WaveEndHandle;
+	FTimerHandle CleanupHandle;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<ATestBaseUnit>> AliveUnits;
 };
