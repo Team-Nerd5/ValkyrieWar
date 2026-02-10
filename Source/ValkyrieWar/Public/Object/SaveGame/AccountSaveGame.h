@@ -4,23 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "CheckAccountSaveGame.generated.h"
+#include "AccountSaveGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UCheckAccountSaveGame : public USaveGame
+class VALKYRIEWAR_API UAccountSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY()
-	uint64 UserId = 0;
+	FString Nickname;
 
 	UPROPERTY()
-	uint64 ItemUID = 0;
+	int32 Level;
 
 	UPROPERTY()
-	uint64 ValkyrieUID = 0;
+	int32 Exp;
+
 };

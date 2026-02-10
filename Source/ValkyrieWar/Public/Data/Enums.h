@@ -92,5 +92,11 @@ UENUM(BlueprintType)
 enum class ESaveType : uint8
 {
 	CheckAccount,
-	AccountInfo,
+	Account,
+	Gacha,
+	Goods,
+	Item,
+	Stage,
+	UnitUpgrade,
+	Valkyrie
 };
