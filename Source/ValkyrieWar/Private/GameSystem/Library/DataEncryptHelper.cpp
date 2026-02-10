@@ -7,7 +7,7 @@
 #include "Misc/AES.h"
 #include "HAL/PlatformFileManager.h"
 
-bool UDataEncryptHelper::SaveGameEncrypted(USaveGame* SaveGameObject, FString SlotName)
+bool UDataEncryptHelper::SaveGameEncrypted(USaveGame* SaveGameObject, ESaveType InSaveType)
 {
 	if (!SaveGameObject) return false;
 	if (!IsKeyValid(GetEncryptKey()))
@@ -34,11 +34,11 @@ bool UDataEncryptHelper::SaveGameEncrypted(USaveGame* SaveGameObject, FString Sl
 	FAES::EncryptData(ObjectBytes.GetData(), ObjectBytes.Num(), AESKey);
 
 	// 3. 파일로 저장
-	FString SaveFile = GetSaveFilePath(SlotName);
+	FString SaveFile = GetSaveFilePath(UEnum::GetValueAsString(InSaveType));
 	return FFileHelper::SaveArrayToFile(ObjectBytes, *SaveFile);
 }
 
-USaveGame* UDataEncryptHelper::LoadGameEncrypted(FString SlotName)
+USaveGame* UDataEncryptHelper::LoadGameEncrypted(ESaveType InSaveType)
 {
 	if (!IsKeyValid(GetEncryptKey()))
 	{
@@ -46,7 +46,7 @@ USaveGame* UDataEncryptHelper::LoadGameEncrypted(FString SlotName)
 		return nullptr;
 	}
 
-	FString SaveFile = GetSaveFilePath(SlotName);
+	FString SaveFile = GetSaveFilePath(UEnum::GetValueAsString(InSaveType));
 
 	// 1. 파일이 존재하는지 확인
 	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*SaveFile))
@@ -72,8 +72,10 @@ USaveGame* UDataEncryptHelper::LoadGameEncrypted(FString SlotName)
 	return UGameplayStatics::LoadGameFromMemory(LoadedBytes);
 }
 
-void UDataEncryptHelper::LoadGameEncryptedAsync(FString SlotName, FOnSaveGameLoaded OnLoaded, ESaveType InSaveType)
+void UDataEncryptHelper::LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESaveType InSaveType)
 {
+	FString SlotName = UEnum::GetValueAsString(InSaveType);
+
 	Async(EAsyncExecution::Thread, [SlotName, OnLoaded, InSaveType]()
 		{
 			// 이 안쪽은 게임(메인) 스레드가 아님! UObject 접근 주의!

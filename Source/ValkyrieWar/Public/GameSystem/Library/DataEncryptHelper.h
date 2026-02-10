@@ -19,13 +19,13 @@ class VALKYRIEWAR_API UDataEncryptHelper : public UBlueprintFunctionLibrary
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame|Encryption")
-	static bool SaveGameEncrypted(USaveGame* SaveGameObject, FString SlotName);
+	static bool SaveGameEncrypted(USaveGame* SaveGameObject, ESaveType InSaveType);
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame|Encryption")
-	static USaveGame* LoadGameEncrypted(FString SlotName);
+	static USaveGame* LoadGameEncrypted(ESaveType InSaveType);
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame|Encryption")
-	static void LoadGameEncryptedAsync(FString SlotName, FOnSaveGameLoaded OnLoaded, ESaveType InSaveType);
+	static void LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESaveType InSaveType);
 
 private:
 	// 키가 유효한지 검사하는 내부 함수 (32바이트 체크)
