@@ -21,4 +21,7 @@ public:
 protected:
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UDataTable> DataTable = nullptr;
 };

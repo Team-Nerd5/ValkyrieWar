@@ -15,8 +15,10 @@ class VALKYRIEWAR_API UItemData : public UObject
 	GENERATED_BODY()
 
 public:
-	void Initialize(FItemDataRow* InTableData);
+	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData);
+	void AddAmount(int32 InAmount);
 
+	//예시..
 	FORCEINLINE EItemGroup GetItemGroup()
 	{
 		if (!TableData)
@@ -26,11 +28,18 @@ public:
 
 		return TableData->ItemGroup;
 	}
+	FORCEINLINE int32 GetAmount() { return Amount; }
 
 private:
+	UPROPERTY()
+	uint64 UID = 0;
+
 	const FItemDataRow* TableData = nullptr;
 
 	UPROPERTY()
 	int32 Amount = 0;
+
+	//장비인 경우 : 장착한 캐릭터 UID
+	uint64 EquipCharacter;
 
 };
