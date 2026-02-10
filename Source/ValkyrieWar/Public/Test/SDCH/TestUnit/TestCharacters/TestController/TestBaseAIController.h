@@ -17,6 +17,8 @@ class VALKYRIEWAR_API ATestBaseAIController : public ADetourCrowdAIController
 public:
     ATestBaseAIController();
 
+    void ClearBBKeySafe(UBlackboardComponent* BB, const FName Key);
+
     UPROPERTY(EditAnywhere, Category = "AI|BT")
     TObjectPtr<UBehaviorTree> BehaviorTreeAsset;
 

@@ -30,7 +30,7 @@ public:
     bool bUseUnitAttackRangeAsRadius = true;
 
     UPROPERTY(EditAnywhere)
-    float RadiusScale = 0.9f;
+    float RadiusScale = 0.5f;
 
 protected:
     virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
