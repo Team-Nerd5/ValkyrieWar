@@ -22,45 +22,49 @@ protected:
 
 	virtual void Deinitialize() override;
 
-public: // 게터 / 세터
-//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-//	inline FPlayerAccountData GetPlayerAccountData() const { return CurrentPlayerAccountData; }
-//
-//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-//	void SetPlayerAccountData(const FPlayerAccountData& InPlayerData);
-//
-//public: // 저장 / 로드
-//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-//	void SaveGame();
-//
-//	UFUNCTION(BlueprintCallable, Category = "SaveSystem")
-//	void LoadGame();
-//
-//protected:
-//	UPROPERTY()
-//	FString SaveSlotName = TEXT("PlayerSave01");
-//
-//	UPROPERTY()
-//	int32 SaveIndex = 0;
-//
-//	UPROPERTY()
-//	TObjectPtr<class UValkyrieWarSaveGame> CachedSaveGame = nullptr;
-//
-//protected: // 데이터
-//	FPlayerAccountData CurrentPlayerAccountData;
-
 public:
-	//음..다 따로 들고있다면?
-	TObjectPtr<class UCheckAccountSaveGame> CheckAccount = nullptr;
+	FORCEINLINE class UCheckAccountSaveGame* GetCheckAccount() { return CheckAccount; }
+	FORCEINLINE class UAccountSaveGame* GeAccount() { return Account; }
+	FORCEINLINE class UGachaSaveGame* GetGacha() { return Gacha; }
+	FORCEINLINE class UGoodsSaveGame* GetGoods() { return Goods; }
+	FORCEINLINE class UItemSaveGame* GetItem() { return Item; }
+	FORCEINLINE class UStageSaveGame* GetStage() { return Stage; }
+	FORCEINLINE class UUnitUpgradeSaveGame* GetUnitUpgrade() { return UnitUpgrade; }
+	FORCEINLINE class UValkyrieSaveGame* GetValkyrie () { return Valkyrie; }
+
 private:
 	TMap <ESaveType, TFunction<void(USaveGame*)>> ActionSetData;
+	TMap <ESaveType, TFunction<void()>> ActionSaveData;
+
+	UPROPERTY()
+	TObjectPtr<class UCheckAccountSaveGame> CheckAccount = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UAccountSaveGame> Account = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UGachaSaveGame> Gacha = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UGoodsSaveGame> Goods = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UItemSaveGame> Item = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UStageSaveGame> Stage = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UUnitUpgradeSaveGame> UnitUpgrade = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UValkyrieSaveGame> Valkyrie = nullptr;
 
 
 protected:
 
 	void InitSetDataAction();
+	void InitSaveDataAction();
 
 	void LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
+	/// <summary>
+	/// 실제 Save파일로 암호화 저장
+	/// </summary>
+	/// <param name="InSaveType"></param>
+	void SaveInternal(ESaveType InSaveType);
 
 	UFUNCTION()
 	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
@@ -68,5 +72,11 @@ protected:
 public:
 	void LoadAllData();
 
-	void LoadCheckAccount();
+	//게임 로드 1순위 계정 체크
+	bool IsAcountExist();
+
+	//게임로드 2순위 id 있으면 가져오고, 음..
+	uint64 GetUserId();
+
+	void SaveData(ESaveType InSaveType);
 };
