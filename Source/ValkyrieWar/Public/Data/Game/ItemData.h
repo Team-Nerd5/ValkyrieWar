@@ -28,7 +28,19 @@ public:
 
 		return TableData->ItemGroup;
 	}
+
 	FORCEINLINE int32 GetAmount() { return Amount; }
+
+	FORCEINLINE const uint64 GetUID() { return UID; }
+
+	FORCEINLINE const uint64 GetEquipCharacterUID()
+	{
+		if (!TableData && !(TableData->ItemGroup == EItemGroup::Armor))
+			return;
+
+		return EquipCharacter;
+	}
+	
 
 private:
 	UPROPERTY()
