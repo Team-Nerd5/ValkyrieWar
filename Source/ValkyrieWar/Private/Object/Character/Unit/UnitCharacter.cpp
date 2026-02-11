@@ -3,9 +3,9 @@
 
 #include "Object/Character/Unit/UnitCharacter.h"
 
-void AUnitCharacter::PostInitializeComponents()
+void AUnitCharacter::OnConstruction(const FTransform& Transform)
 {
-    Super::PostInitializeComponents();
+    Super::OnConstruction(Transform);
 
     //하위 파츠 세팅
     USkeletalMeshComponent* LeaderMesh = GetMesh();
@@ -17,6 +17,15 @@ void AUnitCharacter::PostInitializeComponents()
     {
         if (Part == LeaderMesh) continue;
 
+        if (Part->ComponentHasTag(TEXT("Weapon"))) continue;
+
         Part->SetLeaderPoseComponent(LeaderMesh);
     }
+}
+
+void AUnitCharacter::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    
 }
