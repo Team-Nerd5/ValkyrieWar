@@ -20,15 +20,9 @@ void ATestUnitSpawner::BeginPlay()
 		return;
 	}
 
-	static TSet<EPoolTypes> InitializedTypes;
-
 	// 1) 풀 초기화(Reserve)
 	for (const FTestPoolEntry& Entry : PoolEntries)
 	{
-		if (InitializedTypes.Contains(Entry.PoolType))
-		{
-			continue; // 이미 초기화됨
-		}
 
 		if (Entry.PoolType == EPoolTypes::None || !Entry.UnitClass)
 		{
@@ -37,8 +31,6 @@ void ATestUnitSpawner::BeginPlay()
 		}
 
 		Pool->InitPool<ATestBaseUnit>(Entry.PoolType, Entry.UnitClass, Entry.ReserveSize);
-
-		InitializedTypes.Add(Entry.PoolType);
 	}
 
 	// 2) 안전장치 Cleanup 타이머
@@ -91,7 +83,7 @@ void ATestUnitSpawner::StopWaves()
 	CurrentWaveIndex = INDEX_NONE;
 	SpawnedThisWave = 0;
 
-	// ✅ 살아있는 애들 정리(원하면 옵션으로)
+	// 살아있는 애들 정리(원하면 옵션으로)
 	if (UObjectPoolSubsystem* Pool = GetPool())
 	{
 		for (TWeakObjectPtr<ATestBaseUnit>& W : AliveUnits)
@@ -193,59 +185,64 @@ void ATestUnitSpawner::HandleSpawnTick()
 
 	const FTestWaveConfig& Wave = Waves[CurrentWaveIndex];
 
-	// 종료 조건을 MaxAlive보다 먼저 검사
-	if (Wave.TotalToSpawn > 0 && SpawnedThisWave >= Wave.TotalToSpawn)
+	int32 Count = FMath::Min(10, Wave.SpawnCount);
+
+	for (int32 i = 0; i < Count; i++)
 	{
-		EndWaveInternal();
-		return;
+		// 종료 조건을 MaxAlive보다 먼저 검사
+		if (Wave.TotalToSpawn > 0 && SpawnedThisWave >= Wave.TotalToSpawn)
+		{
+			EndWaveInternal();
+			return;
+		}
+
+		// 스포너 단위 MaxAlive
+		if (AliveUnits.Num() >= Wave.MaxAlive)
+		{
+			return;
+		}
+
+		const EPoolTypes PickType = PickWeightedPoolType(Wave);
+		if (PickType == EPoolTypes::None)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Options invalid for wave %d"), CurrentWaveIndex);
+			return;
+		}
+
+		const FTestPoolEntry* Entry = FindPoolEntry(PickType);
+		if (!Entry || !Entry->UnitClass)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] No PoolEntry for PoolType=%d"), (int32)PickType);
+			return;
+		}
+
+		UObjectPoolSubsystem* Pool = GetPool();
+		if (!Pool)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Pool subsystem missing"));
+			return;
+		}
+
+		const FTransform SpawnTM = MakeSpawnTransform();
+
+		ATestBaseUnit* Unit = Pool->Get<ATestBaseUnit>(
+			PickType,
+			Entry->UnitClass,
+			SpawnTM.GetLocation(),
+			SpawnTM.Rotator()
+		);
+
+		if (!Unit) return;
+
+		// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
+		Unit->SetOwnerSpawner(this);
+		Unit->SetPoolType(PickType);
+
+		RegisterAlive(Unit);
+		SpawnedThisWave++;
+
+		BP_OnUnitSpawned(Unit, CurrentWaveIndex, PickType);
 	}
-
-	// 스포너 단위 MaxAlive
-	if (AliveUnits.Num() >= Wave.MaxAlive)
-	{
-		return;
-	}
-
-	const EPoolTypes PickType = PickWeightedPoolType(Wave);
-	if (PickType == EPoolTypes::None)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Options invalid for wave %d"), CurrentWaveIndex);
-		return;
-	}
-
-	const FTestPoolEntry* Entry = FindPoolEntry(PickType);
-	if (!Entry || !Entry->UnitClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] No PoolEntry for PoolType=%d"), (int32)PickType);
-		return;
-	}
-
-	UObjectPoolSubsystem* Pool = GetPool();
-	if (!Pool)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Pool subsystem missing"));
-		return;
-	}
-
-	const FTransform SpawnTM = MakeSpawnTransform();
-
-	ATestBaseUnit* Unit = Pool->Get<ATestBaseUnit>(
-		PickType,
-		Entry->UnitClass,
-		SpawnTM.GetLocation(),
-		SpawnTM.Rotator()
-	);
-
-	if (!Unit) return;
-
-	// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
-	Unit->SetOwnerSpawner(this);
-	Unit->SetPoolType(PickType);
-
-	RegisterAlive(Unit);
-	SpawnedThisWave++;
-
-	BP_OnUnitSpawned(Unit, CurrentWaveIndex, PickType);
 }
 
 void ATestUnitSpawner::EndWaveInternal()
@@ -431,7 +428,7 @@ void ATestUnitSpawner::CompactAliveUnits()
 			continue;
 		}
 
-		// 2) ✅ Notify 누락 대비: 풀로 돌아간 상태면 Alive에서 제거
+		// 2) Notify 누락 대비: 풀로 돌아간 상태면 Alive에서 제거
 		if (IsReturnedToPoolHeuristic(Unit))
 		{
 			AliveUnits.RemoveAtSwap(i);
