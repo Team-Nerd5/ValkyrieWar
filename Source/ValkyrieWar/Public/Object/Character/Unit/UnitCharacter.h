@@ -16,6 +16,7 @@ class VALKYRIEWAR_API AUnitCharacter : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
+	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void PostInitializeComponents() override;
 
 	//캐릭터 생성 시 데이터 세팅
