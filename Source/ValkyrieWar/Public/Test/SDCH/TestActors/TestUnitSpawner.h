@@ -59,6 +59,9 @@ struct FTestWaveConfig
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float EndDelay = 2.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 SpawnCount = 1;
 };
 
 UCLASS()
