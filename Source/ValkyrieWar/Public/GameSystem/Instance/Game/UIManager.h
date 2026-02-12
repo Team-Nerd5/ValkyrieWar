@@ -9,7 +9,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "GameSystem/Instance/Game/GameManager.h"
 
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "UIManager.generated.h"
 
 /**

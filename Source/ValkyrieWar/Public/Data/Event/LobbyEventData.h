@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Enums.h"
 #include "LobbyEventData.generated.h"
 
 /**

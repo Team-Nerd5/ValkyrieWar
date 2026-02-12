@@ -2,7 +2,7 @@
 
 #include "Test/OKM/TestActorSpawner.h"
 #include "Data/Pool/PoolTypes.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "GameSystem/Base/BaseCharacter.h"
 
 // Sets default values

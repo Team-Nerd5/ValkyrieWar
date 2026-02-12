@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Data/Save/PlayerAccountData.h"
-#include "Data/Enums.h"
+#include "Data/Enum/DataEnums.h"
 #include "SaveManager.generated.h"
 
 class USaveGame;

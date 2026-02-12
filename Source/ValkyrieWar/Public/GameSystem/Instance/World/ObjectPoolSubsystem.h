@@ -7,7 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "Data/Pool/PoolTypes.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
 #include "ObjectPoolSubsystem.generated.h"
 
