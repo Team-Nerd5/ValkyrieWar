@@ -6,7 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "Data/Module/ItemModule.h"
-#include "Data/Enums.h"
+#include "Data/Enum/DataEnums.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
