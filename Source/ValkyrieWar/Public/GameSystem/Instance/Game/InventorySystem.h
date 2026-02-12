@@ -7,6 +7,7 @@
 
 #include "Data/Module/ItemModule.h"
 #include "Data/Enums.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
 #include "InventorySystem.generated.h"
@@ -23,25 +24,19 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
-	UFUNCTION(BlueprintCallable)
 	TArray<UItemData*> GetFilteredInventoryList(EItemGroup InItemGroup);
 
-	UFUNCTION(BlueprintCallable)
-	void UseItem(UItemData* InItem);
+	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
 
-	UFUNCTION(BlueprintCallable)
-	void SellItem(UItemData* InItem, int32 InAmount);
+	void UseItem(uint64 InUID, int32 InAmount);
 
-	UFUNCTION(BlueprintCallable)
-	void EquipItem(UItemData* InItem, int64 InCharacterUID);
+	void SellItem(uint64 InUID, int32 InAmount);
 
-	UFUNCTION(BlueprintCallable)
-	void UnEquipItem(UItemData* InItem);
+	void EquipItem(uint64 InUID, int64 InCharacterUID);
+
+	void UnEquipItem(uint64 InUID);
 
 private:
+	UDataManager* DataManager;
 	UItemModule* ItemModule;
-
-	UWorldEventSystem* WorldEventSystem;
-
-	TArray<UItemData*> InventoryList;
 };
