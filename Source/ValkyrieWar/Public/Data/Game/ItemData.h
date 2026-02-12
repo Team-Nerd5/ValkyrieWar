@@ -29,18 +29,18 @@ public:
 		return TableData->ItemGroup;
 	}
 
-	FORCEINLINE int32 GetAmount() { return Amount; }
+	FORCEINLINE const int32 GetAmount() { return Amount; }
 
 	FORCEINLINE const uint64 GetUID() { return UID; }
 
 	FORCEINLINE const uint64 GetEquipCharacterUID()
 	{
-		if (!TableData && !(TableData->ItemGroup == EItemGroup::Armor))
-			return;
-
-		return EquipCharacter;
+		if (TableData->ItemGroup == EItemGroup::Weapon || TableData->ItemGroup == EItemGroup::Helmet || TableData->ItemGroup == EItemGroup::Armor)
+			return EquipCharacter;
+		else
+			return 0;
 	}
-	
+	FORCEINLINE void SetEquipCharacterUID(uint64 InCharacterUID) { EquipCharacter = InCharacterUID; }
 
 private:
 	UPROPERTY()
