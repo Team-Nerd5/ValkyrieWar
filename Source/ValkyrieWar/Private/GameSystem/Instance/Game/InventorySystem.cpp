@@ -15,16 +15,17 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 
 TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemGroup)
 {
+	TArray<UItemData*> FilteredResult;
+
 #pragma region 유효성 검사
 	if (!ItemModule)
 	{
+		FilteredResult.Empty();
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(Filter)] ItemModule이 없습니다"));
-		return;
+		return FilteredResult;
 	}
 #pragma endregion
-
-	TArray<UItemData*> FilteredResult;
-
+	
 	if (InItemGroup == EItemGroup::None)
 	{
 		// 인벤토리 전체 불러오기
