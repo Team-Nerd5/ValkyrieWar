@@ -2,7 +2,9 @@
 
 
 #include "Test/SDCH/TestUnit/TestCharacters/TestController/TestBaseAIController.h"
+#include "Test/SDCH/TestUnit/TestCharacters/TestBaseUnit.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
 
 ATestBaseAIController::ATestBaseAIController()
 {
@@ -21,8 +23,18 @@ void ATestBaseAIController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    if (BehaviorTreeAsset)
+    if (!BehaviorTreeAsset) return;
+
+    UBlackboardData* BBAsset = BehaviorTreeAsset->BlackboardAsset;
+    if (!BBAsset) return;
+
+    UBlackboardComponent* BB = nullptr;
+    if (UseBlackboard(BBAsset, BB))
     {
+        ATestBaseUnit* Me = Cast<ATestBaseUnit>(InPawn);
+
+        BB->SetValueAsFloat(TEXT("MoveAcceptRad"), Me->AttackRange * 0.8f);
+
         RunBehaviorTree(BehaviorTreeAsset);
     }
 }

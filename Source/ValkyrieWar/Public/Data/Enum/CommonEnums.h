@@ -56,6 +56,12 @@ enum class EPoolTypes : uint8
 
 	// 적 근딜
 	Melee_Enemy,
+
+	// 아군 아처
+	Archer_Friend,
+
+	// 적 아처
+	Archer_Enemy,
 };
 
 UENUM(BlueprintType)
