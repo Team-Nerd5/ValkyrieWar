@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+
 #include "BaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
@@ -20,6 +21,8 @@ class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemI
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
+
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
 	// Called when the game starts or when spawned

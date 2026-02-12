@@ -15,6 +15,5 @@ class VALKYRIEWAR_API AUnitCharacter : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
-	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void PostInitializeComponents() override;
 };
