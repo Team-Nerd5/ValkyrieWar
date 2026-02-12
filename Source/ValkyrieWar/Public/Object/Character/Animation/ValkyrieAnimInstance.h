@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "ValkyrieAnimInstance.generated.h"
 
 /**
