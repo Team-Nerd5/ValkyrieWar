@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "TestBaseUnit.generated.h"
 
 class ATestUnitSpawner;

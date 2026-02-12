@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "ValkyrieCharacter.generated.h"
 
 /**
