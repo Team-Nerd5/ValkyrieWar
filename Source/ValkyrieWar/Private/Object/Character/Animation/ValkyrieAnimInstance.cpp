@@ -3,6 +3,7 @@
 
 #include "Object/Character/Animation/ValkyrieAnimInstance.h"
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UValkyrieAnimInstance::UValkyrieAnimInstance()
 {
@@ -19,17 +20,18 @@ void UValkyrieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	if (OwnerCharacter)
-	{
-		WeaponType = OwnerCharacter->CurrentWeaponType;
-	}
-	if (OwnerCharacter == nullptr)
+	if (OwnerCharacter == nullptr || MovementComp == nullptr)
 	{
 		return;
 	}
-	Velocity = OwnerCharacter->GetVelocity();
+
+	Velocity = MovementComp->Velocity;
 	GroundSpeed = Velocity.Size2D();
+
 	bIsMoving = GroundSpeed > 3.0f;
+
+	FVector CurrentAccel = MovementComp->GetCurrentAcceleration();
+	bIsAcceleration = CurrentAccel.SizeSquared() > 0.0f;
 
 	WeaponType = OwnerCharacter->CurrentWeaponType;
 }

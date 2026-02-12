@@ -7,6 +7,8 @@
 #include "Data/Enum/CharacterEnums.h"
 #include "ValkyrieAnimInstance.generated.h"
 
+
+class UCharacterMovementComponent;
 /**
  * 
  */
@@ -22,6 +24,8 @@ protected:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	UPROPERTY()
+	UCharacterMovementComponent* MovementComp;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class AValkyrieCharacter> OwnerCharacter = nullptr;
@@ -35,4 +39,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bIsMoving = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool bIsAcceleration; // 조이스틱 밀고있어?
+
+
 };
