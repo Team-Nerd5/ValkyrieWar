@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "MapLinkTableData.generated.h"
 
 /**

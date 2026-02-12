@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Data/Enums.h"
+#include "Data/Enum/DataEnums.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameSaveHelper.generated.h"
 

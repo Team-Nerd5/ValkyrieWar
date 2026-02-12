@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "Data/Enums.h"
+#include "Data/Enum/StateEnums.h"
 #include "LoginGameState.generated.h"
 
 /**

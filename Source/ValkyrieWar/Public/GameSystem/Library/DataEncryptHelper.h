@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Data/Enums.h"
+#include "Data/Enum/DataEnums.h"
 #include "DataEncryptHelper.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnSaveGameLoaded, USaveGame*, LoadedSaveGame, bool, bIsSuccess, ESaveType, InSaveType);

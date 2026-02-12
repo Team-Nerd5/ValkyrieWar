@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "TestBaseWall.generated.h"
 
 UCLASS()

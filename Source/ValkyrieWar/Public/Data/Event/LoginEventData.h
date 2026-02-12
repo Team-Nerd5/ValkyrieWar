@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Enums.h"
+#include "Data/Enum/StateEnums.h"
 #include "LoginEventData.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginStateChanged, ELoginState, InState);

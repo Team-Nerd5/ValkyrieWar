@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "TestBattleDirectorSubsystem.generated.h"
 
 class ATestBaseUnit;

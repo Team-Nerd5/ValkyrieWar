@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "TestUnitSpawner.generated.h"
 
 class UObjectPoolSubsystem;
