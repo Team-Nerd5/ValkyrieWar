@@ -4,7 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()

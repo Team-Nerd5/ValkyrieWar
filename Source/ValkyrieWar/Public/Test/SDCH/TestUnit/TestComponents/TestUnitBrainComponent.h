@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "TestUnitBrainComponent.generated.h"
 
 class ATestBaseUnit;

@@ -5,7 +5,7 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "CameraBoundsVolume.h"
 #include "ValkyrieCharacterController.generated.h"
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Enums.h"
+#include "Data/Enum/DataEnums.h"
 #include "ItemDataRow.generated.h"
 
 /**
