@@ -6,7 +6,8 @@
 #include "Engine/GameInstance.h"
 
 #include "Engine/DataTable.h"
-#include "Data/Enums.h"
+#include "Data/Enum/CommonEnums.h"
+#include "Data/Enum/DataEnums.h"
 
 #include "GameSystem/Base/BaseWidget.h"
 #include "GameManager.generated.h"

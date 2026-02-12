@@ -1,4 +1,4 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameSystem/Instance/Game/DataManager.h"
+#include "Data/Struct/WeaponData.h"
