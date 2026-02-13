@@ -24,19 +24,29 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	TArray<UItemData*> GetFilteredInventoryList(EItemGroup InItemGroup);
 
 	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
 
-	void UseItem(uint64 InUID, int32 InAmount);
+	UFUNCTION(BlueprintCallable)
+	void UseItem(UItemData* InItem, int32 InAmount);
 
-	void SellItem(uint64 InUID, int32 InAmount);
+	UFUNCTION(BlueprintCallable)
+	void SellItem(UItemData* InItem, int32 InAmount);
 
-	void EquipItem(uint64 InUID, int64 InCharacterUID);
+	UFUNCTION(BlueprintCallable)
+	void EquipItem(UItemData* InItem, int64 InCharacterUID);
 
-	void UnEquipItem(uint64 InUID);
+	UFUNCTION(BlueprintCallable)
+	void UnEquipItem(UItemData* InItem);
+
+	UFUNCTION(BlueprintCallable)
+	void TestAddItem();
 
 private:
+	UPROPERTY()
 	UDataManager* DataManager;
+	UPROPERTY()
 	UItemModule* ItemModule;
 };

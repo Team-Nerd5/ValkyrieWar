@@ -47,6 +47,8 @@ public:
 	}
 	
 
+	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
+
 private:
 	UPROPERTY()
 	uint64 UID = 0;
