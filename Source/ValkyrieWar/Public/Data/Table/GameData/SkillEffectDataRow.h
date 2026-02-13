@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/DataEnums.h"
+#include "Data/Struct/EffectModifierData.h"
+#include "GameplayEffect.h"
 #include "SkillEffectDataRow.generated.h"
 
 /**
@@ -21,7 +23,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	ESkillType SkillType;
 	UPROPERTY(EditAnywhere)
+	TArray<FEffectModifierData> Modifiers;
+	UPROPERTY(EditAnywhere)
 	EAttributeType AttributeType;
+	UPROPERTY(EditAnywhere)
+	EGameplayEffectDurationType DurationPolicy;
+	UPROPERTY(EditAnywhere)
+	float Duration = 0.0f;
 	UPROPERTY(EditAnywhere)
 	float ApplyValue = 0.0f;
 	UPROPERTY(EditAnywhere)

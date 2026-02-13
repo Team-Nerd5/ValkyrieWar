@@ -16,6 +16,14 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
+void ABaseCharacter::OnGet_Implementation()
+{
+}
+
+void ABaseCharacter::OnRelease_Implementation()
+{
+}
+
 void ABaseCharacter::OnConstruction(const FTransform& Transform)
 {
     //하위 파츠 세팅
@@ -38,7 +46,7 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

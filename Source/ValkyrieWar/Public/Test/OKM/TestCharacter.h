@@ -10,7 +10,7 @@
 #include "TestCharacter.generated.h"
 
 UCLASS()
-class VALKYRIEWAR_API ATestCharacter : public ABaseCharacter, public IObjectPoolInterface
+class VALKYRIEWAR_API ATestCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 

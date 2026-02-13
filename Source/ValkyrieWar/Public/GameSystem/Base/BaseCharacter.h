@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
-
+#include "Interface/ObjectPool/ObjectPoolInterface.h"
 #include "BaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
 
 UCLASS()
-class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface
+class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface, public IObjectPoolInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +21,10 @@ class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemI
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
+
+	virtual void OnGet_Implementation() override;
+
+	virtual void OnRelease_Implementation() override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 

@@ -21,5 +21,4 @@ public:
 	int32 EffectGroupId;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
-
 };
