@@ -9,8 +9,11 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	Collection.InitializeDependency(UDataManager::StaticClass());
+
 	DataManager = Cast<UDataManager>(GetGameInstance()->GetSubsystem<UDataManager>());
-	ItemModule = DataManager->GetItemModule();
+
+	ItemModule = NewObject<UItemModule>(this, UItemModule::StaticClass());
 }
 
 TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemGroup)
@@ -60,8 +63,13 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 	}
 #pragma endregion
 
-	UItemData* Item = ItemModule->GetItem(InUID);
-	if (!Item)
+	UItemData* Item = nullptr;
+	if (ItemModule->GetItems().Contains(InUID))
+	{
+		Item = ItemModule->GetItem(InUID);
+	}
+
+	if (Item == nullptr)
 	{
 		// 아이템이 없을 때
 		ItemModule->AddItem(InDataId, InAmount);
@@ -78,11 +86,12 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 	else
 	{
 		// 장비일 때
-		ItemModule->AddItem(InDataId, InAmount);
-	}	 
+		ItemModule->AddItem(Item->GetTableData()->DataId, InAmount);
+	}
+	return;
 }
 
-void UInventorySystem::UseItem(uint64 InUID, int32 InAmount)
+void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 {
 #pragma region 유효성 검사
 	if (!ItemModule)
@@ -91,11 +100,14 @@ void UInventorySystem::UseItem(uint64 InUID, int32 InAmount)
 		return;
 	}
 #pragma endregion
-
-	ItemModule->AddItemAmount(InUID, -InAmount);
+	
+	if (ItemModule->GetItem(InItem->GetUID()))
+	{
+		ItemModule->AddItemAmount(InItem->GetUID(), -InAmount);
+	}
 }
 
-void UInventorySystem::SellItem(uint64 InUID, int32 InAmount)
+void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 {
 #pragma region 유효성 검사
 	if (!ItemModule)
@@ -107,10 +119,13 @@ void UInventorySystem::SellItem(uint64 InUID, int32 InAmount)
 
 	// 아이템 가격에 따른 플레이어 골드 추가 필요
 
-	ItemModule->AddItemAmount(InUID, -InAmount);
+	if (ItemModule->GetItem(InItem->GetUID()))
+	{
+		ItemModule->AddItemAmount(InItem->GetUID(), -InAmount);
+	}
 }
 
-void UInventorySystem::EquipItem(uint64 InUID, int64 InCharacterUID)
+void UInventorySystem::EquipItem(UItemData* InItem, int64 InCharacterUID)
 {
 #pragma region 유효성 검사
 	if (!ItemModule)
@@ -118,18 +133,15 @@ void UInventorySystem::EquipItem(uint64 InUID, int64 InCharacterUID)
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] ItemModule이 없습니다"));
 		return;
 	}
-	UItemData* Item = ItemModule->GetItem(InUID);
-	if (!Item)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 인벤토리에 장비가 없습니다 없습니다"));
-		return;
-	}
 #pragma endregion
 
-	Item->SetEquipCharacterUID(InUID);
+	if (ItemModule->GetItem(InItem->GetUID()))
+	{
+		InItem->SetEquipCharacterUID(InCharacterUID);
+	}
 }
 
-void UInventorySystem::UnEquipItem(uint64 InUID)
+void UInventorySystem::UnEquipItem(UItemData* InItem)
 {
 #pragma region 유효성 검사
 	if (!ItemModule)
@@ -137,13 +149,21 @@ void UInventorySystem::UnEquipItem(uint64 InUID)
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] ItemModule이 없습니다"));
 		return;
 	}
-	UItemData* Item = ItemModule->GetItem(InUID);
-	if (!Item)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] 인벤토리에 장비가 없습니다"));
-		return;
-	}
 #pragma endregion
 
-	Item->SetEquipCharacterUID(0);
+	if (ItemModule->GetItem(InItem->GetUID()))
+	{
+		InItem->SetEquipCharacterUID(0);
+	}
+}
+
+void UInventorySystem::TestAddItem()
+{
+	AddItem(1, 1, 1);
+	AddItem(1, 2, 1);
+	AddItem(1, 3, 1);
+	AddItem(1, 4, 1);
+	AddItem(1, 5, 1);
+	AddItem(1, 6, 1);
+	AddItem(1, 7, 1);
 }

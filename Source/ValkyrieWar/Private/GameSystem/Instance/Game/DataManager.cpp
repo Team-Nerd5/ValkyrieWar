@@ -2,3 +2,12 @@
 
 
 #include "GameSystem/Instance/Game/DataManager.h"
+
+void UDataManager::InitTestItem(UGameManager* GameManager)
+{
+	if (!ItemModule)
+		ItemModule = NewObject<UItemModule>(this);
+
+	if(ItemModule && GameManager)
+		ItemModule->Initialize(GameManager);
+}

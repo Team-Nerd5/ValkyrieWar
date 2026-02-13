@@ -17,6 +17,8 @@ class VALKYRIEWAR_API UDataManager : public UGameInstanceSubsystem
 	GENERATED_BODY()
 public:
 	//void InitItem(/*Data*/);
+	UFUNCTION(BlueprintCallable)
+	void InitTestItem(UGameManager* GameManager);
 
 public:
 	FORCEINLINE UItemModule* GetItemModule() const { return ItemModule; }

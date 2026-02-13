@@ -42,6 +42,8 @@ public:
 	}
 	FORCEINLINE void SetEquipCharacterUID(uint64 InCharacterUID) { EquipCharacter = InCharacterUID; }
 
+	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
+
 private:
 	UPROPERTY()
 	uint64 UID = 0;

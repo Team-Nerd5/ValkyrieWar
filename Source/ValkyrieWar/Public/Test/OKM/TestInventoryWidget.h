@@ -8,6 +8,9 @@
 #include "Components/Button.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "Data/Game/ItemData.h"
+
+#include "Test/OKM/TestItemObject.h"
+
 #include "TestInventoryWidget.generated.h"
 
 /**
@@ -22,16 +25,26 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void OpenUI() override;
+	UFUNCTION(BlueprintCallable)
 	virtual void CloseUI() override;
 
+	UFUNCTION()
 	void FilterReset();
+	UFUNCTION()
 	void FilterWeapon();
+	UFUNCTION()
 	void FilterArmor();
+	UFUNCTION()
 	void FilterHelmet();
+	UFUNCTION()
 	void FIlterGrowth();
 	
 protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTileView> TileView = nullptr;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> CloseButton = nullptr;
 
@@ -46,11 +59,18 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> FilterGrowthButton = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTileView> TileView = nullptr;
-
 private:
 	UInventorySystem* InventorySystem;
 
 	TArray<UItemData*> CachedItemList;
+
+	// 테스트용
+public:
+	UFUNCTION(BlueprintCallable)
+	void InitTestList();
+	UFUNCTION(BlueprintCallable)
+	void AddTestList(UObject* InItemObject);
+
+private:
+	TArray<UTestItemObject*> TestList;
 };
