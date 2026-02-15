@@ -18,6 +18,7 @@ class VALKYRIEWAR_API UValkyrieModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
+protected:
 	virtual void MakeData() override;
 private:
 	FValkyrieDataRow* GetTableDataById(int32 InDataId);

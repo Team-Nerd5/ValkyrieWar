@@ -17,6 +17,7 @@ class VALKYRIEWAR_API UBaseModule : public UObject
 public:
 	virtual void Initialize(UGameManager* InGameManager);
 
+protected:
 	virtual void MakeData() {}
 protected:
 	UPROPERTY()

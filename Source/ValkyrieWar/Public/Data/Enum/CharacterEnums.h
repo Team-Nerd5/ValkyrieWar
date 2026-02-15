@@ -14,3 +14,12 @@ enum class EWeaponAnimType : uint8
 	Test_Range UMETA(DisplayName = "Range"), // 뭔가 원거리 무기
 	Test_Magic UMETA(DisplayName = "Magic"), // 뭔가 마법무기
 };
+
+UENUM(BlueprintType)
+enum class EAttackType : uint8
+{
+	//발사체인지?
+	InRange,
+	Projectile,
+	TargetRange,
+};

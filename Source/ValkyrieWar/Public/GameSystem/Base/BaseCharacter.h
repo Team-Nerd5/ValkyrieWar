@@ -28,13 +28,17 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	/// <summary>
+	/// 무기 장착 시 공격 관련 세팅(무기에 공격테이블 id)
+	/// </summary>
+	/// <param name="InDataId"></param>
+	virtual void EquipWeapon(int32 InDataId);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float InDeltaTime) override;	
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent = nullptr;

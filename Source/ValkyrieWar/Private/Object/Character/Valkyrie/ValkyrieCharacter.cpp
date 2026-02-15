@@ -4,6 +4,7 @@
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
+#include "AbilitySystemComponent.h"
 
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,6 +12,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
+
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Base/BaseGameplayAbility.h"
 
 #include "Materials/Material.h"
 #include "Engine/World.h"
@@ -76,6 +80,28 @@ void AValkyrieCharacter::Attack()
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Montage Playing: %s"), *MontageName));
+		}
+	}
+}
+
+void AValkyrieCharacter::EquipWeapon(int32 InDataId)
+{
+	Super::EquipWeapon(InDataId);
+
+	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+
+	if (DataManager)
+	{
+		USkillData* SkillData = DataManager->GetSkillModule()->GetSkillData(InDataId);
+
+		if (SkillData)
+		{
+			//공격 Ability 세팅
+			UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
+			NewAbility->UpdataData(SkillData);
+
+			FGameplayAbilitySpec Spec(NewAbility, 1);
+			AbilitySystemComponent->GiveAbility(Spec);
 		}
 	}
 }

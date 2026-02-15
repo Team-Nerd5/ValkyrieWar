@@ -19,9 +19,7 @@ class VALKYRIEWAR_API UItemModule : public UBaseModule
 
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
-
-	virtual void MakeData() override;
-
+		
 	/// <summary>
 	/// 저장 파일에서 아이템 로드할 때 사용
 	/// </summary>
@@ -47,6 +45,9 @@ public:
 
 	FORCEINLINE TMap<uint64, UItemData*> GetItems() { return OwnItems; }
 	FORCEINLINE UItemData* GetItem(uint64 InUID) { return *OwnItems.Find(InUID); }
+
+protected:
+	virtual void MakeData() override;
 
 private:
 	FItemDataRow* GetTableDataById(int32 InDataId);

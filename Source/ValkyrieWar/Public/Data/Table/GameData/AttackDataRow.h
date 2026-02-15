@@ -25,4 +25,5 @@ public:
 	FVector PositionOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere)
 	FVector RotatationOffset = FVector::ZeroVector;		//벡터 말고 다른걸로 해야할 지 확인 필요
+
 };

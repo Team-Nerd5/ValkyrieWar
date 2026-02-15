@@ -75,3 +75,73 @@ void UBaseGameplayAbility::UpdateData(TArray<FSkillEffectDataRow> InSkillEffects
         CachedEffects.Add(NewEffect);
     }
 }
+
+void UBaseGameplayAbility::UpdataData(UAttackData* InAttackData)
+{
+    CachedEffects.Empty();
+
+    //CachedEffect 세팅
+    for (USkillEffectData* EffectData : InAttackData->GetEffectList())
+    {
+        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
+
+        // 2. 지속 시간 설정
+        NewEffect->DurationPolicy = EffectData->GetDurationPolicy();
+
+        // 지속 시간이 있는 경우 설정
+        if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
+        {
+            NewEffect->DurationMagnitude = FScalableFloat(EffectData->GetDuration());
+        }
+
+        //Attribute랑 값 세팅(여러개 가능)
+        for (const FEffectModifierData& ModData : EffectData->GetModifiers())
+        {
+            int32 Idx = NewEffect->Modifiers.Num();
+            NewEffect->Modifiers.Add(FGameplayModifierInfo());
+            FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
+
+            ModInfo.Attribute = ModData.Attribute;
+            ModInfo.ModifierOp = ModData.Op;
+            ModInfo.ModifierMagnitude = FScalableFloat(ModData.Value);
+        }
+
+        // 4. 캐시 목록에 추가
+        CachedEffects.Add(NewEffect);
+    }
+}
+
+void UBaseGameplayAbility::UpdataData(USkillData* InSkillData)
+{
+    CachedEffects.Empty();
+
+    //CachedEffect 세팅
+    for (USkillEffectData* EffectData : InSkillData->GetEffectList())
+    {
+        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
+
+        // 2. 지속 시간 설정
+        NewEffect->DurationPolicy = EffectData->GetDurationPolicy();
+
+        // 지속 시간이 있는 경우 설정
+        if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
+        {
+            NewEffect->DurationMagnitude = FScalableFloat(EffectData->GetDuration());
+        }
+
+        //Attribute랑 값 세팅(여러개 가능)
+        for (const FEffectModifierData& ModData : EffectData->GetModifiers())
+        {
+            int32 Idx = NewEffect->Modifiers.Num();
+            NewEffect->Modifiers.Add(FGameplayModifierInfo());
+            FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
+
+            ModInfo.Attribute = ModData.Attribute;
+            ModInfo.ModifierOp = ModData.Op;
+            ModInfo.ModifierMagnitude = FScalableFloat(ModData.Value);
+        }
+
+        // 4. 캐시 목록에 추가
+        CachedEffects.Add(NewEffect);
+    }
+}

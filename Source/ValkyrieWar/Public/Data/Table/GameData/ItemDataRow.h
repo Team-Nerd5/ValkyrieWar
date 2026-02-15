@@ -15,18 +15,24 @@ struct VALKYRIEWAR_API FItemDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
+	UPROPERTY(EditAnywhere)
+	EItemType ItemType;
 	UPROPERTY(EditAnywhere)
 	EItemGroup ItemGroup;
-	UPROPERTY(EditAnywhere)
-	int32 StatId;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UStaticMesh> Mesh = nullptr;
 	UPROPERTY(EditAnywhere)
+	int32 SellPrice = 0;
+
+	//장비용
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
+	int32 StatId;
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
 	int32 AttackId;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
 	int32 SkillId;
 };
 //상속 구조로 사용할까..? 장비랑 일반 아이템 분리

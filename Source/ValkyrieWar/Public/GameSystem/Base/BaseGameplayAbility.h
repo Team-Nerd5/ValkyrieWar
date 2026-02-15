@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
 #include "Data/Table/GameData/SkillEffectDataRow.h"
+#include "Data/Game/AttackData.h"
+#include "Data/Game/SkillData.h"
 #include "BaseGameplayAbility.generated.h"
 
 /**
@@ -25,12 +27,14 @@ public:
 	/// <param name="TriggerEventData"></param>
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	//타겟이 성벽일 수도 있으니 액터로
+	
 	UFUNCTION()
 	void ApplyAbilityToTarget(AActor* InTargetActor);
 
+	//효과 데이터를 받아서 어빌리티 세팅.
 	void UpdateData(TArray<FSkillEffectDataRow> InSkillEffects);
-
+	void UpdataData(UAttackData* InAttackData);
+	void UpdataData(USkillData* InSkillData);
 private:
 
 	UPROPERTY()

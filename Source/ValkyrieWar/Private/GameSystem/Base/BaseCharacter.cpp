@@ -3,7 +3,8 @@
 
 #include "GameSystem/Base/BaseCharacter.h"
 #include "AbilitySystemComponent.h"
-
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Base/BaseGameplayAbility.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -12,7 +13,7 @@ ABaseCharacter::ABaseCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// Activate ticking in order to update the cursor every frame.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
@@ -22,6 +23,7 @@ void ABaseCharacter::OnGet_Implementation()
 
 void ABaseCharacter::OnRelease_Implementation()
 {
+    AbilitySystemComponent->ClearAllAbilities();
 }
 
 void ABaseCharacter::OnConstruction(const FTransform& Transform)
@@ -42,16 +44,32 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
     }
 }
 
+void ABaseCharacter::EquipWeapon(int32 InDataId)
+{
+    //공격 데이터를 가져옴
+    UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+
+    if (DataManager)
+    {
+        UAttackData* AttackData = DataManager->GetAttackModule()->GetAttackData(InDataId);
+
+        if (AttackData)
+        {
+            //공격 Ability 세팅
+            UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
+            NewAbility->UpdataData(AttackData);
+
+            FGameplayAbilitySpec Spec(NewAbility, 1);
+            AbilitySystemComponent->GiveAbility(Spec);
+
+            //애니메이션 등 세팅
+        }
+    }
+}
+
 // Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-}
-
-// Called every frame
-void ABaseCharacter::Tick(float InDeltaTime)
-{
-	Super::Tick(InDeltaTime);
 
 }
