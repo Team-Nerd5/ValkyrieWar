@@ -20,6 +20,9 @@ public:
 
 	FORCEINLINE UAttackData* GetAttackData(int32 InDataId)
 	{
+		if (AttackData.IsEmpty() || !AttackData.Contains(InDataId))
+			return nullptr;
+
 		return *AttackData.Find(InDataId);
 	}
 

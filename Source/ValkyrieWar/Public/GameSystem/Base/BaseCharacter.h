@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
+#include "Data/Table/GameData/ItemDataRow.h"
 #include "BaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
@@ -38,8 +39,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	
+public:		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+
+protected:
+	const FItemDataRow* EquippedWeapon = nullptr;
 };

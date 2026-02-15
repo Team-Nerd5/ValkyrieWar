@@ -6,7 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "Data/Table/GameData/SkillEffectDataRow.h"
 #include "Data/Game/AttackData.h"
-#include "Data/Game/SkillData.h"
+#include "Data/Game/SkillEffectData.h"
 #include "BaseGameplayAbility.generated.h"
 
 /**
@@ -32,9 +32,7 @@ public:
 	void ApplyAbilityToTarget(AActor* InTargetActor);
 
 	//효과 데이터를 받아서 어빌리티 세팅.
-	void UpdateData(TArray<FSkillEffectDataRow> InSkillEffects);
-	void UpdataData(UAttackData* InAttackData);
-	void UpdataData(USkillData* InSkillData);
+	void UpdateData(TArray<USkillEffectData*> InEffectDataList);
 private:
 
 	UPROPERTY()

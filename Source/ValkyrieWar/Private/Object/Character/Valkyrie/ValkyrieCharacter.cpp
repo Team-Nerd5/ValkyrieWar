@@ -92,16 +92,19 @@ void AValkyrieCharacter::EquipWeapon(int32 InDataId)
 
 	if (DataManager)
 	{
-		USkillData* SkillData = DataManager->GetSkillModule()->GetSkillData(InDataId);
-
-		if (SkillData)
+		if (EquippedWeapon && EquippedWeapon->SkillId > 0)
 		{
-			//공격 Ability 세팅
-			UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
-			NewAbility->UpdataData(SkillData);
+			USkillData* SkillData = DataManager->GetSkillModule()->GetSkillData(EquippedWeapon->SkillId);
 
-			FGameplayAbilitySpec Spec(NewAbility, 1);
-			AbilitySystemComponent->GiveAbility(Spec);
-		}
+			if (SkillData)
+			{
+				//공격 Ability 세팅
+				UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
+				NewAbility->UpdateData(SkillData->GetEffectList());
+
+				FGameplayAbilitySpec Spec(NewAbility, 1);
+				AbilitySystemComponent->GiveAbility(Spec);
+			}
+		}		
 	}
 }

@@ -2,6 +2,7 @@
 
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
+#include "GameplayEffect.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
@@ -24,9 +25,10 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
     if (!InTargetActor || CachedEffects.Num() <= 0) return;
 
     // 1. 타겟의 ASC 가져오기 (GAS가 없는 적일 수도 있으니 체크)
+    UAbilitySystemComponent* MyASC = GetAbilitySystemComponentFromActorInfo();
     UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InTargetActor);
 
-    if (!TargetASC ) return;
+    if (!MyASC || !TargetASC) return;
 
     FGameplayEffectContextHandle Context = MakeEffectContext(CurrentSpecHandle, CurrentActorInfo);
 
@@ -42,46 +44,12 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
     }
 }
 
-void UBaseGameplayAbility::UpdateData(TArray<FSkillEffectDataRow> InSkillEffects)
+void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList)
 {
     CachedEffects.Empty();
 
     //CachedEffect 세팅
-    for (const FSkillEffectDataRow& EffectData : InSkillEffects)
-    {
-        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
-
-        // 2. 지속 시간 설정
-        NewEffect->DurationPolicy = EffectData.DurationPolicy;
-
-        // 지속 시간이 있는 경우 설정
-        if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
-        {
-            NewEffect->DurationMagnitude = FScalableFloat(EffectData.Duration);
-        }
-
-        for (const FEffectModifierData& ModData : EffectData.Modifiers)
-        {
-            int32 Idx = NewEffect->Modifiers.Num();
-            NewEffect->Modifiers.Add(FGameplayModifierInfo());
-            FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
-
-            ModInfo.Attribute = ModData.Attribute;
-            ModInfo.ModifierOp = ModData.Op;
-            ModInfo.ModifierMagnitude = FScalableFloat(ModData.Value);
-        }
-
-        // 4. 캐시 목록에 추가
-        CachedEffects.Add(NewEffect);
-    }
-}
-
-void UBaseGameplayAbility::UpdataData(UAttackData* InAttackData)
-{
-    CachedEffects.Empty();
-
-    //CachedEffect 세팅
-    for (USkillEffectData* EffectData : InAttackData->GetEffectList())
+    for (USkillEffectData* EffectData : InEffectDataList)
     {
         UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
 
@@ -101,44 +69,23 @@ void UBaseGameplayAbility::UpdataData(UAttackData* InAttackData)
             NewEffect->Modifiers.Add(FGameplayModifierInfo());
             FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
 
-            ModInfo.Attribute = ModData.Attribute;
+            ModInfo.Attribute = ModData.TargetAttribute;
             ModInfo.ModifierOp = ModData.Op;
-            ModInfo.ModifierMagnitude = FScalableFloat(ModData.Value);
-        }
 
-        // 4. 캐시 목록에 추가
-        CachedEffects.Add(NewEffect);
-    }
-}
+            if (ModData.bUseSourceAttribute && ModData.SourceAttribute.IsValid())
+            {
+                FAttributeBasedFloat AttributeBasedFloat;
+                AttributeBasedFloat.BackingAttribute.AttributeToCapture = ModData.SourceAttribute;
+                AttributeBasedFloat.BackingAttribute.AttributeSource = EGameplayEffectAttributeCaptureSource::Source;
+                AttributeBasedFloat.BackingAttribute.bSnapshot = false;
+                AttributeBasedFloat.Coefficient = FScalableFloat(ModData.Value);
 
-void UBaseGameplayAbility::UpdataData(USkillData* InSkillData)
-{
-    CachedEffects.Empty();
-
-    //CachedEffect 세팅
-    for (USkillEffectData* EffectData : InSkillData->GetEffectList())
-    {
-        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
-
-        // 2. 지속 시간 설정
-        NewEffect->DurationPolicy = EffectData->GetDurationPolicy();
-
-        // 지속 시간이 있는 경우 설정
-        if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
-        {
-            NewEffect->DurationMagnitude = FScalableFloat(EffectData->GetDuration());
-        }
-
-        //Attribute랑 값 세팅(여러개 가능)
-        for (const FEffectModifierData& ModData : EffectData->GetModifiers())
-        {
-            int32 Idx = NewEffect->Modifiers.Num();
-            NewEffect->Modifiers.Add(FGameplayModifierInfo());
-            FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
-
-            ModInfo.Attribute = ModData.Attribute;
-            ModInfo.ModifierOp = ModData.Op;
-            ModInfo.ModifierMagnitude = FScalableFloat(ModData.Value);
+                ModInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(AttributeBasedFloat);
+            }
+            else
+            {
+                ModInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(ModData.Value));
+            }
         }
 
         // 4. 캐시 목록에 추가

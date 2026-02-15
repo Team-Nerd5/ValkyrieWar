@@ -51,19 +51,27 @@ void ABaseCharacter::EquipWeapon(int32 InDataId)
 
     if (DataManager)
     {
-        UAttackData* AttackData = DataManager->GetAttackModule()->GetAttackData(InDataId);
-
-        if (AttackData)
+        EquippedWeapon = DataManager->GetItemModule()->GetTableDataById(InDataId);
+        if (EquippedWeapon && EquippedWeapon->AttackId > 0)
         {
-            //공격 Ability 세팅
-            UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
-            NewAbility->UpdataData(AttackData);
+            auto AttackModule = DataManager->GetAttackModule();
+            if (!AttackModule) return;
 
-            FGameplayAbilitySpec Spec(NewAbility, 1);
-            AbilitySystemComponent->GiveAbility(Spec);
+            UAttackData* AttackData = AttackModule->GetAttackData(EquippedWeapon->AttackId);
 
-            //애니메이션 등 세팅
+            if (AttackData)
+            {
+                //공격 Ability 세팅
+                UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
+                NewAbility->UpdateData(AttackData->GetEffectList());
+
+                FGameplayAbilitySpec Spec(NewAbility, 1);
+                AbilitySystemComponent->GiveAbility(Spec);
+
+                //애니메이션 등 세팅
+            }
         }
+       
     }
 }
 

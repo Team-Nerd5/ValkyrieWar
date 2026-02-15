@@ -17,7 +17,10 @@ void USkillEffectModule::Initialize(UGameManager* InGameManager)
 
 TArray<USkillEffectData*> USkillEffectModule::GetEffects(int32 InGroupId)
 {
-	return *EffectsByGroupId.Find(InGroupId);
+	if (EffectsByGroupId.Contains(InGroupId))
+		return *EffectsByGroupId.Find(InGroupId);
+	else
+		return TArray<USkillEffectData*>();
 }
 
 void USkillEffectModule::MakeData()

@@ -20,7 +20,6 @@ public:
 
 	FORCEINLINE int32 GetGroupId() { return TableData->GroupId; }
 	FORCEINLINE TArray<FEffectModifierData> GetModifiers() { return TableData->Modifiers; }
-	FORCEINLINE EAttributeType GetAttributeType() { return TableData->AttributeType; }
 	FORCEINLINE EGameplayEffectDurationType GetDurationPolicy() { return TableData->DurationPolicy; }
 	FORCEINLINE float GetDuration() { return TableData->Duration; }
 	FORCEINLINE float GetApplyValue() { return TableData->ApplyValue; }

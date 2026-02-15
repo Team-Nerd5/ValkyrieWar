@@ -11,12 +11,24 @@ struct VALKYRIEWAR_API FEffectModifierData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayAttribute Attribute;  // 바꿀 스탯 (Health, Mana...)
+    /// <summary>
+    /// 타겟에 적용할 Attribute
+    /// </summary>
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayAttribute TargetAttribute;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Value = 0.0f;            // 수치 (-50, +20...)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Value = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EGameplayModOp::Type> Op = EGameplayModOp::Additive;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EGameplayModOp::Type> Op = EGameplayModOp::Additive;
+
+    /// <summary>
+    /// 값을 계산할 기반 Attribute
+    /// </summary>
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayAttribute SourceAttribute;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bUseSourceAttribute = false;
 };

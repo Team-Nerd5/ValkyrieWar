@@ -30,6 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attack Test")
 	void Attack();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void EquipWeapon(int32 InDataId) override;
 
 protected:

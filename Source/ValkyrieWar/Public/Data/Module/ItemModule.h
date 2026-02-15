@@ -46,11 +46,9 @@ public:
 	FORCEINLINE TMap<uint64, UItemData*> GetItems() { return OwnItems; }
 	FORCEINLINE UItemData* GetItem(uint64 InUID) { return *OwnItems.Find(InUID); }
 
+	FItemDataRow* GetTableDataById(int32 InDataId);
 protected:
 	virtual void MakeData() override;
-
-private:
-	FItemDataRow* GetTableDataById(int32 InDataId);
 
 private:
 	TMap<uint64, UItemData*> OwnItems;

@@ -19,6 +19,9 @@ public:
 
 	FORCEINLINE USkillData* GetSkillData(int32 InDataId)
 	{
+		if (SkillData.IsEmpty() || !SkillData.Contains(InDataId))
+			return nullptr;
+
 		return *SkillData.Find(InDataId);
 	}
 

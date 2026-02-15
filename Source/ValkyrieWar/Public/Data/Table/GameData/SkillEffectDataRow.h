@@ -25,15 +25,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<FEffectModifierData> Modifiers;
 	UPROPERTY(EditAnywhere)
-	EAttributeType AttributeType;
-	UPROPERTY(EditAnywhere)
 	EGameplayEffectDurationType DurationPolicy;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "DurationPolicy==EGameplayEffectDurationType::HasDuration"))
 	float Duration = 0.0f;
 	UPROPERTY(EditAnywhere)
 	float ApplyValue = 0.0f;
-	UPROPERTY(EditAnywhere)
-	ESkillApplyType ApplyType;
 	UPROPERTY(EditAnywhere)
 	ETargetType TargetType;
 	UPROPERTY(EditAnywhere)

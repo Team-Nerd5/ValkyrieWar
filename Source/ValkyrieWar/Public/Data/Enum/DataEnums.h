@@ -42,15 +42,6 @@ enum class ESkillType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EAttributeType : uint8
-{
-	Health,
-	Defence,
-	Attack,
-	MoveSpeed,
-};
-
-UENUM(BlueprintType)
 enum class ESkillApplyType : uint8
 {
 	Instant,
