@@ -2,9 +2,19 @@
 
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
+#include "GameSystem/Ability/SkillDamageExecCalc.h"
+
 #include "GameplayEffect.h"
+#include "GameplayEffectComponents/AssetTagsGameplayEffectComponent.h"
+#include "GameplayEffectTypes.h"
+
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+
+UBaseGameplayAbility::UBaseGameplayAbility()
+{
+    InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
 
 void UBaseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -51,40 +61,67 @@ void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList
     //CachedEffect 세팅
     for (USkillEffectData* EffectData : InEffectDataList)
     {
-        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this);
+        // 1. 이펙트 생성
+        FString Name = FString::Printf(TEXT("GE_Cache_%d"), CachedEffects.Num());
+        UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this, FName(*Name));
 
-        // 2. 지속 시간 설정
+        // 2. 지속 시간 및 주기(Period) 설정
         NewEffect->DurationPolicy = EffectData->GetDurationPolicy();
-
-        // 지속 시간이 있는 경우 설정
         if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
         {
             NewEffect->DurationMagnitude = FScalableFloat(EffectData->GetDuration());
         }
-
-        //Attribute랑 값 세팅(여러개 가능)
-        for (const FEffectModifierData& ModData : EffectData->GetModifiers())
+        if (EffectData->GetPeriod() > 0.0f)
         {
+            NewEffect->Period.Value = EffectData->GetPeriod();
+        }
+
+        // 3. 부여 태그 (Granted Tags)
+        if (EffectData->GetGrantedTags().IsValid())
+        {
+            NewEffect->CachedGrantedTags = EffectData->GetGrantedTags();
+        }
+
+        // ★ 4. GameplayCue 설정 (중요!)
+        // "이 이펙트가 터질 때, 이 태그의 큐를 실행해라"
+        if (EffectData->GetCueTag().IsValid())
+        {
+            FGameplayEffectCue CueInfo(EffectData->GetCueTag(), 0.0f, 0.0f);
+            NewEffect->GameplayCues.Add(CueInfo);
+        }
+
+        // 5. 로직 설정 (ExecCalc vs Modifier)
+        if (EffectData->UseCalc())
+        {
+            // [복잡 계산] Execution Calculation 연결
+            FGameplayEffectExecutionDefinition ExecDef;
+            ExecDef.CalculationClass = USkillDamageExecCalc::StaticClass();
+            NewEffect->Executions.Add(ExecDef);
+        }
+        else
+        {
+            // [단순 계산] Modifier 연결
             int32 Idx = NewEffect->Modifiers.Num();
             NewEffect->Modifiers.Add(FGameplayModifierInfo());
             FGameplayModifierInfo& ModInfo = NewEffect->Modifiers[Idx];
 
-            ModInfo.Attribute = ModData.TargetAttribute;
-            ModInfo.ModifierOp = ModData.Op;
+            ModInfo.Attribute = EffectData->GetTargetAttribute();
+            ModInfo.ModifierOp = EffectData->GetOp();
 
-            if (ModData.bUseSourceAttribute && ModData.SourceAttribute.IsValid())
+            if (EffectData->UseSourceAttribute() && EffectData->GetSourceAttribute().IsValid())
             {
+                // 스탯 비례
                 FAttributeBasedFloat AttributeBasedFloat;
-                AttributeBasedFloat.BackingAttribute.AttributeToCapture = ModData.SourceAttribute;
+                AttributeBasedFloat.BackingAttribute.AttributeToCapture = EffectData->GetSourceAttribute();
                 AttributeBasedFloat.BackingAttribute.AttributeSource = EGameplayEffectAttributeCaptureSource::Source;
                 AttributeBasedFloat.BackingAttribute.bSnapshot = false;
-                AttributeBasedFloat.Coefficient = FScalableFloat(ModData.Value);
-
+                AttributeBasedFloat.Coefficient = FScalableFloat(EffectData->GetApplyValue());
                 ModInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(AttributeBasedFloat);
             }
             else
             {
-                ModInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(ModData.Value));
+                // 고정 수치
+                ModInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(EffectData->GetApplyValue()));
             }
         }
 

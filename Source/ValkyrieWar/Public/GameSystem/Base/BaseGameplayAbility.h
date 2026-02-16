@@ -18,13 +18,11 @@ class VALKYRIEWAR_API UBaseGameplayAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
+	UBaseGameplayAbility();
+
 	/// <summary>
 	/// TriggerEventData에 타겟 담아서 전달 필요
 	/// </summary>
-	/// <param name="Handle"></param>
-	/// <param name="ActorInfo"></param>
-	/// <param name="ActivationInfo"></param>
-	/// <param name="TriggerEventData"></param>
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	

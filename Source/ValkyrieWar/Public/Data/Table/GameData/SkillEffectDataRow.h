@@ -22,16 +22,43 @@ public:
 	int32 GroupId;
 	UPROPERTY(EditAnywhere)
 	ESkillType SkillType;
-	UPROPERTY(EditAnywhere)
-	TArray<FEffectModifierData> Modifiers;
-	UPROPERTY(EditAnywhere)
-	EGameplayEffectDurationType DurationPolicy;
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "DurationPolicy==EGameplayEffectDurationType::HasDuration"))
-	float Duration = 0.0f;
-	UPROPERTY(EditAnywhere)
-	float ApplyValue = 0.0f;
-	UPROPERTY(EditAnywhere)
-	ETargetType TargetType;
-	UPROPERTY(EditAnywhere)
-	int32 TargetAmount = 1;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EGameplayEffectDurationType DurationPolicy = EGameplayEffectDurationType::Instant;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Duration = 0.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Period = 0.0f; // 0보다 크면 도트(Dot) 효과
+
+    // --- 비주얼 & 태그 ---
+    // ★ 이펙트 적용 시 터뜨릴 비주얼 태그 (예: GameplayCue.Attack.Impact)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTag GameplayCueTag;
+
+    // 이펙트 유지 중 부여할 태그 (예: State.Debuff.Burn)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTagContainer GrantedTags;
+
+    // --- 계산 방식 ---
+    // True: 방어력/크리 적용 (ExecCalc), False: 단순 수치 (Modifier)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bUseDamageCalc = false;
+
+    // --- 수치 설정 (Modifier용) ---
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseDamageCalc==false"))
+    FGameplayAttribute TargetAttribute; // 바뀔 타겟 스탯
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseDamageCalc==false"))
+    TEnumAsByte<EGameplayModOp::Type> Op = EGameplayModOp::Additive;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseDamageCalc==false"))
+    float Value = 0.0f;
+
+    // 스탯 비례 여부 (내 공격력의 N% 등)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bUseSourceAttribute = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseSourceAttribute==true"))
+    FGameplayAttribute SourceAttribute; // 기준 스탯
 };

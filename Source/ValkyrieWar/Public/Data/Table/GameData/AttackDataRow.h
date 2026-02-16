@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/DataEnums.h"
 #include "AttackDataRow.generated.h"
 
 /**
@@ -25,5 +26,8 @@ public:
 	FVector PositionOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere)
 	FVector RotatationOffset = FVector::ZeroVector;		//벡터 말고 다른걸로 해야할 지 확인 필요
-
+	UPROPERTY(EditAnywhere)
+	ETargetType TargetType;
+	UPROPERTY(EditAnywhere)
+	int32 TargetAmount = 1;
 };

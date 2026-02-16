@@ -54,10 +54,7 @@ void ABaseCharacter::EquipWeapon(int32 InDataId)
         EquippedWeapon = DataManager->GetItemModule()->GetTableDataById(InDataId);
         if (EquippedWeapon && EquippedWeapon->AttackId > 0)
         {
-            auto AttackModule = DataManager->GetAttackModule();
-            if (!AttackModule) return;
-
-            UAttackData* AttackData = AttackModule->GetAttackData(EquippedWeapon->AttackId);
+            UAttackData* AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->AttackId);
 
             if (AttackData)
             {

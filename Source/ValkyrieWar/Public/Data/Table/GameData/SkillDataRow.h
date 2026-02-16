@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/DataEnums.h"
 #include "SkillDataRow.generated.h"
 
 /**
@@ -21,4 +22,8 @@ public:
 	int32 EffectGroupId;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
+	UPROPERTY(EditAnywhere)
+	ETargetType TargetType;
+	UPROPERTY(EditAnywhere)
+	int32 TargetAmount = 1;
 };
