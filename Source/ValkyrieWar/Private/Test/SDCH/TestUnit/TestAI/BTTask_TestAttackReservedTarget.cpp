@@ -54,9 +54,9 @@ EBTNodeResult::Type UBTTask_TestAttackReservedTarget::ExecuteTask(
     //}
 
     // 사거리 경계면 재접근
-    if (Dist2D > Unit->AttackRange)
+    if (Dist2D > Unit->AttackRange * 1.2)
     {
-        AIC->MoveToActor(Target, Unit->AttackRange * 0.85f);
+        AIC->MoveToActor(Target, Unit->AttackRange);
         TryCount += 1;
         BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, TryCount);
         return EBTNodeResult::Failed;

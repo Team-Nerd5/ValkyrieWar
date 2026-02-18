@@ -218,22 +218,40 @@ bool ATestBaseUnit::PerformAttack(AActor* Target)
 	if (!World) return false;
 
 	const float Now = World->GetTimeSeconds();
-	// if (!CanAttackNow(Now)) return false;
+	if (!CanAttackNow(Now)) return false; // 쿨타임 체크 활성화
 
-	const float Dist = FVector::Dist(GetActorLocation(), Target->GetActorLocation());
-	if (Dist > AttackRange) return false;
+	ApplyAttackDamage(Target);
 
+	// 2. 애니메이션 재생
+	if (AttackMontage)
+	{
+		// PlayAnimMontage는 내부적으로 AnimInstance를 찾아 실행해줍니다.
+		float Duration = PlayAnimMontage(AttackMontage);
+		if (Duration > 0.f)
+		{
+			LastAttackTime = Now;
+
+			return true;
+		}
+	}
+
+	// 몽타주가 없을 경우를 대비한 Fallback (즉시 공격)
 	LastAttackTime = Now;
+
+	return true;
+}
+
+void ATestBaseUnit::ApplyAttackDamage(AActor* Target)
+{
+	if (!Target || IsDead()) return;
 
 	AController* InstigatorCtrl = GetController();
 	UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorCtrl, this, UDamageType::StaticClass());
 
 	if (bDrawDebug)
 	{
-		DrawDebugLine(World, GetActorLocation(), Target->GetActorLocation(), FColor::Red, false, 0.1f, 0, 1.5f);
+		DrawDebugLine(GetWorld(), GetActorLocation(), Target->GetActorLocation(), FColor::Red, false, 0.5f, 0, 1.5f);
 	}
-
-	return true;
 }
 
 float ATestBaseUnit::TakeDamage(

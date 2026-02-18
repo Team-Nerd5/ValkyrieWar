@@ -29,7 +29,7 @@ public:
 	int32 MaxEngagementSlots = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float AttackRange = 160.f;
+	float AttackRange = 150.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float AttackCooldown = 1.0f;
@@ -56,7 +56,7 @@ public:
 	TArray<FTestEngagementSlot> EngagementSlots;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
-	bool bDrawDebug = false;
+	bool bDrawDebug = true;
 
 	void SetOwnerSpawner(ATestUnitSpawner* InSpawner);
 
@@ -66,6 +66,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pool")
 	EPoolTypes MyPoolType = EPoolTypes::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Animation")
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 public:
 	virtual void BeginPlay() override;
@@ -81,6 +84,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool PerformAttack(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ApplyAttackDamage(AActor* Target);
 
 	virtual float TakeDamage(
 		float DamageAmount,
