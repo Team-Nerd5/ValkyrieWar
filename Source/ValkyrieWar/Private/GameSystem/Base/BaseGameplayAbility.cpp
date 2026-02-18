@@ -46,7 +46,6 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
     {
         if (!Effect) continue;       
 
-        // Spec(명세서) 만들기    //1.0은 레벨..
         FGameplayEffectSpec Spec(Effect, Context, 1.0f);
 
         //적용
@@ -61,11 +60,9 @@ void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList
     //CachedEffect 세팅
     for (USkillEffectData* EffectData : InEffectDataList)
     {
-        // 1. 이펙트 생성
         FString Name = FString::Printf(TEXT("GE_Cache_%d"), CachedEffects.Num());
         UGameplayEffect* NewEffect = NewObject<UGameplayEffect>(this, FName(*Name));
 
-        // 2. 지속 시간 및 주기(Period) 설정
         NewEffect->DurationPolicy = EffectData->GetDurationPolicy();
         if (NewEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration)
         {
@@ -76,24 +73,20 @@ void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList
             NewEffect->Period.Value = EffectData->GetPeriod();
         }
 
-        // 3. 부여 태그 (Granted Tags)
+        //태그부여
         if (EffectData->GetGrantedTags().IsValid())
         {
             NewEffect->CachedGrantedTags = EffectData->GetGrantedTags();
         }
 
-        // ★ 4. GameplayCue 설정 (중요!)
-        // "이 이펙트가 터질 때, 이 태그의 큐를 실행해라"
         if (EffectData->GetCueTag().IsValid())
         {
             FGameplayEffectCue CueInfo(EffectData->GetCueTag(), 0.0f, 0.0f);
             NewEffect->GameplayCues.Add(CueInfo);
         }
 
-        // 5. 로직 설정 (ExecCalc vs Modifier)
         if (EffectData->UseCalc())
         {
-            // [복잡 계산] Execution Calculation 연결
             FGameplayEffectExecutionDefinition ExecDef;
             ExecDef.CalculationClass = USkillDamageExecCalc::StaticClass();
             NewEffect->Executions.Add(ExecDef);

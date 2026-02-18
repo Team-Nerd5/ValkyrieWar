@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Base/BaseGameplayAbility.h"
+#include "Data/Attribute/StatAttributeSet.h"
 #include "Components/CapsuleComponent.h"
 
 // Sets default values
@@ -15,6 +16,8 @@ ABaseCharacter::ABaseCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+    StatAttribute = CreateDefaultSubobject<UStatAttributeSet>(TEXT("CharacterStat"));
 }
 
 void ABaseCharacter::OnGet_Implementation()

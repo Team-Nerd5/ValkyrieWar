@@ -31,21 +31,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Period = 0.0f; // 0보다 크면 도트(Dot) 효과
 
-    // --- 비주얼 & 태그 ---
-    // ★ 이펙트 적용 시 터뜨릴 비주얼 태그 (예: GameplayCue.Attack.Impact)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTag GameplayCueTag;
 
-    // 이펙트 유지 중 부여할 태그 (예: State.Debuff.Burn)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTagContainer GrantedTags;
 
-    // --- 계산 방식 ---
-    // True: 방어력/크리 적용 (ExecCalc), False: 단순 수치 (Modifier)
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bUseDamageCalc = false;
 
-    // --- 수치 설정 (Modifier용) ---
+    // 수치 설정 (Modifier용)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseDamageCalc==false"))
     FGameplayAttribute TargetAttribute; // 바뀔 타겟 스탯
 

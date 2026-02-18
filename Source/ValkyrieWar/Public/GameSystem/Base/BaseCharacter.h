@@ -43,6 +43,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
+	TObjectPtr<class UStatAttributeSet> StatAttribute = nullptr;
+
 protected:
 	const FItemDataRow* EquippedWeapon = nullptr;
 };
