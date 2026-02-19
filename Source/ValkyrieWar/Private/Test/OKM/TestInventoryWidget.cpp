@@ -10,9 +10,10 @@ void UTestInventoryWidget::NativeConstruct()
 
 	UWorld* World = GetWorld();
 	if (World)
+	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
+		EventSystem = World->GetSubsystem<UWorldEventSystem>();
+	}
 
 	if(CloseButton)
 		CloseButton->OnClicked.AddDynamic(this, &UTestInventoryWidget::CloseUI);
@@ -27,11 +28,18 @@ void UTestInventoryWidget::NativeConstruct()
 		FilterHelmetButton->OnClicked.AddDynamic(this, &UTestInventoryWidget::FilterHelmet);
 	if(FilterGrowthButton)
 		FilterGrowthButton->OnClicked.AddDynamic(this, &UTestInventoryWidget::FIlterGrowth);
+
+	EventSystem->Widget.OnChangeItemAmount.AddDynamic(this, &UTestInventoryWidget::FilterReset);
+
+	FilterReset();
+	
 }
 
 void UTestInventoryWidget::OpenUI()
 {
 	Super::OpenUI();
+
+	FilterReset();
 }
 
 void UTestInventoryWidget::CloseUI()
@@ -42,76 +50,41 @@ void UTestInventoryWidget::CloseUI()
 void UTestInventoryWidget::FilterReset()
 {
 	TileView->ClearListItems();
+	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
-	for (UItemData* Item : CachedItemList)
-	{
-		TileView->AddItem(Item);
-	}
+	TileView->SetListItems(CachedItemList);
 }
 
 void UTestInventoryWidget::FilterWeapon()
 {
 	TileView->ClearListItems();
+	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Weapon);
-	for (UItemData* Item : CachedItemList)
-	{
-		TileView->AddItem(Item);
-	}
+	TileView->SetListItems(CachedItemList);
 }
 
 void UTestInventoryWidget::FilterArmor()
 {
 	TileView->ClearListItems();
+	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Armor);
-	for (UItemData* Item : CachedItemList)
-	{
-		TileView->AddItem(Item);
-	}
+	TileView->SetListItems(CachedItemList);
 }
 
 void UTestInventoryWidget::FilterHelmet()
 {
 	TileView->ClearListItems();
+	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Helmet);
-	for (UItemData* Item : CachedItemList)
-	{
-		TileView->AddItem(Item);
-	}
+	TileView->SetListItems(CachedItemList);
 }
 
 void UTestInventoryWidget::FIlterGrowth()
 {
 	TileView->ClearListItems();
+	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Growth);
-	for (UItemData* Item : CachedItemList)
-	{
-		TileView->AddItem(Item);
-	}
-}
-
-void UTestInventoryWidget::InitTestList()
-{
-	TileView->ClearListItems();
-	for (UTestItemObject* Item : TestList)
-	{
-		if(Item)
-			TileView->AddItem(Item);
-	}
-}
-
-void UTestInventoryWidget::AddTestList(UObject* InItemObject)
-{
-	UTestItemObject* ItemObject = Cast<UTestItemObject>(InItemObject);
-	if (!ItemObject)
-	{
-		UE_LOG(LogTemp, Log, TEXT("InItemObject가 UTestItemObject가 아닙니다"))
-		return;
-	}
-
-	if (ItemObject)
-	{
-		TestList.Add(ItemObject);
-	}
+	TileView->SetListItems(CachedItemList);
 }
 
 
