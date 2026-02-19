@@ -5,6 +5,7 @@
 #include "Test/SDCH/TestUnit/TestCharacters/TestController/TestBaseAIController.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "Components/CapsuleComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "BrainComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -39,10 +40,14 @@ void ATestBaseUnit::BeginPlay()
 	EngagementSlots.SetNum(FMath::Clamp(MaxEngagementSlots, 1, 3));
 	CurrentHP = MaxHP;
 	bDead = false;
+
+	StartStuckMonitor(); // 안전장치(중복 시작은 내부에서 막음)
 }
 
 void ATestBaseUnit::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	StopStuckMonitor();
+
 	// Destroy 되는 예외 대비 안전장치
 	UnregisterFromBattleDirector(true);
 
@@ -168,8 +173,14 @@ void ATestBaseUnit::ResetForReuse()
 
 	LastAssignedTarget = nullptr;
 
+	// BB escape 플래그/카운터 초기화
+	ResetStuckCountdown(true);
+
 	// BD 등록(활성화 시점)
 	RegisterToBattleDirector();
+
+	// 정체 모니터 시작
+	StartStuckMonitor();
 }
 
 void ATestBaseUnit::ApplyMoveSpeed(float NewSpeed)
@@ -188,6 +199,109 @@ void ATestBaseUnit::ApplyMoveSpeed(float NewSpeed)
 		return;
 
 	Move->MaxWalkSpeed = NewSpeed;
+}
+
+void ATestBaseUnit::StartStuckMonitor()
+{
+	if (!bEnableEscapeWhenStuck) return;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// 이미 돌고 있으면 중복 시작 방지
+	if (World->GetTimerManager().IsTimerActive(StuckMonitorTimerHandle))
+		return;
+
+	World->GetTimerManager().SetTimer(
+		StuckMonitorTimerHandle,
+		FTimerDelegate::CreateUObject(this, &ATestBaseUnit::StuckMonitorTick),
+		FMath::Max(0.05f, StuckCheckInterval),
+		true
+	);
+}
+
+void ATestBaseUnit::StopStuckMonitor()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(StuckMonitorTimerHandle);
+	}
+}
+
+void ATestBaseUnit::ResetStuckCountdown(bool bAlsoClearBB)
+{
+	StuckAccumSeconds = 0.f;
+
+	// 필요하면 BB 플래그도 내려줌(기본 true)
+	if (bAlsoClearBB)
+	{
+		SetNeedToEscapeBB(false);
+	}
+}
+
+void ATestBaseUnit::StuckMonitorTick()
+{
+	if (!bEnableEscapeWhenStuck) return;
+	if (IsDead()) return;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (!AIC) return;
+
+	UPathFollowingComponent* PFC = AIC->GetPathFollowingComponent();
+	if (!PFC) return;
+
+	// 1) "진짜 이동 중(Moving)"일 때만 정체 카운트다운
+	if (PFC->GetStatus() != EPathFollowingStatus::Moving)
+	{
+		// 이동 중이 아니라면 정체 누적을 하지 않음
+		StuckAccumSeconds = 0.f;
+		return;
+	}
+
+	// 2) 공격 중/공격 가능 상태는 프로젝트마다 다르지만,
+	//    최소한 속도 기반으로만 판단하되,
+	//    공격이 성공하면 PerformAttack에서 리셋되니까 오탐이 크게 줄어듦.
+
+	const float Speed2D = GetVelocity().Size2D();
+
+	if (Speed2D <= StuckSpeedThreshold)
+	{
+		StuckAccumSeconds += FMath::Max(0.0f, StuckCheckInterval);
+	}
+	else
+	{
+		// 움직임이 있으면 누적 리셋 + 필요하면 플래그도 내림
+		ResetStuckCountdown(true);
+		return;
+	}
+
+	// 3) 타임아웃 도달 시 탈출 요청(쿨다운 포함)
+	const float Now = World->GetTimeSeconds();
+
+	const bool bCooldownOK = (Now - LastEscapeRequestTime) >= EscapeRequestCooldown;
+	if (StuckAccumSeconds >= StuckTimeoutSeconds && bCooldownOK)
+	{
+		LastEscapeRequestTime = Now;
+		StuckAccumSeconds = 0.f; // 요청 후 누적 리셋(연속 요청 방지)
+
+		SetNeedToEscapeBB(true);
+	}
+}
+
+void ATestBaseUnit::SetNeedToEscapeBB(bool bValue)
+{
+	    if (IsDead()) return;
+
+    AAIController* AIC = Cast<AAIController>(GetController());
+    if (!AIC) return;
+
+    UBlackboardComponent* BB = AIC->GetBlackboardComponent();
+    if (!BB) return;
+
+    BB->SetValueAsBool(BB_NeedToEscapeKey, bValue);
 }
 
 // --------------------
@@ -251,12 +365,18 @@ bool ATestBaseUnit::PerformAttack(AActor* Target)
 		{
 			LastAttackTime = Now;
 
+			// 공격 성공 => 정체 카운트다운 리셋(오탐 방지)
+			ResetStuckCountdown(true);
+
 			return true;
 		}
 	}
 
 	// 몽타주가 없을 경우를 대비한 Fallback (즉시 공격)
 	LastAttackTime = Now;
+
+	// 몽타주 없어도 공격 성공으로 간주하니 리셋
+	ResetStuckCountdown(true);
 
 	return true;
 }
@@ -427,6 +547,8 @@ void ATestBaseUnit::OnGet_Implementation()
 
 void ATestBaseUnit::OnRelease_Implementation()
 {
+	StopStuckMonitor();
+
 	// 풀로 반환될 때마다 서브시스템 해제
 	UnregisterFromBattleDirector(true);
 

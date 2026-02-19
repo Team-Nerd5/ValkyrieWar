@@ -70,6 +70,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
 	bool bRunWhenHasTarget = true;
 
+	// ===== Stuck / Escape =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	bool bEnableEscapeWhenStuck = true;
+
+	// 타이머 체크 주기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	float StuckCheckInterval = 0.5f;
+
+	// 이 시간 동안 "거의 정지" + Moving이면 탈출 요청
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	float StuckTimeoutSeconds = 1.f;
+
+	// 속도(2D)가 이 값보다 작으면 "정지로 간주"
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	float StuckSpeedThreshold = 5.f; // cm/s
+
+	// 탈출 요청 쿨다운 (연타 방지)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	float EscapeRequestCooldown = 1.5f;
+
+	// BB 키 이름(프로젝트에 맞게 그대로 쓰기)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Escape")
+	FName BB_NeedToEscapeKey = TEXT("NeedToEscape");
 
 public:
 	virtual void BeginPlay() override;
@@ -117,6 +140,9 @@ public:
 
 	virtual void OnTargetAssigned_Implementation(AActor* NewTarget) override;
 
+	// 공격 성공 시 호출해서 카운트다운 리셋
+	void ResetStuckCountdown(bool bAlsoClearBB = true);
+
 private:
 	// ---- BattleDirector 연동 ----
 	UTestBattleDirectorSubsystem* GetBattleDirector() const;
@@ -131,6 +157,13 @@ private:
 
 	// 내부 적용 함수
 	void ApplyMoveSpeed(float NewSpeed);
+
+	void StartStuckMonitor();
+	void StopStuckMonitor();
+
+	void StuckMonitorTick();
+
+	void SetNeedToEscapeBB(bool bValue);
 
 protected:
 
@@ -148,4 +181,8 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<AActor> LastAssignedTarget;
 
+	FTimerHandle StuckMonitorTimerHandle;
+
+	float StuckAccumSeconds = 0.f;
+	float LastEscapeRequestTime = -10000.f;
 };
