@@ -84,27 +84,33 @@ void AValkyrieCharacter::Attack()
 	}
 }
 
-void AValkyrieCharacter::EquipWeapon(int32 InDataId)
+void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
 {
-	Super::EquipWeapon(InDataId);
-
 	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
 
 	if (DataManager)
 	{
-		if (EquippedWeapon && EquippedWeapon->SkillId > 0)
+		EquippedWeapon = DataManager->GetItemModule()->GetItem(InEquipUID);
+		if (EquippedWeapon)
 		{
-			USkillData* SkillData = DataManager->GetSkillModule()->GetSkillData(EquippedWeapon->SkillId);
+			EquippedWeapon->Equip(Data->GetUID());
 
-			if (SkillData)
-			{
-				//공격 Ability 세팅
-				UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
-				NewAbility->UpdateData(SkillData->GetEffectList());
+			TArray<USkillData*> SkillData = DataManager->GetSkillModule()->GetSkillData(EquippedWeapon->GetSkillID());
 
-				FGameplayAbilitySpec Spec(NewAbility, 1);
-				AbilitySystemComponent->GiveAbility(Spec);
-			}
+			Data->UpdateWeapon(EquippedWeapon, GetGameInstance<UGameManager>());
+
+			AttackData = Data->GetAttackData();
+			SkillDataList = Data->GetSkillData();
 		}		
 	}
+}
+
+void AValkyrieCharacter::SetData(UValkyrieData* InData)
+{
+	Data = InData;
+
+	//기본 무기에 따른 공격/스킬 적용
+	AttackData = InData->GetAttackData();
+
+	SkillDataList = InData->GetSkillData();
 }

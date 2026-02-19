@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
+#include "Data/Game/UnitData.h"
 #include "UnitCharacter.generated.h"
 
 /**
@@ -16,4 +17,11 @@ class VALKYRIEWAR_API AUnitCharacter : public ABaseCharacter
 
 public:
 	virtual void PostInitializeComponents() override;
+
+	//캐릭터 생성 시 데이터 세팅
+	void SetData(UUnitData* InData);
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UUnitData> Data = nullptr;
 };

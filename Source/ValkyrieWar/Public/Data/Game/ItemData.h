@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Table/GameData/ItemDataRow.h"
+#include "GameSystem/Instance/Game/GameManager.h"
 #include "ItemData.generated.h"
 
 /**
@@ -17,8 +18,9 @@ class VALKYRIEWAR_API UItemData : public UObject
 public:
 	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData);
 	void AddAmount(int32 InAmount);
+	void Equip(uint64 InEquipCharacter);
 
-	//예시..
+
 	FORCEINLINE EItemGroup GetItemGroup()
 	{
 		if (!TableData)
@@ -29,6 +31,9 @@ public:
 		return TableData->ItemGroup;
 	}
 	FORCEINLINE int32 GetAmount() { return Amount; }
+	FORCEINLINE int32 GetAttackID() { return TableData ? TableData->AttackId : 0; }
+	FORCEINLINE TArray<int32> GetSkillID() { return TableData ? TableData->SkillId : TArray<int32>(); }
+	FORCEINLINE uint64 GetEquipCharacter() { return EquipCharacter; }
 
 private:
 	UPROPERTY()
@@ -41,5 +46,4 @@ private:
 
 	//장비인 경우 : 장착한 캐릭터 UID
 	uint64 EquipCharacter;
-
 };

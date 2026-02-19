@@ -18,6 +18,13 @@ class VALKYRIEWAR_API UValkyrieModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
+	FORCEINLINE UValkyrieData* GetExistValkyrie(uint64 InUID)
+	{
+		if (OwnValkyries.Contains(InUID))
+			return *OwnValkyries.Find(InUID);
+		else
+			return nullptr;
+	}
 protected:
 	virtual void MakeData() override;
 private:

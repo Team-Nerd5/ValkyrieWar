@@ -22,5 +22,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	float MovSpeed;
 	UPROPERTY(EditAnywhere)
-	int32 AttackId;
+	int32 BaseWeaponId;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AUnitCharacter> SpawnClass = nullptr;
 };

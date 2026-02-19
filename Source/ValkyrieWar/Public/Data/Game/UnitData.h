@@ -4,25 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Data/Table/GameData/ValkyrieDataRow.h"
+#include "Data/Table/GameData/UnitDataRow.h"
 #include "Data/Game/AttackData.h"
 #include "Data/Game/SkillData.h"
-#include "Data/Game/ItemData.h"
+#include "GameplayTagContainer.h"
 #include "GameSystem/Instance/Game/GameManager.h"
-#include "ValkyrieData.generated.h"
+#include "UnitData.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UValkyrieData : public UObject
+class VALKYRIEWAR_API UUnitData : public UObject
 {
 	GENERATED_BODY()
 private:
 	UPROPERTY()
 	uint64 UID = 0;
 
-	const FValkyrieDataRow* TableData = nullptr;
+	const FUnitDataRow* TableData = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<UAttackData> AttackData = nullptr;
@@ -31,12 +31,9 @@ private:
 	TArray<TObjectPtr<USkillData>> SkillData;
 
 public:
-	//기본 데이터 세팅
-	void MakeData(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
-	//장착된 무기 세팅
-	void UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager);
+	void MakeData(const FUnitDataRow* InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE uint64 GetUID() { return UID; }
-	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
+	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 };

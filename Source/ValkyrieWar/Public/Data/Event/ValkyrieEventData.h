@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ValkyrieEventData.generated.h"
 
+
 /**
  * 발키리 캐릭터 관련 이벤트 데이터 구조체
  */

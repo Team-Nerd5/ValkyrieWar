@@ -17,13 +17,7 @@ class VALKYRIEWAR_API USkillModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	FORCEINLINE USkillData* GetSkillData(int32 InDataId)
-	{
-		if (SkillData.IsEmpty() || !SkillData.Contains(InDataId))
-			return nullptr;
-
-		return *SkillData.Find(InDataId);
-	}
+	TArray<USkillData*> GetSkillData(TArray<int32> InDataId);
 
 protected:
 	virtual void MakeData() override;

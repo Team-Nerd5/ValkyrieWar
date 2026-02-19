@@ -20,6 +20,7 @@ public:
 	void MakeData(const FSkillDataRow* InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
+	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
 private:
 	const FSkillDataRow* TableData;
 

@@ -2,6 +2,9 @@
 
 
 #include "Data/Game/ItemData.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 
 void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData)
 {
@@ -13,4 +16,9 @@ void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableDa
 void UItemData::AddAmount(int32 InAmount)
 {
 	Amount += InAmount;
+}
+
+void UItemData::Equip(uint64 InEquipCharacter)
+{
+	EquipCharacter = InEquipCharacter;
 }

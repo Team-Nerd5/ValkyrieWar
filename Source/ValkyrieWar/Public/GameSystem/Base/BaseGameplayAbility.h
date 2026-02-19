@@ -30,7 +30,7 @@ public:
 	void ApplyAbilityToTarget(AActor* InTargetActor);
 
 	//효과 데이터를 받아서 어빌리티 세팅.
-	void UpdateData(TArray<USkillEffectData*> InEffectDataList);
+	void UpdateData(FGameplayTag InAbilityTag, TArray<USkillEffectData*> InEffectDataList);
 private:
 
 	UPROPERTY()

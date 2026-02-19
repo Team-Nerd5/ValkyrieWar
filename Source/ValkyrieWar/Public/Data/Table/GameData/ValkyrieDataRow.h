@@ -26,10 +26,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 BaseWeaponId;
 	UPROPERTY(EditAnywhere)
-	int32 BaseSkillId;
-	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
 	FString SocketName;
-
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AValkyrieCharacter> SpawnClass = nullptr;
 };

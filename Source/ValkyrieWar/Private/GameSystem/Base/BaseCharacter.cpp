@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the D0escription page of Project Settings.
 
 
 #include "GameSystem/Base/BaseCharacter.h"
@@ -7,6 +7,7 @@
 #include "GameSystem/Base/BaseGameplayAbility.h"
 #include "Data/Attribute/StatAttributeSet.h"
 #include "Components/CapsuleComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -47,37 +48,32 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
     }
 }
 
-void ABaseCharacter::EquipWeapon(int32 InDataId)
+void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
 {
-    //공격 데이터를 가져옴
-    UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+    if (!AbilitySystemComponent) return;
 
-    if (DataManager)
-    {
-        EquippedWeapon = DataManager->GetItemModule()->GetTableDataById(InDataId);
-        if (EquippedWeapon && EquippedWeapon->AttackId > 0)
-        {
-            UAttackData* AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->AttackId);
+    FGameplayEventData Payload;
+    Payload.Instigator = this;
+    Payload.Target = InTargetActor;
 
-            if (AttackData)
-            {
-                //공격 Ability 세팅
-                UBaseGameplayAbility* NewAbility = NewObject<UBaseGameplayAbility>(this);
-                NewAbility->UpdateData(AttackData->GetEffectList());
+    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
+}
 
-                FGameplayAbilitySpec Spec(NewAbility, 1);
-                AbilitySystemComponent->GiveAbility(Spec);
+void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
+{
+    if (!AbilitySystemComponent) return;
 
-                //애니메이션 등 세팅
-            }
-        }
-       
-    }
+    if (SkillDataList.Num() > (InSkillIndex + 1)) return;
+
+    FGameplayEventData Payload;
+    Payload.Instigator = this;
+    Payload.Target = InTargetActor;
+
+    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, SkillDataList[InSkillIndex]->GetAbilityTag(), Payload);
 }
 
 // Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 }

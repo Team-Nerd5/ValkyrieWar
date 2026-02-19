@@ -53,9 +53,17 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
     }
 }
 
-void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList)
+void UBaseGameplayAbility::UpdateData(FGameplayTag InAbilityTag, TArray<USkillEffectData*> InEffectDataList)
 {
     CachedEffects.Empty();
+
+    if (InAbilityTag.IsValid())
+    {
+        FAbilityTriggerData TriggerData;
+        TriggerData.TriggerTag = InAbilityTag;
+
+        AbilityTriggers.Add(TriggerData);
+    }
 
     //CachedEffect 세팅
     for (USkillEffectData* EffectData : InEffectDataList)

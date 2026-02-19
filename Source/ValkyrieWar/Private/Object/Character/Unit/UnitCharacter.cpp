@@ -5,7 +5,15 @@
 
 void AUnitCharacter::PostInitializeComponents()
 {
-    Super::PostInitializeComponents();
+    Super::PostInitializeComponents();    
+}
 
-    
+void AUnitCharacter::SetData(UUnitData* InData)
+{
+	Data = InData;
+
+	//기본 무기에 따른 공격/스킬 적용
+	AttackData = InData->GetAttackData();
+
+	SkillDataList = InData->GetSkillData();
 }

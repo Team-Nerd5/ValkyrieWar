@@ -22,6 +22,7 @@ public:
 	FORCEINLINE UAnimInstance* GetAnimInstance() { return TableData->AnimInstance.LoadSynchronous(); }
 	FORCEINLINE UAnimMontage* GetAnimMontage() { return TableData->AnimMontage.LoadSynchronous(); }
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
+	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
 private:
 	const FAttackDataRow* TableData;
 

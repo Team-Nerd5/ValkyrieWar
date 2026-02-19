@@ -14,6 +14,21 @@ void USkillModule::Initialize(UGameManager* InGameManager)
 	}
 }
 
+TArray<USkillData*> USkillModule::GetSkillData(TArray<int32> InDataId)
+{
+	TArray<USkillData*> DataList;
+
+	for (int32 DataId : InDataId)
+	{
+		if (SkillData.IsEmpty() || !SkillData.Contains(DataId))
+			continue;
+
+		DataList.Add(*SkillData.Find(DataId));
+	}
+	
+	return DataList;
+}
+
 void USkillModule::MakeData()
 {
 	if (DataTable)

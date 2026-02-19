@@ -33,7 +33,5 @@ public:
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
 	int32 AttackId;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
-	int32 SkillId;
+	TArray<int32> SkillId;
 };
-//상속 구조로 사용할까..? 장비랑 일반 아이템 분리
-//없는값은 없는대로 사용할까..?

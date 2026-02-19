@@ -1,10 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Data/Game/ValkyrieData.h"
+#include "Data/Game/UnitData.h"
+#include "Data/Table/GameData/ItemDataRow.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
-void UValkyrieData::MakeData(const FValkyrieDataRow* InTableData, UGameManager* InGameManager)
+void UUnitData::MakeData(const FUnitDataRow* InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
 
@@ -21,20 +22,6 @@ void UValkyrieData::MakeData(const FValkyrieDataRow* InTableData, UGameManager* 
 				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon->AttackId);
 				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon->SkillId);
 			}
-		}
-	}
-}
-
-void UValkyrieData::UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager)
-{
-	if (InGameManager && InNewWeapon)
-	{
-		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
-
-		if (DataManager)
-		{
-			AttackData = DataManager->GetAttackModule()->GetAttackData(InNewWeapon->GetAttackID());
-			SkillData = DataManager->GetSkillModule()->GetSkillData(InNewWeapon->GetSkillID());
 		}
 	}
 }

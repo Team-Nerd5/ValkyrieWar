@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/DataEnums.h"
+#include "GameplayTagContainer.h"
 #include "SkillDataRow.generated.h"
 
 /**
@@ -20,6 +21,8 @@ public:
 	TSoftObjectPtr<UAnimMontage> Montage = nullptr;
 	UPROPERTY(EditAnywhere)
 	int32 EffectGroupId;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag AbilityTag;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
