@@ -36,3 +36,11 @@ enum class ELobbyState : uint8
 	Ready,			//인벤토리 등 데이터 로드 완료, UI 호출
 	MoveToStage,	//스테이지로 레벨 전환
 };
+
+UENUM(BlueprintType)
+enum class ELoadingState : uint8
+{
+	None,
+	LoadingData, // 데이터 로드 중
+	LoadingMap   // 맵 애셋 로드 중
+};

@@ -2,50 +2,99 @@
 
 
 #include "GameSystem/Instance/Game/LevelManager.h"
-#include "LoadingScreenModule.h"
+#include "GameSystem/Instance/Game/UIManager.h"
+#include "Engine/AssetManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Widget/Loading/LoadingWidget.h"
 
 void ULevelManager::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
 
-    // BeginLoadingScreen 함수를 PostLoadMap 델리게이트에 바인딩
-    // 이렇게 하면 맵이 로드되기 전에 우리 함수가 호출되고 로딩 화면을 시작함
-    FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &ULevelManager::BeginLoadingScreen);
-
-    // EndLoadingScreen 함수를 PostLoadMapWithWorld 델리게이트에 바인딩
-    // 이렇게 하면 맵이 로드된 후에 우리 함수가 호출됨
-    FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ULevelManager::EndLoadingScreen);
 }
 
 void ULevelManager::Deinitialize()
 {
-    // 바인딩 해제
-    FCoreUObjectDelegates::PreLoadMap.RemoveAll(this);
-    FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
 
     Super::Deinitialize();
 }
 
-void ULevelManager::BeginLoadingScreen(const FString& MapName)
+void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
 {
-    UE_LOG(LogTemp, Warning, TEXT("로딩창 열림"));
+	if (InMap.IsNull()) return;
 
+	TargetMap = InMap;
+	DataLoadProgress = 0.0f;
 
-    // 로딩 화면 모듈을 가져오기 시도
-    FLoadingScreenModule* LoadingScreenModule = FModuleManager::LoadModulePtr<FLoadingScreenModule>("LoadingScreenModule");
-    if (LoadingScreenModule != nullptr)
-    {
-        // 모듈을 찾음 - 로딩 화면 시작
-        LoadingScreenModule->StartLoadingScreen(MapName);
-    }
-    else
-    {
-        // 모듈을 찾지 못함 - 경고 로그 출력
-        UE_LOG(LogTemp, Warning, TEXT("MyGameInstance::BeginLoadingScreen: LoadingScreenModule not found"));
-    }
+	//UIManager 로딩 위젯
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
+	}
+
+	// 3. 데이터 로딩부터 시작
+	StartDataLoading();
 }
 
-void ULevelManager::EndLoadingScreen(UWorld* InLoadedWorld)
+void ULevelManager::StartDataLoading()
 {
-    UE_LOG(LogTemp, Warning, TEXT("로딩창 닫힘"));
+	CurrentState = ELoadingState::LoadingData;
+
+	DataLoadProgress = 1.0f;
+	OnDataLoadCompleted();
+}
+
+void ULevelManager::OnDataLoadCompleted()
+{
+	StartMapLoading();
+}
+
+void ULevelManager::StartMapLoading()
+{
+	CurrentState = ELoadingState::LoadingMap;
+
+	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+
+	MapLoadHandle = StreamableManager.RequestAsyncLoad(
+		TargetMap.ToSoftObjectPath(),
+		FStreamableDelegate::CreateUObject(this, &ULevelManager::OnMapLoadCompleted)
+	);
+}
+
+void ULevelManager::OnMapLoadCompleted()
+{
+	CurrentState = ELoadingState::None;
+
+	if (MapLoadHandle.IsValid())
+	{
+		MapLoadHandle->ReleaseHandle();
+		MapLoadHandle.Reset();
+	}
+
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		//클래스 만들고..
+		UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
+	}
+
+	// 최종 맵 이동
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, TargetMap);
+}
+
+float ULevelManager::CalculateCombinedProgress() const
+{
+	const float DataWeight = 0.3f; // 데이터 로드 비중 30%
+	const float MapWeight = 0.7f;  // 맵 로드 비중 70%
+
+	if (CurrentState == ELoadingState::LoadingData)
+	{
+		return DataLoadProgress * DataWeight;
+	}
+	else if (CurrentState == ELoadingState::LoadingMap)
+	{
+		float MapProgress = MapLoadHandle.IsValid() ? MapLoadHandle->GetProgress() : 0.0f;
+		return DataWeight + (MapProgress * MapWeight);
+	}
+
+	return 0.0f;
 }
