@@ -1,12 +1,19 @@
 ﻿#include "Object/Character/Controller/ValkyrieCharacterController.h"
+
 #include "GameFramework/Pawn.h"
-#include "Camera/CameraComponent.h" // 카메라 컴포넌트 헤더 필수!
+#include "Camera/CameraComponent.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
+
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "Object/Character/Controller/CameraBoundsVolume.h"
+
+
 AValkyrieCharacterController::AValkyrieCharacterController()
 {
 	bShowMouseCursor = true;
@@ -207,6 +214,14 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
 	if (CurrentControlMode == EInputControlMode::Auto) return;
+
+	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
+	{
+		if (ControlledCharacter->bIsPivotLocked)
+		{
+			return;
+		}
+	}
 	FVector2D MovementVector = InValue.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
@@ -271,8 +286,6 @@ void AValkyrieCharacterController::OnInputStarted()
 				bIsDragging = false;
 				return; // 조이스틱 영역이면 드래그 무시
 			}
-
-			
 		}
 		PrevTouchLocation = FVector2D(X, Y);
 		bIsDragging = true;

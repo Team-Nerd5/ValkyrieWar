@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "Data/Enum/CharacterEnums.h"
+
 #include "ValkyrieAnimInstance.generated.h"
 
 
@@ -42,6 +43,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bIsAcceleration; // 조이스틱 밀고있어?
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	bool bShouldPivot; // 급선회 트리거
 
 
 };
