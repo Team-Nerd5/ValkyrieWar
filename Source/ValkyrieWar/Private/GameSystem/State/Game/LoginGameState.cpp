@@ -5,6 +5,8 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Instance/Game/SaveManager.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+#include "GameSystem/Instance/Game/GameManager.h"
+#include <Kismet/GameplayStatics.h>
 
 void ALoginGameState::ChangeGameState(ELoginState InState)
 {
@@ -70,11 +72,10 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 			UIManager->ResetAllUIStates();
 		}
 
-		//레벨 전환
-		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
+		if (UGameManager* GameManager = GetGameInstance<UGameManager>())
 		{
-			LevelManager->BeginLoadingScreen(StaticEnum<EMapType>()->GetNameStringByValue(static_cast<int64>(EMapType::Lobby)));				
-		}
+			UGameplayStatics::OpenLevelBySoftObjectPtr(this, GameManager->GetMapObject(EMapType::Lobby));
+		}		
 		
 		break;
 	}

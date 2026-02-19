@@ -16,7 +16,7 @@ void ALoginPlayerController::BeginPlay()
 		EventSystem->Login.OnLoginStateChanged.AddDynamic(this, &ALoginPlayerController::ChageGameState);
 	}
 
-	ChageGameState(ELoginState::MakeSaveData);
+	ChageGameState(ELoginState::Init);
 }
 
 /// <summary>
