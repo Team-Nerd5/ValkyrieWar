@@ -4,6 +4,8 @@
 #include "Test/SDCH/TestGameSystem/TestInstance/TestWorld/TestBattleDirectorSubsystem.h"
 #include "Test/SDCH/TestUnit/TestCharacters/TestBaseUnit.h"
 #include "Test/SDCH/TestUnit/TestComponents/TestUnitBrainComponent.h"
+#include "Test/SDCH/TestInterface/TestTargetReservationInterface.h"
+
 
 void UTestBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -145,6 +147,16 @@ void UTestBattleDirectorSubsystem::CleanupInvalidReferences()
     CleanupAnchors(TeamBWallAnchors);
 }
 
+void UTestBattleDirectorSubsystem::NotifyTargetAssigned(ATestBaseUnit* Unit, AActor* NewTarget)
+{
+    if (!Unit) return;
+
+    if (Unit->GetClass()->ImplementsInterface(UTestTargetReservationInterface::StaticClass()))
+    {
+        ITestTargetReservationInterface::Execute_OnTargetAssigned(Unit, NewTarget);
+    }
+}
+
 ATestBaseUnit* UTestBattleDirectorSubsystem::FindBestTargetWithFreeSlot(ATestBaseUnit* Attacker, float Now) const
 {
 
@@ -274,6 +286,9 @@ bool UTestBattleDirectorSubsystem::TryReserve(ATestBaseUnit* Attacker, ATestBase
     Target->EngagementSlots[SlotIdx].ReservedAtTime = Now;
 
     Attacker->Brain->SetReservedTarget(Target, Now);
+
+    NotifyTargetAssigned(Attacker, Target);
+
     return true;
 }
 
@@ -292,6 +307,8 @@ void UTestBattleDirectorSubsystem::ReleaseReservation(ATestBaseUnit* Attacker, A
     {
         const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
         Attacker->Brain->ClearReservedTarget(Now);
+
+        NotifyTargetAssigned(Attacker, nullptr);
     }
 }
 
@@ -310,6 +327,8 @@ void UTestBattleDirectorSubsystem::ReleaseAllAttackersOfTarget(ATestBaseUnit* Ta
                 if (Attacker->Brain && Attacker->Brain->ReservedTarget.Get() == Target)
                 {
                     Attacker->Brain->ClearReservedTarget(Now);
+
+                    NotifyTargetAssigned(Attacker, nullptr);
                 }
             }
         }
@@ -336,10 +355,12 @@ void UTestBattleDirectorSubsystem::UpdateReservationFor(ATestBaseUnit* Unit)
 
             // 슬롯에서 빠져있으면 예약이 깨진 것 -> 비우고 새로 잡자
             Unit->Brain->ClearReservedTarget(Now);
+            NotifyTargetAssigned(Unit, nullptr);
         }
         else
         {
             Unit->Brain->ClearReservedTarget(Now);
+            NotifyTargetAssigned(Unit, nullptr);
         }
     }
 

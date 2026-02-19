@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
+#include "Test/SDCH/TestInterface/TestTargetReservationInterface.h"
 #include "Data/Enum/CommonEnums.h"
 #include "TestBaseUnit.generated.h"
 
@@ -15,7 +16,7 @@ class UObjectPoolSubsystem;
 struct FTestEngagementSlot;
 
 UCLASS()
-class VALKYRIEWAR_API ATestBaseUnit : public ABaseCharacter
+class VALKYRIEWAR_API ATestBaseUnit : public ABaseCharacter, public IObjectPoolInterface, public ITestTargetReservationInterface
 {
 	GENERATED_BODY()
 
@@ -29,7 +30,7 @@ public:
 	int32 MaxEngagementSlots = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float AttackRange = 150.f;
+	float AttackRange = 160.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float AttackCooldown = 1.0f;
@@ -58,6 +59,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
 	bool bDrawDebug = true;
 
+	// ===== Speed tuning =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
+	float WalkSpeed = 150.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
+	float RunSpeed = 600.f;
+
+	// 예약 타깃이 있을 때는 달리고, 없으면 걷기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
+	bool bRunWhenHasTarget = true;
+
+
+public:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	bool IsDead() const { return CurrentHP <= 0.f; }
+
 	void SetOwnerSpawner(ATestUnitSpawner* InSpawner);
 
 	// 스포너가 스폰(또는 재사용) 시점에 세팅
@@ -70,14 +89,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Animation")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
-public:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	bool IsDead() const { return CurrentHP <= 0.f; }
-
 	int32 FindSlotOfAttacker(AActor* Attacker) const;
 	int32 FindFirstFreeSlot() const;
+
 	bool HasFreeSlot() const;
 
 	bool CanAttackNow(float Now) const;
@@ -101,6 +115,8 @@ public:
 	virtual void OnGet_Implementation() override;
 	virtual void OnRelease_Implementation() override;
 
+	virtual void OnTargetAssigned_Implementation(AActor* NewTarget) override;
+
 private:
 	// ---- BattleDirector 연동 ----
 	UTestBattleDirectorSubsystem* GetBattleDirector() const;
@@ -112,6 +128,9 @@ private:
 
 	// 풀 재사용 초기화
 	void ResetForReuse();
+
+	// 내부 적용 함수
+	void ApplyMoveSpeed(float NewSpeed);
 
 protected:
 
@@ -125,4 +144,8 @@ private:
 	FTimerHandle DestroyTimerHandle;
 
 	bool bRegisteredToBattleDirector = false;
+
+	UPROPERTY()
+	TWeakObjectPtr<AActor> LastAssignedTarget;
+
 };

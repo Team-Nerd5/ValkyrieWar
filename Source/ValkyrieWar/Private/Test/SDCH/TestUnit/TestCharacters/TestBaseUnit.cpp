@@ -19,7 +19,7 @@ ATestBaseUnit::ATestBaseUnit()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->MaxWalkSpeed = 150.f;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
 	CurrentHP = MaxHP;
 }
@@ -146,7 +146,7 @@ void ATestBaseUnit::ResetForReuse()
 	{
 		Move->StopMovementImmediately();
 		Move->SetMovementMode(EMovementMode::MOVE_Walking);
-		Move->MaxWalkSpeed = 150.f;
+		Move->MaxWalkSpeed = WalkSpeed;
 		Move->Activate(true);
 	}
 
@@ -166,8 +166,28 @@ void ATestBaseUnit::ResetForReuse()
 		SpawnDefaultController();
 	}
 
+	LastAssignedTarget = nullptr;
+
 	// BD 등록(활성화 시점)
 	RegisterToBattleDirector();
+}
+
+void ATestBaseUnit::ApplyMoveSpeed(float NewSpeed)
+{
+	if (IsDead()) return;
+
+	UCharacterMovementComponent* Move = GetCharacterMovement();
+	if (!Move) return;
+
+	// DisableMovement 상태면 굳이 바꿔도 의미가 없으니 방어
+	if (Move->MovementMode == MOVE_None)
+		return;
+
+	// 중복 세팅 방지 (미세 오차 고려)
+	if (FMath::IsNearlyEqual(Move->MaxWalkSpeed, NewSpeed, 0.1f))
+		return;
+
+	Move->MaxWalkSpeed = NewSpeed;
 }
 
 // --------------------
@@ -431,4 +451,27 @@ void ATestBaseUnit::OnRelease_Implementation()
 	Brain->ResetRuntimeBrainState();
 
 	OwnerSpawner = nullptr;
+}
+
+void ATestBaseUnit::OnTargetAssigned_Implementation(AActor* NewTarget)
+{
+	if (IsDead()) return;
+
+	// 중복 호출 방지: 같은 타깃이면 아무것도 안 함
+	if (LastAssignedTarget.Get() == NewTarget)
+		return;
+
+	LastAssignedTarget = NewTarget;
+
+	// 타깃이 있으면 Run, 없으면 Walk
+	const bool bHasTarget = (NewTarget != nullptr);
+
+	if (bRunWhenHasTarget && bHasTarget)
+	{
+		ApplyMoveSpeed(RunSpeed);
+	}
+	else
+	{
+		ApplyMoveSpeed(WalkSpeed);
+	}
 }

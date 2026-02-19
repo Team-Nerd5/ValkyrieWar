@@ -91,4 +91,6 @@ private:
     // 예약 실행(원자적으로)
     bool TryReserve(ATestBaseUnit* Attacker, ATestBaseUnit* Target, float Now);
     void CleanupInvalidReferences();
+
+    void NotifyTargetAssigned(ATestBaseUnit* Unit, AActor* NewTarget);
 };
