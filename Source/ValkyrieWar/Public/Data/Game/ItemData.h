@@ -35,18 +35,7 @@ public:
 	FORCEINLINE int32 GetAttackID() { return TableData ? TableData->AttackId : 0; }
 	FORCEINLINE TArray<int32> GetSkillID() { return TableData ? TableData->SkillId : TArray<int32>(); }
 	FORCEINLINE uint64 GetEquipCharacter() { return EquipCharacter; }
-
 	FORCEINLINE const uint64 GetUID() { return UID; }
-
-	FORCEINLINE const uint64 GetEquipCharacterUID()
-	{
-		if (!TableData && !(TableData->ItemGroup == EItemGroup::Armor))
-			return;
-
-		return EquipCharacter;
-	}
-	
-
 	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
 
 private:

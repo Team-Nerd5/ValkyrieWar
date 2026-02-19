@@ -22,9 +22,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
 
-
 	UPROPERTY(EditAnywhere, Category = "Combat") // 에디터에서 추가함
 	TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
+
+	//급선회
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Movement")
+	bool bIsPivotLocked = false;
 
 public:
 	virtual void Tick(float InDeltaTime) override;

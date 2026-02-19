@@ -50,7 +50,7 @@ void UValkyrieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		float DotResult = FVector::DotProduct(VelocityDir, AccelDir); // 내적 계산
 
 		bShouldPivot = DotResult < -0.5f; // 위 계산의 결과값이 -0.5 이상이면 급선회 발동
-		PlayAnim
+		//PlayAnim
 	}
 	else
 	{

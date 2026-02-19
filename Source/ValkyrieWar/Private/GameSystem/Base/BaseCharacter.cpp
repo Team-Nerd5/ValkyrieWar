@@ -72,24 +72,6 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
     UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, SkillDataList[InSkillIndex]->GetAbilityTag(), Payload);
 }
 
-void ABaseCharacter::OnConstruction(const FTransform& Transform)
-{
-    //하위 파츠 세팅
-    USkeletalMeshComponent* LeaderMesh = GetMesh();
-
-    TArray<USkeletalMeshComponent*> ModularParts;
-    GetComponents<USkeletalMeshComponent>(ModularParts);
-
-    for (USkeletalMeshComponent* Part : ModularParts)
-    {
-        if (Part == LeaderMesh) continue;
-
-        if (Part->ComponentHasTag(TEXT("Weapon"))) continue;
-
-        Part->SetLeaderPoseComponent(LeaderMesh);
-    }
-}
-
 // Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {

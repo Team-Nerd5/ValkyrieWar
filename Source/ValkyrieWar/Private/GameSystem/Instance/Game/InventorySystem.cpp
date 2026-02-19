@@ -176,7 +176,7 @@ void UInventorySystem::EquipItem(UItemData* InItem, int64 InCharacterUID)
 
 	if (DataManager->GetItemModule()->GetItem(InItem->GetUID()))
 	{
-		InItem->SetEquipCharacterUID(InCharacterUID);
+		InItem->Equip(InCharacterUID);
 	}
 }
 
@@ -192,7 +192,7 @@ void UInventorySystem::UnEquipItem(UItemData* InItem)
 
 	if (DataManager->GetItemModule()->GetItem(InItem->GetUID()))
 	{
-		InItem->SetEquipCharacterUID(0);
+		InItem->Equip(0);
 	}
 }
 

@@ -16,7 +16,7 @@ class UObjectPoolSubsystem;
 struct FTestEngagementSlot;
 
 UCLASS()
-class VALKYRIEWAR_API ATestBaseUnit : public ABaseCharacter, public IObjectPoolInterface, public ITestTargetReservationInterface
+class VALKYRIEWAR_API ATestBaseUnit : public ABaseCharacter, public ITestTargetReservationInterface
 {
 	GENERATED_BODY()
 
