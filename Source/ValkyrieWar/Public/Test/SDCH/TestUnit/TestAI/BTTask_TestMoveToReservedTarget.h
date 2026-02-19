@@ -28,7 +28,7 @@ public:
     bool bUseUnitAttackRangeAsRadius = true;
 
     UPROPERTY(EditAnywhere, Category = "Move")
-    float RadiusScale = 0.85f;
+    float RadiusScale = 0.80f;
 
     UPROPERTY(EditAnywhere, Category = "Move")
     bool bStopOnOverlap = true;
