@@ -16,7 +16,7 @@ class VALKYRIEWAR_API UBTService_TestSetMoveSpeed : public UBTService
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Speed")
-	float WalkSpeed = 200.f;
+	float WalkSpeed = 150.f;
 
 
 	UPROPERTY(EditAnywhere, Category = "Speed")

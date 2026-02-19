@@ -19,7 +19,7 @@ ATestBaseUnit::ATestBaseUnit()
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->MaxWalkSpeed = 450.f;
+	GetCharacterMovement()->MaxWalkSpeed = 150.f;
 
 	CurrentHP = MaxHP;
 }
@@ -146,7 +146,7 @@ void ATestBaseUnit::ResetForReuse()
 	{
 		Move->StopMovementImmediately();
 		Move->SetMovementMode(EMovementMode::MOVE_Walking);
-		Move->MaxWalkSpeed = 450.f;
+		Move->MaxWalkSpeed = 150.f;
 		Move->Activate(true);
 	}
 

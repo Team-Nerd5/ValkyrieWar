@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTTask_TestAttackReservedTarget::ExecuteTask(
 
     int32 TryCount = BB->GetValueAsInt(AttackTryCountKey.SelectedKeyName);
 
-    if (TryCount >= 100)
+    if (TryCount >= 50)
     {
         if (UTestBattleDirectorSubsystem* Subsys = GetWorld()->GetSubsystem<UTestBattleDirectorSubsystem>())
         {

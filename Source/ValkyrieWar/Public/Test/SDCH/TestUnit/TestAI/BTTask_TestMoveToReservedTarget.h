@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "AIController.h"
 #include "BTTask_TestMoveToReservedTarget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class VALKYRIEWAR_API UBTTask_TestMoveToReservedTarget : public UBTTaskNode
 {
@@ -18,20 +16,24 @@ public:
     UBTTask_TestMoveToReservedTarget();
 
     UPROPERTY(EditAnywhere, Category = "BB")
-    struct FBlackboardKeySelector ReservedTargetKey;
+    FBlackboardKeySelector ReservedTargetKey;
 
     UPROPERTY(EditAnywhere, Category = "BB")
-    struct FBlackboardKeySelector EnemyBaseKey;
+    FBlackboardKeySelector EnemyBaseKey;
 
-    UPROPERTY(EditAnywhere)
-    float AcceptableRadius = 80.f;
+    UPROPERTY(EditAnywhere, Category = "Move")
+    float AcceptableRadius = 100.f;
 
-    UPROPERTY(EditAnywhere)
+    UPROPERTY(EditAnywhere, Category = "Move")
     bool bUseUnitAttackRangeAsRadius = true;
 
-    UPROPERTY(EditAnywhere)
-    float RadiusScale = 0.5f;
+    UPROPERTY(EditAnywhere, Category = "Move")
+    float RadiusScale = 0.85f;
+
+    UPROPERTY(EditAnywhere, Category = "Move")
+    bool bStopOnOverlap = true;
 
 protected:
     virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+    virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 };
