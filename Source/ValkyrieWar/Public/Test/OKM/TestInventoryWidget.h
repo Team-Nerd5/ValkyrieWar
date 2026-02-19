@@ -7,6 +7,7 @@
 #include "Components/TileView.h"
 #include "Components/Button.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
 
 #include "Test/OKM/TestItemObject.h"
@@ -62,15 +63,7 @@ protected:
 private:
 	UInventorySystem* InventorySystem;
 
+	UWorldEventSystem* EventSystem;
+
 	TArray<UItemData*> CachedItemList;
-
-	// 테스트용
-public:
-	UFUNCTION(BlueprintCallable)
-	void InitTestList();
-	UFUNCTION(BlueprintCallable)
-	void AddTestList(UObject* InItemObject);
-
-private:
-	TArray<UTestItemObject*> TestList;
 };

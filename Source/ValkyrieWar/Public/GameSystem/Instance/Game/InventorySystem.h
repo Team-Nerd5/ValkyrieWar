@@ -4,11 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-
 #include "Data/Module/ItemModule.h"
 #include "Data/Enum/DataEnums.h"
-#include "GameSystem/Instance/Game/DataManager.h"
-#include "GameSystem/Instance/World/WorldEventSystem.h"
 
 #include "InventorySystem.generated.h"
 
@@ -41,12 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnEquipItem(UItemData* InItem);
 
+	// 아이템 추가 테스트용 함수
 	UFUNCTION(BlueprintCallable)
 	void TestAddItem();
 
 private:
-	UPROPERTY()
-	UDataManager* DataManager;
-	UPROPERTY()
-	UItemModule* ItemModule;
+	TObjectPtr<class UDataManager> DataManager;
 };

@@ -22,13 +22,18 @@ protected:
 	UFUNCTION()
 	void Init(UObject* InData);
 
-public:
-	UFUNCTION()
-	void TestInit(UObject* InData);
+private:
+	void RefreshText();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> ID = nullptr;
+	TObjectPtr<UTextBlock> UID = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> DataID = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> ItemGroup = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> Amount = nullptr;
