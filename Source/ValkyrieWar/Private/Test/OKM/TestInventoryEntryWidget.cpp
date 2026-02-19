@@ -22,9 +22,6 @@ void UTestInventoryEntryWidget::Init(UObject* InData)
 	if (!ItemData)
 		return;
 
-	RefreshText();
-
-	UE_LOG(LogTemp, Log, TEXT("Amount : %d"), ItemData->GetAmount());
 	Amount->SetText(FText::AsNumber(ItemData->GetAmount()));
 	UID->SetText(FText::AsNumber(ItemData->GetUID()));
 	DataID->SetText(FText::AsNumber(ItemData->GetTableData()->DataId));
