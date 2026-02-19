@@ -31,7 +31,7 @@ public:
 	FORCEINLINE class UStageSaveGame* GetStage() { return Stage; }
 	FORCEINLINE class UUnitUpgradeSaveGame* GetUnitUpgrade() { return UnitUpgrade; }
 	FORCEINLINE class UValkyrieSaveGame* GetValkyrie () { return Valkyrie; }
-
+	
 private:
 	TMap <ESaveType, TFunction<void(USaveGame*)>> ActionSetData;
 	TMap <ESaveType, TFunction<void()>> ActionSaveData;
@@ -69,6 +69,7 @@ protected:
 	UFUNCTION()
 	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
 
+	void SetItemData();
 public:
 	void LoadAllData();
 
@@ -77,6 +78,8 @@ public:
 
 	//게임로드 2순위 id 있으면 가져오고, 음..
 	uint64 GetUserId();
+
+	void UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter);
 
 	void SaveData(ESaveType InSaveType);
 };

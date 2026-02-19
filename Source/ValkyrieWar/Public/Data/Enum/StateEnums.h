@@ -8,9 +8,9 @@ UENUM(BlueprintType)
 enum class ELoginState : uint8
 {
 	Init,
-	LoadData,
 	CheckAccount,
 	CreateAccount,
+	LoadData,
 	MakeSaveData,
 	MoveToLobby,
 };

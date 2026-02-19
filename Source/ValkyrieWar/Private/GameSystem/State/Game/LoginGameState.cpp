@@ -3,6 +3,8 @@
 
 #include "GameSystem/State/Game/LoginGameState.h"
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
 
 void ALoginGameState::ChangeGameState(ELoginState InState)
 {
@@ -17,13 +19,19 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 			//UIManager->OpenUI(EUIType::Login);
 			//오픈되면 로딩 이런느낌좀 내봐..?
 		}
-		break;
-	case ELoginState::LoadData:
-		//화면 터치하면 계정 데이터 로드 시도
-		//파일이 없으면 CreateAccount로
-		//있으면 CheckAccount
-		break;
+		break;	
 	case ELoginState::CheckAccount:
+		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+		{
+			if (SaveManager->IsAcountExist())
+			{
+				ChangeGameState(ELoginState::LoadData);
+			}
+			else
+			{
+				ChangeGameState(ELoginState::CreateAccount);
+			}
+		}
 		//데이터 세팅 후 MoveToLobby로
 		break;
 
@@ -32,8 +40,24 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 		//계정생성 취소 시 경고팝업 -> 확인 시 종료
 		//계정 생성 성공 시 MakeSaveData로
 		break;
+	case ELoginState::LoadData:
+
+		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+		{
+			SaveManager->LoadAllData();
+			ChangeGameState(ELoginState::MoveToLobby);
+		}
+		//화면 터치하면 계정 데이터 로드 시도
+		//파일이 없으면 CreateAccount로
+		//있으면 CheckAccount
+		break;
 	case ELoginState::MakeSaveData:
 		//데이터 저장 후 CheckAccount로
+		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+		{
+			SaveManager->GetUserId();
+			ChangeGameState(ELoginState::LoadData);
+		}
 		break;
 
 	case ELoginState::MoveToLobby:
@@ -47,6 +71,11 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 		}
 
 		//레벨 전환
+		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
+		{
+			LevelManager->BeginLoadingScreen(StaticEnum<EMapType>()->GetNameStringByValue(static_cast<int64>(EMapType::Lobby)));				
+		}
+		
 		break;
 	}
 }

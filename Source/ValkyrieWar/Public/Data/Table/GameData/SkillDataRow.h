@@ -16,17 +16,17 @@ struct VALKYRIEWAR_API FSkillDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UAnimMontage> Montage = nullptr;
 	UPROPERTY(EditAnywhere)
-	int32 EffectGroupId;
+	int32 EffectGroupId = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayTag AbilityTag;
+	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
-	ETargetType TargetType;
+	ETargetType TargetType = ETargetType::None;
 	UPROPERTY(EditAnywhere)
 	int32 TargetAmount = 1;
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,9 +9,18 @@
 /**
  * 
  */
+
+struct ItemDataStruct
+{
+	uint64 UID;
+	int32 Amount;
+	uint64 EquipCharacter;
+};
+
 UCLASS()
 class VALKYRIEWAR_API UItemSaveGame : public USaveGame
 {
 	GENERATED_BODY()
-	
+public:
+	TMap<uint64, ItemDataStruct*> ItemDataList;
 };

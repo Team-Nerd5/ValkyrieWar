@@ -7,6 +7,7 @@
 UENUM(BlueprintType)
 enum class EUIType : uint8
 {
+	None,
 	//HUD
 	Login,
 	Lobby,

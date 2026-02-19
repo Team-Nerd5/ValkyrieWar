@@ -14,15 +14,15 @@ struct VALKYRIEWAR_API FUnitDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	int32 StatId;
+	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<USkeletalMesh> Mesh = nullptr;
 	UPROPERTY(EditAnywhere)
-	float MovSpeed;
+	float MovSpeed = 0.0f;
 	UPROPERTY(EditAnywhere)
-	int32 BaseWeaponId;
+	int32 BaseWeaponId = 0;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AUnitCharacter> SpawnClass = nullptr;
 };

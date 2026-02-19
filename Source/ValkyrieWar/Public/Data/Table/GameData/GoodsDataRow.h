@@ -15,11 +15,11 @@ struct VALKYRIEWAR_API FGoodsDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	EGoodsType Type;
+	EGoodsType Type = EGoodsType::Gold;
 	UPROPERTY(EditAnywhere)
-	FString Name;
+	FString Name = TEXT("");
 	UPROPERTY(EditAnywhere)
-	int32 Order;
+	int32 Order = 0;
 };

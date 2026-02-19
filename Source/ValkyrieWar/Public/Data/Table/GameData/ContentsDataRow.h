@@ -15,14 +15,14 @@ struct VALKYRIEWAR_API FContentsDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	FString Name;
+	FString Name = TEXT("");
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
-	EUIType OpenPopup;
+	EUIType OpenPopup = EUIType::None;
 	UPROPERTY(EditAnywhere)
-	int32 Order;
+	int32 Order = 0;
 
 };

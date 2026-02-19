@@ -14,11 +14,11 @@ struct VALKYRIEWAR_API FStatGroupDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	float Attack;
+	float Attack = 0.0f;
 	UPROPERTY(EditAnywhere)
-	float Health;
+	float Health = 0.0f;
 	UPROPERTY(EditAnywhere)
-	float Defence;
+	float Defence = 0.0f;
 };

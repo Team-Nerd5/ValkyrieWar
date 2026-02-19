@@ -1,7 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameSystem/Instance/Save/SaveManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Library/DataEncryptHelper.h"
+#include "GameSystem/Library/GameSaveHelper.h"
 
 #include "Object/Save/ValkyrieWarSaveGame.h"
 
@@ -15,8 +18,6 @@
 #include "Object/SaveGame/ValkyrieSaveGame.h"
 
 #include "Kismet/GameplayStatics.h"
-#include "GameSystem/Library/DataEncryptHelper.h"
-#include "GameSystem/Library/GameSaveHelper.h"
 
 
 void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -24,64 +25,13 @@ void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	InitSetDataAction();
-
-	//CachedSaveGame = Cast<UValkyrieWarSaveGame>(UGameplayStatics::CreateSaveGameObject(UValkyrieWarSaveGame::StaticClass()));
-	//LoadGame();
 }
 
 void USaveManager::Deinitialize()
 {
-	//SaveGame();
-	//CachedSaveGame = nullptr;
-
 	Super::Deinitialize();
 }
 
-//void USaveManager::SetPlayerAccountData(const FPlayerAccountData& InPlayerAccountData)
-//{
-	//CurrentPlayerAccountData = InPlayerAccountData;
-	
-	//SaveGame();
-//}
-//
-//void USaveManager::SaveGame()
-//{
-//	if (CachedSaveGame)
-//	{
-//		CachedSaveGame->PlayerAccountData = CurrentPlayerAccountData;
-//
-//		bool bIsSuccess = UGameplayStatics::SaveGameToSlot(CachedSaveGame, SaveSlotName, SaveIndex);
-//		if (bIsSuccess)
-//		{
-//			UE_LOG(LogTemp, Log, TEXT("저장 성공"));
-//		}
-//		else
-//		{
-//			UE_LOG(LogTemp, Log, TEXT("저장 실패"));
-//		}
-//	}
-//
-//}
-//
-//void USaveManager::LoadGame()
-//{
-//	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, SaveIndex))
-//	{
-//		UValkyrieWarSaveGame* LoadedSaveGame = Cast<UValkyrieWarSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
-//
-//		if (LoadedSaveGame)
-//		{
-//			CurrentPlayerAccountData = LoadedSaveGame->PlayerAccountData;
-//			CachedSaveGame->PlayerAccountData = CurrentPlayerAccountData;
-//			UE_LOG(LogTemp, Log, TEXT("저장파일 로드 성공"));
-//		}
-//		else
-//		{
-//			UE_LOG(LogTemp, Log, TEXT("저장파일 로드 실패"));
-//		}
-//	}
-//
-//}
 
 void USaveManager::LoadAllData()
 {
@@ -140,18 +90,17 @@ bool USaveManager::IsAcountExist()
 	return CheckAccount && CheckAccount->UserId > 0;
 }
 
-void USaveManager::SaveData(ESaveType InSaveType)
-{
-	SaveInternal(InSaveType);
-}
-
 void USaveManager::InitSetDataAction()
 {
 	//ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Account, [this](USaveGame* InData) { Account = Cast<UAccountSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::Item, [this](USaveGame* InData) { Item = Cast<UItemSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Item, [this](USaveGame* InData)
+		{
+			Item = Cast<UItemSaveGame>(InData);
+			SetItemData();
+		});
 	ActionSetData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData) { Valkyrie = Cast<UValkyrieSaveGame>(InData); });
@@ -226,4 +175,39 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 			LoadDataInternal(InSaveType, Data);
 		}		
 	}
+}
+
+
+void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter)
+{
+	ItemDataStruct* ItemData = *Item->ItemDataList.Find(InUID);
+
+	if (ItemData)
+	{
+		ItemData->Amount = InAmount;
+		ItemData->EquipCharacter = InEquipCharacter;
+	}
+
+	SaveInternal(ESaveType::Item);
+}
+
+void USaveManager::SetItemData()
+{
+	if (Item)
+	{
+		UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+
+		if (DataManager)
+		{
+			for (auto Data : Item->ItemDataList)
+			{				
+				DataManager->GetItemModule()->LoadItem(Data.Value->UID, Data.Value->Amount, Data.Value->EquipCharacter);
+			}
+		}
+	}
+}
+
+void USaveManager::SaveData(ESaveType InSaveType)
+{
+	SaveInternal(InSaveType);
 }

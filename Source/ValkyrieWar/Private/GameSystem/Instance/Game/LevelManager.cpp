@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameSystem/Instance/Level/LevelManager.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
 #include "LoadingScreenModule.h"
 
 void ULevelManager::Initialize(FSubsystemCollectionBase& Collection)
@@ -29,6 +29,7 @@ void ULevelManager::Deinitialize()
 void ULevelManager::BeginLoadingScreen(const FString& MapName)
 {
     UE_LOG(LogTemp, Warning, TEXT("로딩창 열림"));
+
 
     // 로딩 화면 모듈을 가져오기 시도
     FLoadingScreenModule* LoadingScreenModule = FModuleManager::LoadModulePtr<FLoadingScreenModule>("LoadingScreenModule");

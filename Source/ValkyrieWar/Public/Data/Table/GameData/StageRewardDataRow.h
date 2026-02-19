@@ -14,12 +14,12 @@ struct VALKYRIEWAR_API FStageRewardDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	int32 StageChapter;
+	int32 StageChapter = 0;
 	UPROPERTY(EditAnywhere)
-	int32 StarAmount;
+	int32 StarAmount = 0;
 	UPROPERTY(EditAnywhere)
-	int32 RewardId;
+	int32 RewardId = 0;
 
 };

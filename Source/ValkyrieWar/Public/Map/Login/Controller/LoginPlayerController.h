@@ -18,5 +18,6 @@ class VALKYRIEWAR_API ALoginPlayerController : public APlayerController
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
 	void ChageGameState(ELoginState InState);
 };

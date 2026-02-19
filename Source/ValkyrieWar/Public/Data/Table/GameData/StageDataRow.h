@@ -14,15 +14,15 @@ struct VALKYRIEWAR_API FStageDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
-	int32 MissionId1;
+	int32 MissionId1 = 0;
 	UPROPERTY(EditAnywhere)
-	int32 MissionId2;
+	int32 MissionId2 = 0;
 	UPROPERTY(EditAnywhere)
-	int32 MissionId3;
+	int32 MissionId3 = 0;
 	UPROPERTY(EditAnywhere)
-	int32 StageGroupId;
+	int32 StageGroupId = 0;
 };

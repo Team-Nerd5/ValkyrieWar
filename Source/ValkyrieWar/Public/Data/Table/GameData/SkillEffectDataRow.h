@@ -17,11 +17,11 @@ struct VALKYRIEWAR_API FSkillEffectDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 DataId;
+	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	int32 GroupId;
+	int32 GroupId = 0;
 	UPROPERTY(EditAnywhere)
-	ESkillType SkillType;
+	ESkillType SkillType = ESkillType::None;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EGameplayEffectDurationType DurationPolicy = EGameplayEffectDurationType::Instant;
 

@@ -17,9 +17,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	EItemType ItemType;
+	EItemType ItemType = EItemType::None;
 	UPROPERTY(EditAnywhere)
-	EItemGroup ItemGroup;
+	EItemGroup ItemGroup = EItemGroup::None;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
@@ -29,9 +29,9 @@ public:
 
 	//장비용
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
-	int32 StatId;
+	int32 StatId = 0;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
-	int32 AttackId;
+	int32 AttackId = 0;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
 	TArray<int32> SkillId;
 };

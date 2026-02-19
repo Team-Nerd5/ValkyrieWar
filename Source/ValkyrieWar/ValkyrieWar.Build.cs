@@ -9,7 +9,7 @@ public class ValkyrieWar : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(new string[] { 
-            "Core", "CoreUObject", "Engine", "InputCore", 
+            "Core", "CoreUObject", "Engine", "InputCore", "MoviePlayer",
             "NavigationSystem", "AIModule", "Niagara", "EnhancedInput" });
         PrivateDependencyModuleNames.AddRange(new string[] {
             "GameplayAbilities", "GameplayTags", "GameplayTasks",

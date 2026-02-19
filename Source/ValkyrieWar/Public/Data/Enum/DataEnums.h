@@ -51,6 +51,7 @@ enum class ESkillApplyType : uint8
 UENUM(BlueprintType)
 enum class ETargetType : uint8
 {
+	None,
 	InRange,
 	LowHpInRange,
 	HighHpInRange,
