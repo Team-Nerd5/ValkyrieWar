@@ -36,6 +36,9 @@ void UTestInventoryWidget::NativeConstruct()
 
 	PopupWidget->SetVisibility(ESlateVisibility::Collapsed);
 
+	if (Money)
+		Money->SetText(FText::AsNumber(InventorySystem->GetMoney()));
+
 	FilterReset();
 	CloseUI();
 }

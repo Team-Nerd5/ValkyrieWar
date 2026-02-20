@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "Components/TileView.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -45,6 +46,9 @@ public:
 	void ItemClicked(UObject* InItemData);
 	
 protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> Money = nullptr;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> TileView = nullptr;
 

@@ -37,10 +37,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnEquipItem(UItemData* InItem);
 
+private:
+	TObjectPtr<class UDataManager> DataManager;
+
+// 테스트용(삭제 가능)
+public:
 	// 아이템 추가 테스트용 함수
 	UFUNCTION(BlueprintCallable)
 	void TestAddItem();
 
+	inline int32 GetMoney() { return Money; }
+	inline void SetMoney(int32 AddMoney) { Money += AddMoney; }
 private:
-	TObjectPtr<class UDataManager> DataManager;
+	int32 Money = 0;
 };
