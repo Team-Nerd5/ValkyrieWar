@@ -29,6 +29,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Movement")
 	bool bIsPivotLocked = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	FRotator TargetPivotRotation;
+
 public:
 	virtual void Tick(float InDeltaTime) override;
 	/** Returns TopDownCameraComponent subobject **/
@@ -59,4 +62,30 @@ protected:
 	class USpringArmComponent* CameraBoom;
 
 	TObjectPtr<UValkyrieData> Data = nullptr;
+
+public: // 일반 공격
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void DoLightAttack();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void DoHeavyAttack();
+
+	// 콤보
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ContinueCombo();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ResetCombo();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	int32 ComboCount = 0;
+	//최대 콤보수 4로 정하고있음
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
+	int32 MaxComboCount = 4;
+	//공격중에는 다른 움직임 막기용
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool bIsAttacking = false;
+
+	// 공격 몽타주 재생중에 미리 누른 내용 저장
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool bSaveAttack = false;
+
 };

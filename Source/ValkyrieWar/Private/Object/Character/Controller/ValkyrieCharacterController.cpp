@@ -213,6 +213,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
+	
 	if (CurrentControlMode == EInputControlMode::Auto) return;
 
 	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
@@ -222,6 +223,7 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 			return;
 		}
 	}
+
 	FVector2D MovementVector = InValue.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
@@ -247,6 +249,25 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InValue)
 {
 	bIsInputActive = false;
+}
+
+void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
+{
+	if (CurrentControlMode == EInputControlMode::Auto) return;
+
+	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
+	{
+		ControlledCharacter->DoLightAttack();
+	}
+}
+
+void AValkyrieCharacterController::OnAttackHold(const FInputActionValue& InValue)
+{
+	if (CurrentControlMode == EInputControlMode::Auto) return;
+	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
+	{
+		ControlledCharacter->DoHeavyAttack();
+	}
 }
 
 void AValkyrieCharacterController::RefreshInteractionTime()

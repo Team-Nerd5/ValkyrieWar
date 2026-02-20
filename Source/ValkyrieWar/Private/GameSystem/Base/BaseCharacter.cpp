@@ -50,13 +50,20 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
 
 void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
 {
-    if (!AbilitySystemComponent) return;
+    if (!AbilitySystemComponent || !AttackData) return;
 
     FGameplayEventData Payload;
     Payload.Instigator = this;
     Payload.Target = InTargetActor;
 
-    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("🚨 C++ : 어택 함수 뚫고 지나감! 이벤트 발사!!"));
+    }
+   // UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
+
+    FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
+    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, MyTestTag, Payload);
 }
 
 void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)

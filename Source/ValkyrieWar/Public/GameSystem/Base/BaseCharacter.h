@@ -59,7 +59,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UItemData> EquippedWeapon = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Data")
 	TObjectPtr<UAttackData> AttackData = nullptr;
 
 	UPROPERTY()

@@ -50,7 +50,21 @@ void UValkyrieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		float DotResult = FVector::DotProduct(VelocityDir, AccelDir); // 내적 계산
 
 		bShouldPivot = DotResult < -0.5f; // 위 계산의 결과값이 -0.5 이상이면 급선회 발동
-		//PlayAnim
+		if (bShouldPivot)
+		{
+			if (PivotMontage && !Montage_IsPlaying(PivotMontage))
+			{
+				MovementComp->bOrientRotationToMovement = false;// 회전잠금
+				MovementComp->StopMovementImmediately(); // 당장 움직임 관성 멈춰!
+				OwnerCharacter->bIsPivotLocked = true; // 유저조작 멈춰잇
+
+				FRotator CurrentRot = OwnerCharacter->GetActorRotation();
+				CurrentRot.Yaw -= 179.9f;
+				OwnerCharacter->TargetPivotRotation = CurrentRot;
+
+				Montage_Play(PivotMontage, 1.0f); // 그리고나서 몽타주 실행해
+			}
+		}
 	}
 	else
 	{

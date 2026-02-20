@@ -96,12 +96,16 @@ protected:
 	// 입력 함수들
 	void OnMove(const FInputActionValue& InValue);
 	void OnMoveCompleted(const FInputActionValue& InValue);
+	void OnAttackTap(const FInputActionValue& InValue);
+	void OnAttackHold(const FInputActionValue& InValue);
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
 	// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
 	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
 	void OnControlModeChanged(EInputControlMode InNewMode);
+
+	
 
 private:
 	

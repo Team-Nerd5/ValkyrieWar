@@ -37,26 +37,31 @@ void UValkyrieANS_LockRotation::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 void UValkyrieANS_LockRotation::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
+	if (AActor* OwnerActor = MeshComp->GetOwner())
+	{
+		if (AValkyrieCharacter* Char = Cast<AValkyrieCharacter>(OwnerActor))
+		{
+			if (UCharacterMovementComponent* MoveComp = Char->GetCharacterMovement())
+			{
+				MoveComp->bOrientRotationToMovement = true;
+				Char->bIsPivotLocked = false;
+			}
+		}
+	}
+}
+
+void UValkyrieANS_LockRotation::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+{
+	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
+
 	if (MeshComp && MeshComp->GetOwner())
 	{
-		AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner());
-
-		if (Character && Character->GetCharacterMovement())
+		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
 		{
-			UCharacterMovementComponent* MoveComp = Character->GetCharacterMovement();
-			FVector CurrentInputDirection = MoveComp->GetCurrentAcceleration();
+			FRotator SmoothRot = FMath::RInterpTo(Character->GetActorRotation(), Character->TargetPivotRotation, FrameDeltaTime, 10.0f);
 
-			if (!CurrentInputDirection.IsNearlyZero())
-			{
-				Character->SetActorRotation(CurrentInputDirection.Rotation());
-			}
-
-			Character->bIsPivotLocked = false;
-			MoveComp->bOrientRotationToMovement = true;
-
-			MoveComp->GroundFriction = CachedGroundFriction;
-			MoveComp->BrakingDecelerationWalking = CachedBrakingDeceleration;
-
+			Character->SetActorRotation(SmoothRot);
 		}
+		
 	}
 }

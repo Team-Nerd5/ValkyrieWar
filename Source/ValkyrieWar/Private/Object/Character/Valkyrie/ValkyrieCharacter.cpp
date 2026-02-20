@@ -62,6 +62,67 @@ void AValkyrieCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AValkyrieCharacter::DoLightAttack()
+{
+	if (bIsAttacking)
+	{
+		if (ComboCount < MaxComboCount)
+		{
+			bSaveAttack = true;
+		}
+	}
+	else
+	{
+		bIsAttacking = true;
+		ComboCount = 1;
+
+		if (AbilitySystemComponent)
+		{
+			FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
+			FGameplayTagContainer TagContainer(MyTestTag);
+			AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
+		}
+	}
+}
+
+void AValkyrieCharacter::DoHeavyAttack()
+{
+	bSaveAttack = false; // 강공격 커맨드 들어오면 약공격 예약 다 찌부시켜버리고 강공격 우선
+	ResetCombo();
+	ApplySkill(0, nullptr);
+}
+
+void AValkyrieCharacter::ContinueCombo()
+{
+
+	if (bSaveAttack)
+	{
+		bSaveAttack = false;
+		ComboCount++;
+
+		if (AbilitySystemComponent)
+		{
+			FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
+			FGameplayTagContainer TagContainer(MyTestTag);
+			bool bSuccess = AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
+		}
+	}
+	else
+	{
+
+		bIsAttacking = false;
+		ComboCount = 0;
+	}
+}
+
+void AValkyrieCharacter::ResetCombo() // 콤보끝나면 싹 초기화
+{
+	bIsAttacking = false;
+
+	bSaveAttack = false;
+	ComboCount = 0;
+}
+
 void AValkyrieCharacter::Tick(float InDeltaTime)
 {
 	Super::Tick(InDeltaTime);
@@ -75,14 +136,13 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AValkyrieCharacter::Attack()
 {
-	TObjectPtr<UAnimMontage>* FoundMontage = WeaponMontageMap.Find(CurrentWeaponType);
-	if (FoundMontage && *FoundMontage)
+	if (AttackData)
 	{
-		PlayAnimMontage(*FoundMontage);
-		FString MontageName = (*FoundMontage)->GetName();
-		if (GEngine)
+		UAnimMontage* MontageToPlay = AttackData->GetAnimMontage();
+
+		if (MontageToPlay)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Montage Playing: %s"), *MontageName));
+			PlayAnimMontage(MontageToPlay);
 		}
 	}
 }

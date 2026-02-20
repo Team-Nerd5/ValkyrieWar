@@ -20,10 +20,14 @@ class VALKYRIEWAR_API UValkyrieAnimInstance : public UAnimInstance
 public:
 	UValkyrieAnimInstance();
 
+
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+
 
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComp;
