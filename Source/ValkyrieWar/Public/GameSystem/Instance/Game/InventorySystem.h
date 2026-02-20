@@ -32,8 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SellItem(UItemData* InItem, int32 InAmount);
 
-	UFUNCTION(BlueprintCallable)
-	void EquipItem(UItemData* InItem, int64 InCharacterUID);
+	void EquipItem(UItemData* InItem, uint64 InCharacterUID);
 
 	UFUNCTION(BlueprintCallable)
 	void UnEquipItem(UItemData* InItem);

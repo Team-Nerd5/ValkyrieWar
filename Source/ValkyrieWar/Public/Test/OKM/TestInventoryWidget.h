@@ -9,8 +9,7 @@
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
-
-#include "Test/OKM/TestItemObject.h"
+#include "Test/OKM/TestPopupWidget.h"
 
 #include "TestInventoryWidget.generated.h"
 
@@ -41,24 +40,30 @@ public:
 	void FilterHelmet();
 	UFUNCTION()
 	void FIlterGrowth();
+
+	UFUNCTION()
+	void ItemClicked(UObject* InItemData);
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> TileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> CloseButton = nullptr;
+	TObjectPtr<UButton> Btn_Close = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> FilterResetButton = nullptr;
+	TObjectPtr<UButton> Btn_FilterReset = nullptr;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> FilterWeaponButton = nullptr;
+	TObjectPtr<UButton> Btn_FilterWeapon = nullptr;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> FilterArmorButton = nullptr;
+	TObjectPtr<UButton> Btn_FilterArmor = nullptr;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> FilterHelmetButton = nullptr;
+	TObjectPtr<UButton> Btn_FilterHelmet = nullptr;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> FilterGrowthButton = nullptr;
+	TObjectPtr<UButton> Btn_FilterGrowth = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTestPopupWidget> PopupWidget = nullptr;
 
 private:
 	UInventorySystem* InventorySystem;

@@ -22,9 +22,6 @@ protected:
 	UFUNCTION()
 	void Init(UObject* InData);
 
-private:
-	void RefreshText();
-
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UID = nullptr;
@@ -37,4 +34,8 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> Amount = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> EquipCharacterUID = nullptr;
+
 };
