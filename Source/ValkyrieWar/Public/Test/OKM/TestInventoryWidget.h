@@ -59,6 +59,9 @@ public:
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> Money = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> TileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
