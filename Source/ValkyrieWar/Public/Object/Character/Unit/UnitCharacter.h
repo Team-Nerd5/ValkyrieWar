@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseCharacter.h"
 #include "Data/Game/UnitData.h"
-#include "Test/SDCH/TestInterface/TestTargetReservationInterface.h"
+#include "Interface/Unit/TargetReservationInterface.h"
 #include "UnitCharacter.generated.h"
 
 class UBattleDirectorSubsystem;
@@ -18,7 +18,7 @@ struct FUnitEngagementSlotData;
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API AUnitCharacter : public ABaseCharacter, public ITestTargetReservationInterface
+class VALKYRIEWAR_API AUnitCharacter : public ABaseCharacter, public ITargetReservationInterface
 {
 	GENERATED_BODY()
 
