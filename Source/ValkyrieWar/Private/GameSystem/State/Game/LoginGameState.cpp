@@ -2,10 +2,19 @@
 
 
 #include "GameSystem/State/Game/LoginGameState.h"
+
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Instance/Game/SaveManager.h"
-#include "GameSystem/Instance/Game/LevelManager.h"
 #include "GameSystem/Instance/Game/GameManager.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
+
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+
+#include "GameSystem/Library/GameBaseLibrary.h"
+
+#include "Widget/HUD/LoginWidget.h"
+#include "Widget/Popup/Login/CreateAccountWidget.h"
+
 #include <Kismet/GameplayStatics.h>
 
 void ALoginGameState::ChangeGameState(ELoginState InState)
@@ -18,65 +27,71 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 		//로그인 UI를 오픈
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
-			//UIManager->OpenUI(EUIType::Login);
-			//오픈되면 로딩 이런느낌좀 내봐..?
+			UIManager->OpenUI<ULoginWidget>(EUIType::Login);
+
+			ChangeGameState(ELoginState::CheckAccount);
 		}
 		break;	
 	case ELoginState::CheckAccount:
 		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
 		{
-			if (SaveManager->IsAcountExist())
-			{
-				ChangeGameState(ELoginState::LoadData);
-			}
-			else
-			{
-				ChangeGameState(ELoginState::CreateAccount);
-			}
+			bIsAccountExist = SaveManager->IsAcountExist();
+			ChangeGameState(ELoginState::LoadAccount);
 		}
-		//데이터 세팅 후 MoveToLobby로
 		break;
-
-	case ELoginState::CreateAccount:
-		//계정 생성 UI 띄워줌
-		//계정생성 취소 시 경고팝업 -> 확인 시 종료
-		//계정 생성 성공 시 MakeSaveData로
-		break;
-	case ELoginState::LoadData:
-
+	case ELoginState::LoadAccount:
 		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
 		{
-			SaveManager->LoadAllData();
-			ChangeGameState(ELoginState::MoveToLobby);
+			SaveManager->LoadData(ESaveType::Account);
+			ChangeGameState(ELoginState::ReadyToStart);
 		}
-		//화면 터치하면 계정 데이터 로드 시도
-		//파일이 없으면 CreateAccount로
-		//있으면 CheckAccount
 		break;
-	case ELoginState::MakeSaveData:
-		//데이터 저장 후 CheckAccount로
-		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+
+	case ELoginState::ReadyToStart:
+
+		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 		{
-			SaveManager->GetUserId();
-			ChangeGameState(ELoginState::LoadData);
+			EventSystem->Login.OnReadyToStart.Broadcast();
 		}
 		break;
 
-	case ELoginState::MoveToLobby:
-		//로비로 레벨 전환
-
-		//켜진 UI전부 종료
+	case ELoginState::CheckNickname:
+		if (bIsAccountExist)
+		{
+			if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+			{
+				SaveManager->GetUserId();
+				ChangeGameState(ELoginState::MoveToLobby);
+			}
+		}
+		else
+		{
+			ChangeGameState(ELoginState::StartCreateAccount);
+		}
+		break;
+	case ELoginState::StartCreateAccount:
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
-			UIManager->CloseAllPopupUI();
-			UIManager->ResetAllUIStates();
+			UIManager->OpenUI<UCreateAccountWidget>(EUIType::PopupCreateAccount);
 		}
-
+		break;
+	case ELoginState::CreateAccount:
+		ChangeGameState(ELoginState::MoveToLobby);
+		break;
+	case ELoginState::MoveToLobby:
 		if (UGameManager* GameManager = GetGameInstance<UGameManager>())
 		{
-			UGameplayStatics::OpenLevelBySoftObjectPtr(this, GameManager->GetMapObject(EMapType::Lobby));
-		}		
-		
+			if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+			{
+				UIManager->CloseAllPopupUI();
+				UIManager->ResetAllUIStates();
+			}
+			//실행되나..?
+			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
+			{
+				LevelManager->LoadLevelAsync(GameManager->GetMapObject(EMapType::Lobby));
+			}
+		}
 		break;
 	}
 }

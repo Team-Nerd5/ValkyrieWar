@@ -23,18 +23,21 @@ bool UDataEncryptHelper::SaveGameEncrypted(USaveGame* SaveGameObject, ESaveType 
 		return false;
 	}
 
-	// 2. AES 암호화 수행
-	// FAES::EncryptData는 16바이트 블록 단위로 처리하므로 패딩이 필요할 수 있으나,
-	// 언리얼의 SaveGameToMemory는 보통 그대로 처리가 가능합니다. 
-	// 안전을 위해 FAES::KeySize(32)에 맞게 TCHAR를 AnsiChar로 변환합니다.
+	// [핵심 수정] 2. AES 블록 크기(16바이트)에 맞게 패딩 추가
+	// 부족한 바이트 수만큼 배열 끝에 0(Zero)을 채워 16의 배수로 만듭니다.
+	int32 BytesToPad = FAES::AESBlockSize - (ObjectBytes.Num() % FAES::AESBlockSize);
+	ObjectBytes.AddZeroed(BytesToPad);
+
+	// 3. AES 암호화 수행
 	FTCHARToUTF8 KeyUtf8(*GetEncryptKey());
 	FAES::FAESKey AESKey;
 	FMemory::Memcpy(AESKey.Key, KeyUtf8.Get(), 32); // 32바이트 복사
 
+	// 이제 ObjectBytes의 크기가 16의 배수이므로 안전하게 암호화됩니다.
 	FAES::EncryptData(ObjectBytes.GetData(), ObjectBytes.Num(), AESKey);
 
-	// 3. 파일로 저장
-	FString SaveFile = GetSaveFilePath(UEnum::GetValueAsString(InSaveType));
+	// 4. 파일로 저장
+	FString SaveFile = GetSaveFilePath(StaticEnum<ESaveType>()->GetNameStringByValue(static_cast<int64>(InSaveType)));
 	return FFileHelper::SaveArrayToFile(ObjectBytes, *SaveFile);
 }
 
@@ -46,7 +49,7 @@ USaveGame* UDataEncryptHelper::LoadGameEncrypted(ESaveType InSaveType)
 		return nullptr;
 	}
 
-	FString SaveFile = GetSaveFilePath(UEnum::GetValueAsString(InSaveType));
+	FString SaveFile = GetSaveFilePath(StaticEnum<ESaveType>()->GetNameStringByValue(static_cast<int64>(InSaveType)));
 
 	// 1. 파일이 존재하는지 확인
 	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*SaveFile))
@@ -74,7 +77,7 @@ USaveGame* UDataEncryptHelper::LoadGameEncrypted(ESaveType InSaveType)
 
 void UDataEncryptHelper::LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESaveType InSaveType)
 {
-	FString SlotName = UEnum::GetValueAsString(InSaveType);
+	FString SlotName = StaticEnum<ESaveType>()->GetNameStringByValue(static_cast<int64>(InSaveType));
 
 	Async(EAsyncExecution::Thread, [SlotName, OnLoaded, InSaveType]()
 		{

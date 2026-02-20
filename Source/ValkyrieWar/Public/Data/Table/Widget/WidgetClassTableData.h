@@ -18,8 +18,8 @@ struct VALKYRIEWAR_API FWidgetClassTableData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EUIType UIType;
+	EUIType UIType = EUIType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftClassPtr<UBaseWidget> WidgetClass;
+	TSoftClassPtr<UBaseWidget> WidgetClass = nullptr;
 };

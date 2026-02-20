@@ -23,4 +23,6 @@ public:
 
 private:
 	ELoginState State = ELoginState::Init;
+
+	bool bIsAccountExist = false;
 };

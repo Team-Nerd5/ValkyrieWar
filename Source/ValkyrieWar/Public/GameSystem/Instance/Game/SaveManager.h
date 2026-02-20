@@ -53,7 +53,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UValkyrieSaveGame> Valkyrie = nullptr;
 
-
+	int32 LoadTask = 0;
 protected:
 
 	void InitSetDataAction();
@@ -71,7 +71,7 @@ protected:
 
 	void SetItemData();
 public:
-	void LoadAllData();
+	int32 LoadAllData();
 
 	//게임 로드 1순위 계정 체크
 	bool IsAcountExist();
@@ -81,5 +81,9 @@ public:
 
 	void UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter);
 
+
+	void CreateAccount(FString& InNickname);
+
+	void LoadData(ESaveType InSaveType);
 	void SaveData(ESaveType InSaveType);
 };

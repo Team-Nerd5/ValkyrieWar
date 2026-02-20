@@ -15,6 +15,7 @@ enum class EUIType : uint8
 
 	//로딩은 로딩 레벨 자체에 열어두는것도
 	Loading,
+	PopupCreateAccount,
 
 	//Lobby Popup
 	PopupCharacterInfo,

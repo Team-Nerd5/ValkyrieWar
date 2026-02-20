@@ -12,6 +12,7 @@ void UValkyrieModule::Initialize(UGameManager* InGameManager)
 		DataTable = GameManager->GetGameData(ETableDataType::Valkyrie);
 		MakeData();
 	}
+	SendDataLoadComplete();
 }
 
 void UValkyrieModule::MakeData()

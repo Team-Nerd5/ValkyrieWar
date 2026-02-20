@@ -19,6 +19,8 @@ public:
 
 protected:
 	virtual void MakeData() {}
+
+	virtual void SendDataLoadComplete();
 protected:
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;

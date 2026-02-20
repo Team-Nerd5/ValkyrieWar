@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "GameSystem/Base/BaseWidget.h"
 #include "LoadingWidget.generated.h"
 
 class UProgressBar;
@@ -11,7 +11,7 @@ class UProgressBar;
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API ULoadingWidget : public UUserWidget
+class VALKYRIEWAR_API ULoadingWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 protected:

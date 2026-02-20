@@ -19,9 +19,9 @@ public:
 	FString Nickname;
 
 	UPROPERTY()
-	int32 Level;
+	int32 Level = 1;
 
 	UPROPERTY()
-	int32 Exp;
+	int32 Exp = 0;
 
 };

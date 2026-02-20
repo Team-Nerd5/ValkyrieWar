@@ -3,8 +3,10 @@
 
 #include "GameSystem/Instance/Game/SaveManager.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/DataEncryptHelper.h"
 #include "GameSystem/Library/GameSaveHelper.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Object/Save/ValkyrieWarSaveGame.h"
 
@@ -25,6 +27,8 @@ void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	InitSetDataAction();
+
+	InitSaveDataAction();
 }
 
 void USaveManager::Deinitialize()
@@ -33,7 +37,7 @@ void USaveManager::Deinitialize()
 }
 
 
-void USaveManager::LoadAllData()
+int32 USaveManager::LoadAllData()
 {
 	const UEnum* EnumPtr = StaticEnum<ESaveType>();
 
@@ -52,10 +56,12 @@ void USaveManager::LoadAllData()
 			FOnSaveGameLoaded OnLoadedDelegate;
 			OnLoadedDelegate.BindDynamic(this, &USaveManager::OnDataLoaded);
 
+			LoadTask++;
 			//데이터 암호화 로드 비동기...
 			UDataEncryptHelper::LoadGameEncryptedAsync(OnLoadedDelegate, static_cast<ESaveType>(EnumPtr->GetValueByIndex(i)));
 		}
 	}
+	return LoadTask;
 }
 
 uint64 USaveManager::GetUserId()
@@ -175,6 +181,12 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 			LoadDataInternal(InSaveType, Data);
 		}		
 	}
+
+	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
+	if (EventSystem)
+	{
+		EventSystem->Login.OnDataLoadComplete.Broadcast();
+	}
 }
 
 
@@ -204,6 +216,25 @@ void USaveManager::SetItemData()
 				DataManager->GetItemModule()->LoadItem(Data.Value->UID, Data.Value->Amount, Data.Value->EquipCharacter);
 			}
 		}
+	}
+}
+
+void USaveManager::CreateAccount(FString& InNickname)
+{
+	if (Account)
+	{
+		Account->Nickname = InNickname;
+
+		SaveInternal(ESaveType::Account);
+	}
+}
+
+void USaveManager::LoadData(ESaveType InSaveType)
+{
+	USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
+	if (Data)
+	{
+		LoadDataInternal(InSaveType, Data);
 	}
 }
 

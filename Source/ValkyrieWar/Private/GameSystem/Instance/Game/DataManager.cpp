@@ -9,13 +9,12 @@ void UDataManager::Initialize(FSubsystemCollectionBase& Collection)
 
 	GameManager = Cast<UGameManager>(GetGameInstance());
 
-	CreateData();
 }
 
-void UDataManager::CreateData()
+int32 UDataManager::CreateData()
 {
 	UE_LOG(LogTemp, Log, TEXT("TableData Start Create"));
-	//음.. 그냥 순서대로 해야하나..?
+
 	InitializeData(ItemModule);
 	InitializeData(ValkyrieModule);
 
@@ -25,4 +24,5 @@ void UDataManager::CreateData()
 	InitializeData(AttackModule);
 	InitializeData(SkillModule);
 
+	return TaskCount;
 }

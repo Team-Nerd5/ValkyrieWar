@@ -181,11 +181,18 @@ T* UUIManager::GetOrCreateWidgetInternal(TSubclassOf<T> WidgetClassFactory)
 template<typename T>
 TSubclassOf<T> UUIManager::GetUIClassInternal(EUIType InUIType)
 {
+    static_assert(TIsDerivedFrom<T, UBaseWidget>::IsDerived, "T must be a descendant of UBaseWidget");
+
     UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
 
     if (GameManager)
     {
-        return GameManager->GetUIClass(InUIType);
+        TSubclassOf<UBaseWidget> WidgetClass = GameManager->GetUIClass(InUIType);
+
+        if (WidgetClass)
+        {
+            return WidgetClass.Get();
+        }
     }
 
     return nullptr;
@@ -212,7 +219,7 @@ T* UUIManager::OpenUIInternal(TSubclassOf<T> TargetClassFactory)
     }
 
     //캐싱된 인스턴스가 있다면 반환, 없으면 생성 후 반환
-    T* Widget = GetOrCreateWidget<T>(TargetClassFactory);
+    T* Widget = GetOrCreateWidgetInternal<T>(TargetClassFactory);
     if (!Widget)
     {
         return nullptr;

@@ -13,6 +13,7 @@ void USkillEffectModule::Initialize(UGameManager* InGameManager)
 		DataTable = GameManager->GetGameData(ETableDataType::SkillEffect);
 		MakeData();
 	}
+	SendDataLoadComplete();
 }
 
 TArray<USkillEffectData*> USkillEffectModule::GetEffects(int32 InGroupId)

@@ -16,7 +16,7 @@ struct VALKYRIEWAR_API FMapLinkTableData : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EMapType UIType;
+	EMapType UIType = EMapType::Login;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSoftObjectPtr<UWorld> Map;

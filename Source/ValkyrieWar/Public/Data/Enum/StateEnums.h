@@ -9,9 +9,11 @@ enum class ELoginState : uint8
 {
 	Init,
 	CheckAccount,
+	LoadAccount,
+	ReadyToStart,
+	CheckNickname,
+	StartCreateAccount,
 	CreateAccount,
-	LoadData,
-	MakeSaveData,
 	MoveToLobby,
 };
 

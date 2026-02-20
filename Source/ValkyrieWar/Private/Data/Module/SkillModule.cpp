@@ -12,6 +12,7 @@ void USkillModule::Initialize(UGameManager* InGameManager)
 		DataTable = GameManager->GetGameData(ETableDataType::Skill);
 		MakeData();
 	}
+	SendDataLoadComplete();
 }
 
 TArray<USkillData*> USkillModule::GetSkillData(TArray<int32> InDataId)

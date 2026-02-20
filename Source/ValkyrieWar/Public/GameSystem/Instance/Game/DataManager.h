@@ -24,7 +24,7 @@ class VALKYRIEWAR_API UDataManager : public UGameInstanceSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	void CreateData();
+	int32 CreateData();
 
 public:
 	FORCEINLINE UItemModule* GetItemModule() const { return ItemModule; }
@@ -51,6 +51,8 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;
+
+	int32 TaskCount = 0;
 };
 
 template<typename T>
@@ -65,6 +67,7 @@ inline void UDataManager::InitializeData(TObjectPtr<T>& InVal)
 			InVal = NewObject<T>(this);
 		}
 		InVal->Initialize(GameManager.Get());
+		TaskCount++;
 	}
 
 }

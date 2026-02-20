@@ -3,14 +3,17 @@
 
 #include "GameSystem/Instance/Game/LevelManager.h"
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/Loading/LoadingWidget.h"
 
 void ULevelManager::Initialize(FSubsystemCollectionBase& Collection)
 {
-    Super::Initialize(Collection);
-
+    Super::Initialize(Collection);	
 }
 
 void ULevelManager::Deinitialize()
@@ -36,12 +39,32 @@ void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
 	StartDataLoading();
 }
 
+void ULevelManager::InitEvent()
+{
+	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
+	if (EventSystem)
+	{
+		EventSystem->Login.OnDataLoadComplete.AddDynamic(this, &ULevelManager::OnDataLoadComplete);
+	}
+}
+
 void ULevelManager::StartDataLoading()
 {
 	CurrentState = ELoadingState::LoadingData;
 
-	DataLoadProgress = 1.0f;
-	OnDataLoadCompleted();
+	//데이터 로드..
+	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+	if (DataManager)
+	{
+		DataLoadTask += DataManager->CreateData();
+	}
+	USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>();
+	if (SaveManager)
+	{
+		DataLoadTask += SaveManager->LoadAllData();
+	}
+
+	DataLoadProgress = DataLoadedTask / DataLoadTask;
 }
 
 void ULevelManager::OnDataLoadCompleted()
@@ -97,4 +120,14 @@ float ULevelManager::CalculateCombinedProgress() const
 	}
 
 	return 0.0f;
+}
+
+void ULevelManager::OnDataLoadComplete()
+{
+	DataLoadedTask += 1.0f;
+
+	if (static_cast<int32>(DataLoadedTask) == DataLoadTask)
+	{
+		OnDataLoadCompleted();
+	}
 }

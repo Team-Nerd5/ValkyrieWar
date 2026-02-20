@@ -12,6 +12,8 @@ void UItemModule::Initialize(UGameManager* InGameManager)
 		DataTable = GameManager->GetGameData(ETableDataType::Item);
 		MakeData();
 	}
+
+	SendDataLoadComplete();
 }
 
 void UItemModule::MakeData()

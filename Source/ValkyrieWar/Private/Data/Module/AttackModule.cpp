@@ -13,6 +13,7 @@ void UAttackModule::Initialize(UGameManager* InGameManager)
 		DataTable = GameManager->GetGameData(ETableDataType::Attack);
 		MakeData();
 	}
+	SendDataLoadComplete();
 }
 
 void UAttackModule::MakeData()

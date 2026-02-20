@@ -24,6 +24,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "LevelManager")
 	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap);
 
+	void InitEvent();
+
 	// 위젯에서 호출할 진척도 반환 함수 (짧으므로 FORCEINLINE 처리)
 	// 위젯 NativeTick
 	FORCEINLINE float GetLoadingProgress() const { return CalculateCombinedProgress(); }
@@ -37,6 +39,10 @@ private:
 
 	float CalculateCombinedProgress() const;
 
+
+	UFUNCTION()
+	void OnDataLoadComplete();
+
 private:
 	UPROPERTY()
 	TSoftObjectPtr<UWorld> TargetMap;
@@ -45,4 +51,7 @@ private:
 
 	ELoadingState CurrentState = ELoadingState::None;
 	float DataLoadProgress = 0.0f;
+
+	int32 DataLoadTask = 0;
+	float DataLoadedTask = 0;
 };

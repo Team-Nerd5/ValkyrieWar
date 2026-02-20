@@ -3,8 +3,11 @@
 
 #include "Map/Login/Controller/LoginPlayerController.h"
 #include "GameSystem/State/Game/LoginGameState.h"
+
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 void ALoginPlayerController::BeginPlay()
@@ -14,6 +17,11 @@ void ALoginPlayerController::BeginPlay()
 	if (EventSystem)
 	{
 		EventSystem->Login.OnLoginStateChanged.AddDynamic(this, &ALoginPlayerController::ChageGameState);
+	}
+
+	if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
+	{
+		LevelManager->InitEvent();
 	}
 
 	ChageGameState(ELoginState::Init);

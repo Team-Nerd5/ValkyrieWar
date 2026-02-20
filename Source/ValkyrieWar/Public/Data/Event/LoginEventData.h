@@ -8,6 +8,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginStateChanged, ELoginState, InState);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDataLoadComplete);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReadyToStart);
 /**
  * 
  */
@@ -17,4 +19,6 @@ struct VALKYRIEWAR_API FLoginEventData
 	GENERATED_BODY()
 public:
 	FOnLoginStateChanged OnLoginStateChanged;
+	FOnDataLoadComplete OnDataLoadComplete;
+	FOnReadyToStart OnReadyToStart;
 };
