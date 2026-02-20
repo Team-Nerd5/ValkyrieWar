@@ -24,6 +24,8 @@ void ALoginPlayerController::BeginPlay()
 		LevelManager->InitEvent();
 	}
 
+	bShowMouseCursor = true;
+
 	ChageGameState(ELoginState::Init);
 }
 

@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/StateEnums.h"
 #include "LobbyEventData.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyStateChanged, ELobbyState, InState);
 /**
  * 
  */
@@ -13,5 +15,5 @@ struct VALKYRIEWAR_API FLobbyEventData
 {
 	GENERATED_BODY()
 public:
-	//팝업들 열어줄 이벤트...
+	FOnLobbyStateChanged OnLobbyStateChanged;
 };

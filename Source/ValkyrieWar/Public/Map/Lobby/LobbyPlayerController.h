@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Data/Enum/StateEnums.h"
 #include "LobbyPlayerController.generated.h"
 
 /**
@@ -14,6 +15,9 @@ class VALKYRIEWAR_API ALobbyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-public:
-	void OpenLobbyUI();
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void ChageGameState(ELobbyState InState);
 };
