@@ -5,7 +5,7 @@
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
 #include "Data/Struct/UnitEngagementSlotData.h"
-#include "Test/SDCH/TestInterface/TestTargetReservationInterface.h"
+#include "Interface/Unit/TargetReservationInterface.h"
 
 void UBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -151,9 +151,9 @@ void UBattleDirectorSubsystem::NotifyTargetAssigned(AUnitCharacter* Unit, AActor
 {
     if (!Unit) return;
 
-    if (Unit->GetClass()->ImplementsInterface(UTestTargetReservationInterface::StaticClass()))
+    if (Unit->GetClass()->ImplementsInterface(UTargetReservationInterface::StaticClass()))
     {
-        ITestTargetReservationInterface::Execute_OnTargetAssigned(Unit, NewTarget);
+        ITargetReservationInterface::Execute_OnTargetAssigned(Unit, NewTarget);
     }
 }
 
