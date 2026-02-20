@@ -47,5 +47,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bShouldPivot; // 급선회 트리거
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement|Montage")
+	class UAnimMontage* PivotMontage; //급 선회 몽타주
+
 
 };
