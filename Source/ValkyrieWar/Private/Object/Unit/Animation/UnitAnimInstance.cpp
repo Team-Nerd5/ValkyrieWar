@@ -6,14 +6,14 @@
 #include "Object/Unit/Component/UnitBrainComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-void UUnitAnimSInstance::NativeInitializeAnimation()
+void UUnitAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	CacheOwner();
 	ResetForReuse();
 }
 
-void UUnitAnimSInstance::NativeUpdateAnimation(float DeltaSeconds)
+void UUnitAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
@@ -26,7 +26,7 @@ void UUnitAnimSInstance::NativeUpdateAnimation(float DeltaSeconds)
 	UpdateFromOwner(DeltaSeconds);
 }
 
-void UUnitAnimSInstance::CacheOwner()
+void UUnitAnimInstance::CacheOwner()
 {
 	OwnerUnit = nullptr;
 	CachedMoveComp = nullptr;
@@ -41,7 +41,7 @@ void UUnitAnimSInstance::CacheOwner()
 	CachedMoveComp = CharOwner->GetCharacterMovement();
 }
 
-void UUnitAnimSInstance::UpdateFromOwner(float DeltaSeconds)
+void UUnitAnimInstance::UpdateFromOwner(float DeltaSeconds)
 {
 	if (!OwnerUnit)
 	{
@@ -98,7 +98,7 @@ void UUnitAnimSInstance::UpdateFromOwner(float DeltaSeconds)
 	bIsAttacking = IsAnyMontagePlaying();
 }
 
-void UUnitAnimSInstance::ResetForReuse()
+void UUnitAnimInstance::ResetForReuse()
 {
 	// 풀링 재사용 시 "남아있는 애니 상태" 제거가 핵심
 	StopAllMontages(0.f);

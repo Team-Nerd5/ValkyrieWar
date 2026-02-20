@@ -13,7 +13,7 @@ class UCharacterMovementComponent;
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UUnitAnimSInstance : public UAnimInstance
+class VALKYRIEWAR_API UUnitAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
