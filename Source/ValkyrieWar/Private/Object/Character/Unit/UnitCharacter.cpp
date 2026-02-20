@@ -293,7 +293,7 @@ void AUnitCharacter::OnGet_Implementation()
 		}
 	}
 
-	bInPool = true;
+	bInPool = false;
 }
 
 void AUnitCharacter::OnRelease_Implementation()
@@ -323,7 +323,7 @@ void AUnitCharacter::OnRelease_Implementation()
 
 	if (Brain) Brain->ResetRuntimeBrainState();
 
-	bInPool = false;
+	bInPool = true;
 	OwnerSpawner = nullptr;
 }
 
