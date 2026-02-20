@@ -2,10 +2,10 @@
 
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
-#include "Test/SDCH/TestUnit/TestCharacters/TestController/TestBaseAIController.h"
-#include "Test/SDCH/TestActors/TestUnitSpawner.h"
+#include "Object/AI/Controller/UnitAIController.h"
 #include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
+#include "GameSystem/Base/BaseUnitSpawner.h"
 #include "Data/Struct/UnitEngagementSlotData.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
@@ -19,7 +19,7 @@ AUnitCharacter::AUnitCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Brain = CreateDefaultSubobject<UUnitBrainComponent>(TEXT("TestBrain"));
+	Brain = CreateDefaultSubobject<UUnitBrainComponent>(TEXT("Brain"));
 
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -60,7 +60,7 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	SkillDataList = InData->GetSkillData();
 }
 
-void AUnitCharacter::SetOwnerSpawner(ATestUnitSpawner* InSpawner)
+void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
 {
 	OwnerSpawner = InSpawner;
 }
@@ -184,7 +184,7 @@ void AUnitCharacter::HandleDeath(AController* Killer, AActor* DamageCauser)
 	UnregisterFromBattleDirector(true);
 
 	// 2) AI/이동 정지
-	if (ATestBaseAIController* AIC = Cast<ATestBaseAIController>(GetController()))
+	if (AUnitAIController* AIC = Cast<AUnitAIController>(GetController()))
 	{
 		AIC->StopMovement();
 		AIC->ClearFocus(EAIFocusPriority::Gameplay);
@@ -292,6 +292,8 @@ void AUnitCharacter::OnGet_Implementation()
 			BrainComp->RestartLogic();
 		}
 	}
+
+	bInPool = true;
 }
 
 void AUnitCharacter::OnRelease_Implementation()
@@ -316,11 +318,12 @@ void AUnitCharacter::OnRelease_Implementation()
 	// 스포너 AliveCount 반영
 	if (OwnerSpawner.IsValid())
 	{
-		//OwnerSpawner->NotifyUnitReleased(this);
+		OwnerSpawner->NotifyUnitReleased(this);
 	}
 
 	if (Brain) Brain->ResetRuntimeBrainState();
 
+	bInPool = false;
 	OwnerSpawner = nullptr;
 }
 

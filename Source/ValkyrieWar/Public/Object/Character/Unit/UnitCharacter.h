@@ -10,7 +10,7 @@
 
 class UBattleDirectorSubsystem;
 class UObjectPoolSubsystem;
-class ATestUnitSpawner;
+class ABaseUnitSpawner;
 class UUnitBrainComponent;
 struct FUnitEngagementSlotData;
 
@@ -32,13 +32,15 @@ public:
 	//캐릭터 생성 시 데이터 세팅
 	void SetData(UUnitData* InData);
 
-		bool IsDead() const { return bDead; }
+	bool IsDead() const { return bDead; }
 
-	void SetOwnerSpawner(ATestUnitSpawner* InSpawner);
+	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
 
 	// 스포너가 스폰(또는 재사용) 시점에 세팅
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void SetPoolType(EPoolTypes InType) { MyPoolType = InType; }
+
+	inline bool IsInPool() { return bInPool; }
 
 	int32 FindSlotOfAttacker(AActor* Attacker) const;
 	int32 FindFirstFreeSlot() const;
@@ -178,13 +180,14 @@ private:
 	bool bDead = false;
 
 	UPROPERTY()
-	TWeakObjectPtr<ATestUnitSpawner> OwnerSpawner;
+	TWeakObjectPtr<ABaseUnitSpawner> OwnerSpawner;
 
 	float LastAttackTime = -1000.f;
 
 	FTimerHandle DestroyTimerHandle;
 
 	bool bRegisteredToBattleDirector = false;
+	bool bInPool;
 
 	UPROPERTY()
 	TWeakObjectPtr<AActor> LastAssignedTarget;
