@@ -38,3 +38,16 @@ void UValkyrieData::UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameMan
 		}
 	}
 }
+
+void UValkyrieData::Initialize(const FValkyrieDataRow* InTableData, UGameManager* InGameManager)
+{
+	 UID = InGameManager->GetCharacterUID();
+
+	 MakeData(InTableData, InGameManager);
+}
+
+void UValkyrieData::LoadData(uint64 InUID, const FValkyrieDataRow* InTableData, UGameManager* InGameManager)
+{
+	UID = InUID;
+	MakeData(InTableData, InGameManager);
+}

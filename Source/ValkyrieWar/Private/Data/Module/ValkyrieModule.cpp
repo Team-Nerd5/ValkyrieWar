@@ -15,6 +15,32 @@ void UValkyrieModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
+bool UValkyrieModule::HasValkyrie(int32 InDataId)
+{
+	for (auto Valkyrie : OwnValkyries)
+	{
+		if (Valkyrie.Value->GetDataID() == InDataId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UValkyrieModule::CreateValkyrie(int32 InDataId)
+{
+	if (HasValkyrie(InDataId))
+	{
+		//조각 아이템 생성
+		return;
+	}
+
+	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
+	NewValkyrie->Initialize(*TableDataByDataId.Find(InDataId), GameManager.Get());
+
+	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
+}
+
 void UValkyrieModule::MakeData()
 {
 	if (DataTable)

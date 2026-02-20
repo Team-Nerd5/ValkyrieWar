@@ -25,6 +25,10 @@ public:
 		else
 			return nullptr;
 	}
+
+	bool HasValkyrie(int32 InDataId);
+
+	void CreateValkyrie(int32 InDataId);
 protected:
 	virtual void MakeData() override;
 private:

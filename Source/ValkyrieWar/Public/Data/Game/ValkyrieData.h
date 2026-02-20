@@ -30,13 +30,21 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<USkillData>> SkillData;
 
-public:
 	//기본 데이터 세팅
 	void MakeData(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+
+public:
 	//장착된 무기 세팅
 	void UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager);
 
-	FORCEINLINE uint64 GetUID() { return UID; }
+	//새로 캐릭터를 획득
+	void Initialize(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+
+	//저장된 데이터 로드 시(모듈에서 호출되는걸로 하자...)
+	void LoadData(uint64 InUID, const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+
+	FORCEINLINE const uint64 GetUID() { return UID; }
+	FORCEINLINE const int32 GetDataID() { return TableData ? TableData->DataId : 0; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 };
