@@ -174,7 +174,7 @@ protected:
 	TObjectPtr<UUnitData> Data = nullptr;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	UPROPERTY(VisibleAnywhere, Category = "Health")
 	bool bDead = false;
 
 	UPROPERTY()
