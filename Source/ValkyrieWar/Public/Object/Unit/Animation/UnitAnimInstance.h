@@ -4,18 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Data/Enum/CommonEnums.h"
 #include "UnitAnimInstance.generated.h"
 
 class AUnitCharacter;
 class UCharacterMovementComponent;
+class UBlendSpace;
 
-/**
- * 
- */
 UCLASS()
 class VALKYRIEWAR_API UUnitAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
+public:
+	// ===== ABP/게임코드에서 호출 가능 =====
+	UFUNCTION(BlueprintCallable, Category = "Unit|Anim")
+	void ResetForReuse();
 
 public:
 	// ===== ABP에서 읽을 런타임 값들 =====
@@ -28,7 +32,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim")
 	float Speed2D = 0.f;
 
-	// 이동 방향(-180~180). 스트레이프/8방향 블렌드에 유용
 	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim")
 	float Direction = 0.f;
 
@@ -41,26 +44,39 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim")
 	bool bDead = false;
 
-	// “전투 중인지” (ReservedTarget 존재 등)
 	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim")
 	bool bInCombat = false;
 
-	// 옵션: 공격 중(몽타주 재생중 등) 표시
 	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim")
 	bool bIsAttacking = false;
 
-	// ===== ABP/게임코드에서 호출 가능 =====
-	// 풀에서 재사용(OnGet) 시 애니 상태를 깨끗하게 초기화
-	UFUNCTION(BlueprintCallable, Category = "Unit|Anim")
-	void ResetForReuse();
+	// ===== 병과별 Locomotion BS =====
+	// ABP에서 BlendSpace Player의 Asset으로 바로 꽂아 쓸 "현재 선택된" BS
+	UPROPERTY(BlueprintReadOnly, Category = "Unit|Anim|Assets")
+	TObjectPtr<UBlendSpace> LocomotionBS_Current = nullptr;
+
+	// 어떤 병과에도 매핑이 없거나 병과를 못 읽었을 때 사용할 기본 BS
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit|Anim|Assets")
+	TObjectPtr<UBlendSpace> LocomotionBS_Default = nullptr;
 
 protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 private:
+	UPROPERTY()
 	TObjectPtr<UCharacterMovementComponent> CachedMoveComp = nullptr;
+
+	// Owner가 바뀌었는지 판단용 (풀링 재사용 시 중요)
+	UPROPERTY()
+	TWeakObjectPtr<APawn> CachedPawnOwner;
 
 	void CacheOwner();
 	void UpdateFromOwner(float DeltaSeconds);
+
+	// 병과에 맞는 BS를 골라 LocomotionBS_Current에 넣는다
+	void ApplyLocomotionBlendSpace();
+
+	// 안전장치
+	void EnsureLocomotionBSValid();
 };
