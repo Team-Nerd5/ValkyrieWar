@@ -13,6 +13,10 @@ UCLASS()
 class VALKYRIEWAR_API ULobbyWidget : public UBaseWidget
 {
 	GENERATED_BODY()
+
+public:
+	virtual void OpenUI() override;
+
 	//버튼 목록들..
 	//탑 메뉴는 따로
 	//버튼은 컨텐츠 테이블 불러와서 세팅
