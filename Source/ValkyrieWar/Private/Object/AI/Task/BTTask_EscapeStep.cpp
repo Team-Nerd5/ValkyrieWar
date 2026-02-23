@@ -10,7 +10,7 @@
 
 UBTTask_EscapeStep::UBTTask_EscapeStep()
 {
-	NodeName = TEXT("Test Escape Step (SideStep)");
+	NodeName = TEXT("Escape Step (SideStep)");
 	bNotifyTaskFinished = true;
 }
 

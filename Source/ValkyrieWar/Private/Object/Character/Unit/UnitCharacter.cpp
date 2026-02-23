@@ -21,8 +21,8 @@ AUnitCharacter::AUnitCharacter()
 
 	Brain = CreateDefaultSubobject<UUnitBrainComponent>(TEXT("Brain"));
 
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
