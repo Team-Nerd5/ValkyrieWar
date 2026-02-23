@@ -62,7 +62,9 @@ void UUIManager::NotifyInputModeChange()
 	{
 		// Popup이 있을 때는 UI Only 모드
 		FInputModeUIOnly InputMode;
-		InputMode.SetWidgetToFocus(PopupUIStack.Last()->TakeWidget());
+
+		PopupUIStack.Last()->SetIsFocusable(true);
+		InputMode.SetWidgetToFocus(PopupUIStack.Last()->GetCachedWidget());
 		PC->SetInputMode(InputMode);
 		PC->SetShowMouseCursor(true);
 	}
