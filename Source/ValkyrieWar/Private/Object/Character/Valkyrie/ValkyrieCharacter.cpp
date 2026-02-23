@@ -142,6 +142,9 @@ void AValkyrieCharacter::Attack()
 
 		if (MontageToPlay)
 		{
+			GetCharacterMovement()->StopMovementImmediately();
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+
 			PlayAnimMontage(MontageToPlay);
 		}
 	}

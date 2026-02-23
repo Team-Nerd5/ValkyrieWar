@@ -215,10 +215,9 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
 	
 	if (CurrentControlMode == EInputControlMode::Auto) return;
-
 	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
 	{
-		if (ControlledCharacter->bIsPivotLocked)
+		if (ControlledCharacter->bIsPivotLocked || ControlledCharacter->bIsAttacking)
 		{
 			return;
 		}
