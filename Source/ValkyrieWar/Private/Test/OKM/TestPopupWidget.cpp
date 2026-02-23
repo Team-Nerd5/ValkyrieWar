@@ -2,7 +2,6 @@
 
 
 #include "Test/OKM/TestPopupWidget.h"
-#include "Data/Enum/DataEnums.h"
 
 void UTestPopupWidget::NativeConstruct()
 {
@@ -44,7 +43,7 @@ void UTestPopupWidget::CloseUI()
 	Super::CloseUI();
 }
 
-void UTestPopupWidget::InitMenu(UItemData* ItemData)
+void UTestPopupWidget::InitMenu(UItemData* ItemData, EUIType InUIType)
 {
 #pragma region 유효성 검사
 	if (!ItemData)
@@ -56,30 +55,55 @@ void UTestPopupWidget::InitMenu(UItemData* ItemData)
 
 	CachedItemData = ItemData;
 
-	Btn_Sell->SetVisibility(ESlateVisibility::Visible);
-	Btn_Cancel->SetVisibility(ESlateVisibility::Visible);
-
-	if (ItemData->GetItemGroup() == EItemGroup::Weapon ||
-		ItemData->GetItemGroup() == EItemGroup::Helmet ||
-		ItemData->GetItemGroup() == EItemGroup::Armor)
+	if (InUIType == EUIType::PopupInventory)					// 인벤토리
 	{
+		Btn_Cancel->SetVisibility(ESlateVisibility::Visible);
+		Btn_Sell->SetVisibility(ESlateVisibility::Visible);
+
+		// 장비가 아닐 때만 사용 버튼 표시
+		if (CachedItemData->GetItemGroup() == EItemGroup::None ||
+			CachedItemData->GetItemGroup() == EItemGroup::Growth)
+		{
+			Btn_Use->SetVisibility(ESlateVisibility::Visible);
+		}
+
+		Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
+		Btn_UnEquip->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else if (InUIType == EUIType::PopupCharacterInfo)			// 장비창 (Enum이 잘못 됬다면 추후 수정)
+	{
+		Btn_Cancel->SetVisibility(ESlateVisibility::Visible);
+
+		Btn_Sell->SetVisibility(ESlateVisibility::Hidden);
+		Btn_Use->SetVisibility(ESlateVisibility::Hidden);
+
 		if (ItemData->GetEquipCharacter() == 0)
 		{
 			Btn_Equip->SetVisibility(ESlateVisibility::Visible);
-			Btn_UnEquip->SetVisibility(ESlateVisibility::Collapsed);
+			Btn_UnEquip->SetVisibility(ESlateVisibility::Hidden);
 		}
 		else
 		{
-			Btn_Equip->SetVisibility(ESlateVisibility::Collapsed);
+			Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
 			Btn_UnEquip->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else
-	{
-		Btn_Use->SetVisibility(ESlateVisibility::Visible);
-		Btn_Equip->SetVisibility(ESlateVisibility::Collapsed);
-		Btn_UnEquip->SetVisibility(ESlateVisibility::Collapsed);
-	}
+		return;
+}
+
+void UTestPopupWidget::PopupSetHidden()
+{
+	if(Btn_Sell->GetVisibility() == ESlateVisibility::Visible)
+		Btn_Sell->SetVisibility(ESlateVisibility::Hidden);
+	if (Btn_Use->GetVisibility() == ESlateVisibility::Visible)
+		Btn_Use->SetVisibility(ESlateVisibility::Hidden);
+	if (Btn_Equip->GetVisibility() == ESlateVisibility::Visible)
+		Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
+	if (Btn_UnEquip->GetVisibility() == ESlateVisibility::Visible)
+		Btn_UnEquip->SetVisibility(ESlateVisibility::Hidden);
+	if (Btn_Cancel->GetVisibility() == ESlateVisibility::Visible)
+		Btn_Cancel->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UTestPopupWidget::Sell()
@@ -105,8 +129,10 @@ void UTestPopupWidget::Sell()
 	// 개수 입력 필요시 추가
 	InventorySystem->SellItem(CachedItemData, 1);
 
-	WorldEventSystem->Widget.OnChangeItemAmount.Broadcast();
+	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	CachedItemData = nullptr;
+
+	PopupSetHidden();
 }
 
 void UTestPopupWidget::Use()
@@ -132,12 +158,10 @@ void UTestPopupWidget::Use()
 	// 개수 입력 필요시 추가
 	InventorySystem->UseItem(CachedItemData, 1);
 
-	Btn_Use->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_Equip->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_UnEquip->SetVisibility(ESlateVisibility::Collapsed);
-
-	WorldEventSystem->Widget.OnChangeItemAmount.Broadcast();
+	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	CachedItemData = nullptr;
+
+	PopupSetHidden();
 }
 
 void UTestPopupWidget::Equip()
@@ -156,15 +180,13 @@ void UTestPopupWidget::Equip()
 #pragma endregion
 
 	// 추후 케릭터UID 입력 필요
-
 	const uint64 TempCharacterUID = 1001001;
 	InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
 
-	Btn_Use->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_Equip->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_UnEquip->SetVisibility(ESlateVisibility::Collapsed);
+	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
 
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast();
+	PopupSetHidden();
 }
 
 void UTestPopupWidget::UnEquip()
@@ -184,9 +206,9 @@ void UTestPopupWidget::UnEquip()
 
 	InventorySystem->UnEquipItem(CachedItemData);
 
-	Btn_Use->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_Equip->SetVisibility(ESlateVisibility::Collapsed);
-	Btn_UnEquip->SetVisibility(ESlateVisibility::Collapsed);
+	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0);
 
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast();
+	PopupSetHidden();
 }
+

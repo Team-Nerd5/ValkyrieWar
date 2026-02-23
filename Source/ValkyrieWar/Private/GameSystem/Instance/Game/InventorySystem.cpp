@@ -14,6 +14,9 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	DataManager = Cast<UDataManager>(GetGameInstance()->GetSubsystem<UDataManager>());
 
+	// 인벤토리 데이터 테스트용
+	DataManager->CreateData();
+
 	GetFilteredInventoryList(EItemGroup::None);
 }
 
@@ -52,6 +55,32 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 		}
 	}
 	return FilteredResult;
+}
+
+UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup)
+{
+#pragma region 유효성 검사
+	if (!(DataManager->GetItemModule()))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(Equipped)] ItemModule이 없습니다"));
+		return nullptr;
+	}
+#pragma endregion
+
+	for (auto& Data : DataManager->GetItemModule()->GetItems())
+	{
+		UItemData* Item = Data.Value;
+		if (InCharacterUID == 0)
+		{
+			return nullptr;
+		}
+
+		if (Item && Item->GetEquipCharacter() == InCharacterUID && Item->GetItemGroup() == InItemGroup)
+		{
+			return Item;
+		}
+	}
+	return nullptr;
 }
 
 void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
@@ -180,8 +209,8 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 
 		// 아이템 가격에 따른 플레이어 골드 추가 필요
 		// 테스트용
-		const FItemDataRow* Table = InItem->GetTableData();
-		SetMoney(Table->SellPrice);
+		//const FItemDataRow* Table = InItem->GetTableData();
+		//SetMoney(Table->SellPrice);
 	}
 	else
 	{
@@ -239,7 +268,6 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 	}
 
 	InItem->Equip(InCharacterUID);
-
 }
 
 void UInventorySystem::UnEquipItem(UItemData* InItem)
@@ -279,5 +307,5 @@ void UInventorySystem::TestAddItem()
 	AddItem(1000000010, 10, 1);
 
 	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
-	WorldEvent->Widget.OnChangeItemAmount.Broadcast();
+	WorldEvent->Widget.OnUpdateInventory.Broadcast();
 }

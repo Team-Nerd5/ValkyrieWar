@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "Data/Game/ItemData.h"
 #include "Components/Button.h"
+#include "Data/Enum/DataEnums.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "TestPopupWidget.generated.h"
@@ -30,8 +31,10 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void InitMenu(UItemData* ItemData);
+	void InitMenu(UItemData* ItemData, EUIType InUIType);
 
+	UFUNCTION(BlueprintCallable)
+	void PopupSetHidden();
 protected:
 	UFUNCTION()
 	void Sell();

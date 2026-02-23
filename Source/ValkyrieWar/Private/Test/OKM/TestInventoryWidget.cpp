@@ -18,6 +18,11 @@ void UTestInventoryWidget::NativeConstruct()
 	if(Btn_Close)
 		Btn_Close->OnClicked.AddDynamic(this, &UTestInventoryWidget::CloseUI);
 
+	if(Btn_Inventory)
+		Btn_Inventory->OnClicked.AddDynamic(this, &UTestInventoryWidget::FilterInventory);
+	if(Btn_Equipment)
+		Btn_Equipment->OnClicked.AddDynamic(this, &UTestInventoryWidget::FilterEquipment);
+
 	if(Btn_FilterReset)
 		Btn_FilterReset->OnClicked.AddDynamic(this, &UTestInventoryWidget::FilterReset);
 	if(Btn_FilterWeapon)
@@ -29,17 +34,16 @@ void UTestInventoryWidget::NativeConstruct()
 	if(Btn_FilterGrowth)
 		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UTestInventoryWidget::FIlterGrowth);
 
-	EventSystem->Widget.OnChangeItemAmount.AddDynamic(this, &UTestInventoryWidget::FilterReset);
-	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UTestInventoryWidget::FilterReset);
+	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UTestInventoryWidget::FilterReset);
+	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
 
 	TileView->OnItemClicked().AddUObject(this, &UTestInventoryWidget::ItemClicked);
 
-	PopupWidget->SetVisibility(ESlateVisibility::Collapsed);
+	PopupWidget->SetVisibility(ESlateVisibility::Hidden);
+	WeaponWidget->SetVisibility(ESlateVisibility::Hidden);
+	HelmetWidget->SetVisibility(ESlateVisibility::Hidden);
+	ArmorWidget->SetVisibility(ESlateVisibility::Hidden);
 
-	if (Money)
-		Money->SetText(FText::AsNumber(InventorySystem->GetMoney()));
-
-	FilterReset();
 	CloseUI();
 }
 
@@ -57,15 +61,67 @@ void UTestInventoryWidget::CloseUI()
 
 void UTestInventoryWidget::FilterReset()
 {
+	if (UIType == EUIType::PopupInventory)
+		FilterInventory();
+	else if (UIType == EUIType::PopupCharacterInfo)
+		FilterEquipment();
+	else
+		return;
+}
+
+void UTestInventoryWidget::FilterInventory()
+{
+	UIType = EUIType::PopupInventory;
+
 	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
+
+	PopupWidget->PopupSetHidden();
+	WeaponWidget->SetVisibility(ESlateVisibility::Hidden);
+	HelmetWidget->SetVisibility(ESlateVisibility::Hidden);
+	ArmorWidget->SetVisibility(ESlateVisibility::Hidden);
+	
+}
+
+void UTestInventoryWidget::FilterEquipment()	
+{
+	UIType = EUIType::PopupCharacterInfo;
+
+	CachedItemList.Empty();
+	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Weapon));
+	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Armor));
+	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Helmet));
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
+
+	PopupWidget->PopupSetHidden();
+	WeaponWidget->SetVisibility(ESlateVisibility::Visible);
+	HelmetWidget->SetVisibility(ESlateVisibility::Visible);
+	ArmorWidget->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID)
+{
+	UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Weapon);
+	UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Helmet);
+	UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Armor);
+
+	if (WeaponWidget)
+		WeaponWidget->EquipInfo(WeaponData);
+
+	if (HelmetWidget)
+		HelmetWidget->EquipInfo(HelmetData);
+
+	if (ArmorWidget)
+		ArmorWidget->EquipInfo(ArmorData);
+
+	return;
 }
 
 void UTestInventoryWidget::FilterWeapon()
 {
-	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Weapon);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
@@ -73,7 +129,6 @@ void UTestInventoryWidget::FilterWeapon()
 
 void UTestInventoryWidget::FilterArmor()
 {
-	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Armor);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
@@ -81,18 +136,17 @@ void UTestInventoryWidget::FilterArmor()
 
 void UTestInventoryWidget::FilterHelmet()
 {
-	CachedItemList.Empty();
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Helmet);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 }
 
 void UTestInventoryWidget::FIlterGrowth()
-{
-	CachedItemList.Empty();
+{	
 	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Growth);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
+	
 }
 
 void UTestInventoryWidget::ItemClicked(UObject* InItemData)
@@ -105,13 +159,13 @@ void UTestInventoryWidget::ItemClicked(UObject* InItemData)
 		return;
 	}
 #pragma endregion
-
 	if (PopupWidget)
 	{
-		PopupWidget->InitMenu(ItemData);
+		PopupWidget->InitMenu(ItemData, UIType);
 		PopupWidget->SetVisibility(ESlateVisibility::Visible);
 	}
-
 }
+
+
 
 

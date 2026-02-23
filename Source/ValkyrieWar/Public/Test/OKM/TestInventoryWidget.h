@@ -11,6 +11,7 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
 #include "Test/OKM/TestPopupWidget.h"
+#include "Test/OKM/TestEquipmentWidget.h"
 
 #include "TestInventoryWidget.generated.h"
 
@@ -34,6 +35,14 @@ public:
 	UFUNCTION()
 	void FilterReset();
 	UFUNCTION()
+	void FilterInventory();
+	UFUNCTION()
+	void FilterEquipment();
+
+	UFUNCTION()
+	void UpdateEquipmentUi(uint64 InCharacterUID);
+
+	UFUNCTION()
 	void FilterWeapon();
 	UFUNCTION()
 	void FilterArmor();
@@ -44,16 +53,21 @@ public:
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
+
+public:
+	FORCEINLINE void SetCurrentCharacterUID(uint64 inUID) { CurrentCharacterUID = inUID; }
 	
 protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> Money = nullptr;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> TileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Close = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Inventory = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Equipment = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterReset = nullptr;
@@ -69,10 +83,22 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTestPopupWidget> PopupWidget = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTestEquipmentWidget> WeaponWidget = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTestEquipmentWidget> HelmetWidget = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTestEquipmentWidget> ArmorWidget = nullptr;
+	
+
 private:
 	UInventorySystem* InventorySystem;
 
 	UWorldEventSystem* EventSystem;
 
 	TArray<UItemData*> CachedItemList;
+
+	EUIType UIType;
+
+	uint64 CurrentCharacterUID = 0;
 };

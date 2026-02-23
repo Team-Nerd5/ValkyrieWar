@@ -24,6 +24,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<UItemData*> GetFilteredInventoryList(EItemGroup InItemGroup);
 
+	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup);
+
 	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)
@@ -45,9 +47,4 @@ public:
 	// 아이템 추가 테스트용 함수
 	UFUNCTION(BlueprintCallable)
 	void TestAddItem();
-
-	inline int32 GetMoney() { return Money; }
-	inline void SetMoney(int32 AddMoney) { Money += AddMoney; }
-private:
-	int32 Money = 0;
 };
