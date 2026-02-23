@@ -9,7 +9,6 @@
 
 class AUnitCharacter;
 class UCharacterMovementComponent;
-class UBlendSpace;
 
 UCLASS()
 class VALKYRIEWAR_API UUnitAnimInstance : public UAnimInstance
