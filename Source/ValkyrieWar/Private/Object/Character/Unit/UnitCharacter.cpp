@@ -94,7 +94,8 @@ bool AUnitCharacter::HasFreeSlot() const
 
 bool AUnitCharacter::CanAttackNow(float Now) const
 {
-	return (Now - LastAttackTime) >= AttackCooldown;
+	// Attack Cooldown은 BT에서 Wait Task로 대체(2s ~ 3s)
+	return true;
 }
 
 bool AUnitCharacter::PerformAttack(AActor* Target)
