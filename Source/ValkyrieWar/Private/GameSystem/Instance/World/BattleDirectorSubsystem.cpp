@@ -35,24 +35,24 @@ const TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamA
 
 void UBattleDirectorSubsystem::RegisterUnit(AUnitCharacter* Unit)
 {
-    if (!Unit || !Unit->Brain) return;
-    GetTeamArray(Unit->Brain->Team).AddUnique(Unit);
+    if (!Unit || !Unit->GetBrain()) return;
+    GetTeamArray(Unit->GetBrain()->Team).AddUnique(Unit);
 
     // 적 베이스 링크
-    Unit->Brain->EnemyBase = GetEnemyBaseFor(Unit);
+    Unit->GetBrain()->EnemyBase = GetEnemyBaseFor(Unit);
 }
 
 void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
 {
-    if (!Unit || !Unit->Brain) return;
+    if (!Unit || !Unit->GetBrain()) return;
 
     // 내가 어떤 타깃에 예약돼 있었다면 해제 시도
-    if (AUnitCharacter* Target = Cast<AUnitCharacter>(Unit->Brain->ReservedTarget.Get()))
+    if (AUnitCharacter* Target = Cast<AUnitCharacter>(Unit->GetBrain()->ReservedTarget.Get()))
     {
         ReleaseReservation(Unit, Target);
     }
 
-    GetTeamArray(Unit->Brain->Team).Remove(Unit);
+    GetTeamArray(Unit->GetBrain()->Team).Remove(Unit);
 }
 
 void UBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActor)
@@ -93,9 +93,9 @@ float UBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, 
 
 AActor* UBattleDirectorSubsystem::GetEnemyBaseFor(const AUnitCharacter* Unit) const
 {
-    if (!Unit || !Unit->Brain) return nullptr;
+    if (!Unit || !Unit->GetBrain()) return nullptr;
 
-    const ETeam MyTeam = Unit->Brain->Team;
+    const ETeam MyTeam = Unit->GetBrain()->Team;
     const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
 
     // 1) 성벽을 적 기지로 취급: 적 팀의 WallAnchor 중 가장 가까운 앵커를 반환
@@ -159,9 +159,9 @@ void UBattleDirectorSubsystem::NotifyTargetAssigned(AUnitCharacter* Unit, AActor
 
 AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot(AUnitCharacter* Attacker, float Now) const
 {
-    if (!Attacker || !Attacker->Brain) return nullptr;
+    if (!Attacker || !Attacker->GetBrain()) return nullptr;
 
-    const ETeam MyTeam = Attacker->Brain->Team;
+    const ETeam MyTeam = Attacker->GetBrain()->Team;
     const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
 
     const TArray<TWeakObjectPtr<AUnitCharacter>>& Enemies = GetTeamArrayConst(EnemyTeam);
@@ -171,10 +171,10 @@ AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot(AUnitCharac
     // NOTE:
     // - 서브시스템은 "슬롯/attacker 제한" 정책을 유지한다.
     // - 여기서는 "어떤 후보를 우선할지"만 (TargetingPolicy)로 결정한다.
-    const ETargetingPolicy Policy = Attacker->Brain->TargetingPolicy;
+    const ETargetingPolicy Policy = Attacker->GetBrain()->TargetingPolicy;
 
     const float NearWallDistSq = NearWallDistance * NearWallDistance;
-    const float AttackRangeSq = Attacker->AttackRange * Attacker->AttackRange;
+    const float AttackRangeSq = Attacker->GetAttackRange() * Attacker->GetAttackRange();
 
     AUnitCharacter* Best = nullptr;
     float BestScore = -FLT_MAX;
@@ -259,15 +259,15 @@ AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot(AUnitCharac
 
 bool UBattleDirectorSubsystem::TryReserve(AUnitCharacter* Attacker, AUnitCharacter* Target, float Now)
 {
-    if (!Attacker || !Target || !Attacker->Brain) return false;
+    if (!Attacker || !Target || !Attacker->GetBrain()) return false;
     if (Attacker->IsDead() || Target->IsDead()) return false;
 
     // 이미 같은 타깃 예약 중이면 OK
-    if (Attacker->Brain->ReservedTarget.Get() == Target)
+    if (Attacker->GetBrain()->ReservedTarget.Get() == Target)
         return true;
 
     // thrashing 방지
-    if (!Attacker->Brain->CanChangeReservation(Now))
+    if (!Attacker->GetBrain()->CanChangeReservation(Now))
         return false;
 
     // 타깃의 슬롯 확보
@@ -275,7 +275,7 @@ bool UBattleDirectorSubsystem::TryReserve(AUnitCharacter* Attacker, AUnitCharact
     if (SlotIdx == INDEX_NONE) return false;
 
     // 기존 예약이 있으면 해제
-    if (AUnitCharacter* OldTarget = Cast<AUnitCharacter>(Attacker->Brain->ReservedTarget.Get()))
+    if (AUnitCharacter* OldTarget = Cast<AUnitCharacter>(Attacker->GetBrain()->ReservedTarget.Get()))
     {
         ReleaseReservation(Attacker, OldTarget);
     }
@@ -284,7 +284,7 @@ bool UBattleDirectorSubsystem::TryReserve(AUnitCharacter* Attacker, AUnitCharact
     Target->EngagementSlots[SlotIdx].Attacker = Attacker;
     Target->EngagementSlots[SlotIdx].ReservedAtTime = Now;
 
-    Attacker->Brain->SetReservedTarget(Target, Now);
+    Attacker->GetBrain()->SetReservedTarget(Target, Now);
 
     NotifyTargetAssigned(Attacker, Target);
 
@@ -293,7 +293,7 @@ bool UBattleDirectorSubsystem::TryReserve(AUnitCharacter* Attacker, AUnitCharact
 
 void UBattleDirectorSubsystem::ReleaseReservation(AUnitCharacter* Attacker, AUnitCharacter* Target)
 {
-    if (!Attacker || !Target || !Attacker->Brain) return;
+    if (!Attacker || !Target || !Attacker->GetBrain()) return;
 
     const int32 SlotIdx = Target->FindSlotOfAttacker(Attacker);
     if (SlotIdx != INDEX_NONE)
@@ -302,10 +302,10 @@ void UBattleDirectorSubsystem::ReleaseReservation(AUnitCharacter* Attacker, AUni
     }
 
     // 공격자 쪽도 비움
-    if (Attacker->Brain->ReservedTarget.Get() == Target)
+    if (Attacker->GetBrain()->ReservedTarget.Get() == Target)
     {
         const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
-        Attacker->Brain->ClearReservedTarget(Now);
+        Attacker->GetBrain()->ClearReservedTarget(Now);
 
         NotifyTargetAssigned(Attacker, nullptr);
     }
@@ -323,9 +323,9 @@ void UBattleDirectorSubsystem::ReleaseAllAttackersOfTarget(AUnitCharacter* Targe
         {
             if (AUnitCharacter* Attacker = Cast<AUnitCharacter>(AttackerActor))
             {
-                if (Attacker->Brain && Attacker->Brain->ReservedTarget.Get() == Target)
+                if (Attacker->GetBrain() && Attacker->GetBrain()->ReservedTarget.Get() == Target)
                 {
-                    Attacker->Brain->ClearReservedTarget(Now);
+                    Attacker->GetBrain()->ClearReservedTarget(Now);
 
                     NotifyTargetAssigned(Attacker, nullptr);
                 }
@@ -337,14 +337,14 @@ void UBattleDirectorSubsystem::ReleaseAllAttackersOfTarget(AUnitCharacter* Targe
 
 void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
 {
-    if (!Unit || !Unit->Brain) return;
+    if (!Unit || !Unit->GetBrain()) return;
 
     CleanupInvalidReferences();
 
     const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 
     // 현재 예약 타깃이 유효하면 유지
-    if (AUnitCharacter* CurrentTarget = Cast<AUnitCharacter>(Unit->Brain->ReservedTarget.Get()))
+    if (AUnitCharacter* CurrentTarget = Cast<AUnitCharacter>(Unit->GetBrain()->ReservedTarget.Get()))
     {
         if (!CurrentTarget->IsDead())
         {
@@ -353,12 +353,12 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
                 return;
 
             // 슬롯에서 빠져있으면 예약이 깨진 것 -> 비우고 새로 잡자
-            Unit->Brain->ClearReservedTarget(Now);
+            Unit->GetBrain()->ClearReservedTarget(Now);
             NotifyTargetAssigned(Unit, nullptr);
         }
         else
         {
-            Unit->Brain->ClearReservedTarget(Now);
+            Unit->GetBrain()->ClearReservedTarget(Now);
             NotifyTargetAssigned(Unit, nullptr);
         }
     }
@@ -372,7 +372,7 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
     {
         // 아무도 빈 슬롯 없으면: 예약 없음 (BT가 “베이스로 전진” 선택)
         // 필요하면 여기서 “짧은 대기” 상태를 따로 두면 더 자연스러움
-        Unit->Brain->ReservationState = EReservationState::None;
-        Unit->Brain->EnemyBase = GetEnemyBaseFor(Unit);
+        Unit->GetBrain()->ReservationState = EReservationState::None;
+        Unit->GetBrain()->EnemyBase = GetEnemyBaseFor(Unit);
     }
 }

@@ -32,6 +32,8 @@ public:
 	//캐릭터 생성 시 데이터 세팅
 	void SetData(UUnitData* InData);
 
+	inline UUnitBrainComponent* GetBrain() const { return Brain; }
+
 	bool IsDead() const { return bDead; }
 
 	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
@@ -40,6 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void SetPoolType(EPoolTypes InType) { MyPoolType = InType; }
 
+	inline EPoolTypes GetMyPoolType() { return MyPoolType; }
 	inline bool IsInPool() { return bInPool; }
 
 	int32 FindSlotOfAttacker(AActor* Attacker) const;
@@ -48,6 +51,8 @@ public:
 	bool HasFreeSlot() const;
 
 	bool CanAttackNow(float Now) const;
+
+	inline float GetAttackRange() const { return AttackRange; }
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool PerformAttack(AActor* Target);
@@ -98,6 +103,10 @@ private:
 	void SetNeedToEscapeBB(bool bValue);
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TArray<FUnitEngagementSlotData> EngagementSlots;
+
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting")
 	EUnitCombatType CombatType = EUnitCombatType::Melee;
 
@@ -119,15 +128,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	float CurrentHP;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	float DestroyDelay = 1.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UUnitBrainComponent> Brain;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TArray<FUnitEngagementSlotData> EngagementSlots;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
 	bool bDrawDebug = false;
@@ -176,7 +182,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation|Combat")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
-protected:
 	UPROPERTY()
 	TObjectPtr<UUnitData> Data = nullptr;
 

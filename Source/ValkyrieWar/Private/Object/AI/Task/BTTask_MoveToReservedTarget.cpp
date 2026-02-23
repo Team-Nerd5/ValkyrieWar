@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTTask_MoveToReservedTarget::ExecuteTask(UBehaviorTreeCompo
         {
             if (const AUnitCharacter* Unit = Cast<AUnitCharacter>(Pawn))
             {
-                Radius = FMath::Max(AcceptableRadius, Unit->AttackRange * RadiusScale);
+                Radius = FMath::Max(AcceptableRadius, Unit->GetAttackRange() * RadiusScale);
             }
         }
     }

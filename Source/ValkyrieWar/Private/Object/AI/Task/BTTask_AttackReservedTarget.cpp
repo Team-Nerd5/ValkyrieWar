@@ -44,7 +44,7 @@ EBTNodeResult::Type UBTTask_AttackReservedTarget::ExecuteTask(UBehaviorTreeCompo
     const float Dist2D = FVector::Dist2D(MyLoc, TargetLoc);
 
     // 사거리 경계면 재접근
-    if (Dist2D > Unit->AttackRange * 1.4)
+    if (Dist2D > Unit->GetAttackRange() * 1.4)
     {
         TryCount += 1;
         BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, TryCount);

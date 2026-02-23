@@ -23,7 +23,7 @@ void UBTService_UpdateReservation::TickNode(UBehaviorTreeComponent& OwnerComp, u
     if (!AIC) return;
 
     AUnitCharacter* Unit = Cast<AUnitCharacter>(AIC->GetPawn());
-    if (!Unit || !Unit->Brain) return;
+    if (!Unit || !Unit->GetBrain()) return;
 
     UWorld* World = Unit->GetWorld();
     if (!World) return;
@@ -36,6 +36,6 @@ void UBTService_UpdateReservation::TickNode(UBehaviorTreeComponent& OwnerComp, u
     UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
     if (!BB) return;
 
-    BB->SetValueAsObject(ReservedTargetKey.SelectedKeyName, Unit->Brain->ReservedTarget.Get());
-    BB->SetValueAsObject(EnemyBaseKey.SelectedKeyName, Unit->Brain->EnemyBase.Get());
+    BB->SetValueAsObject(ReservedTargetKey.SelectedKeyName, Unit->GetBrain()->ReservedTarget.Get());
+    BB->SetValueAsObject(EnemyBaseKey.SelectedKeyName, Unit->GetBrain()->EnemyBase.Get());
 }

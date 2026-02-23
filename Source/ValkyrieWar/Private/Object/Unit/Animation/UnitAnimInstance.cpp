@@ -131,10 +131,9 @@ void UUnitAnimInstance::UpdateFromOwner(float DeltaSeconds)
 
 	bIsMoving = (Speed2D > 3.f) && !bIsInAir && !bDead;
 
-	// 전투 여부(ReservedTarget 기반) - 필요에 따라 정책 변경 가능
-	if (OwnerUnit->Brain)
+	if (OwnerUnit->GetBrain())
 	{
-		bInCombat = OwnerUnit->Brain->ReservedTarget.IsValid();
+		bInCombat = OwnerUnit->GetBrain()->ReservedTarget.IsValid();
 	}
 	else
 	{

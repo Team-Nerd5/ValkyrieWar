@@ -94,9 +94,9 @@ void ABaseUnitSpawner::StopWaves()
 				if (U->IsInPool()) continue;
 
 				// 안전하게 풀로 반환(유닛 OnRelease에서 BD 해제 + Notify)
-				if (U->MyPoolType != EPoolTypes::None)
+				if (U->GetMyPoolType() != EPoolTypes::None)
 				{
-					Pool->Release<AUnitCharacter>(U->MyPoolType, U);
+					Pool->Release<AUnitCharacter>(U->GetMyPoolType(), U);
 				}
 				else
 				{
