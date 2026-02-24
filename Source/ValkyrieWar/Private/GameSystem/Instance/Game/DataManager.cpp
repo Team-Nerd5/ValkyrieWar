@@ -14,6 +14,7 @@ void UDataManager::Initialize(FSubsystemCollectionBase& Collection)
 int32 UDataManager::CreateData()
 {
 	UE_LOG(LogTemp, Log, TEXT("TableData Start Create"));
+	TaskCount = 0;
 
 	InitializeData(ItemModule);
 	InitializeData(ValkyrieModule);

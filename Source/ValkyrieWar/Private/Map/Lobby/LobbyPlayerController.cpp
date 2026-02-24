@@ -8,12 +8,22 @@
 #include "GameSystem/State/Game/LobbyGameState.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "Camera/CameraActor.h"
 
 void ALobbyPlayerController::BeginPlay()
 {
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Lobby.OnLobbyStateChanged.AddDynamic(this, &ALobbyPlayerController::ChageGameState);
+	}
+
+	ACameraActor* FoundCamera = Cast<ACameraActor>(UGameplayStatics::GetActorOfClass(GetWorld(), ACameraActor::StaticClass()));
+
+	if (FoundCamera)
+	{
+		SetViewTargetWithBlend(FoundCamera, 0.0f);
 	}
 
 	bShowMouseCursor = true;
