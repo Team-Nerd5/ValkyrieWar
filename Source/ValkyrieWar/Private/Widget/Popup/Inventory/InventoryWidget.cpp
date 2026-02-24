@@ -166,3 +166,13 @@ void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEq
 {
 
 }
+
+void UInventoryWidget::ItemClicked(UObject* InItemData)
+{
+
+}
+
+void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
+{
+
+}
