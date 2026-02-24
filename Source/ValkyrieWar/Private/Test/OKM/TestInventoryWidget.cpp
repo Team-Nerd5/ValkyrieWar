@@ -44,7 +44,6 @@ void UTestInventoryWidget::NativeConstruct()
 	HelmetWidget->SetVisibility(ESlateVisibility::Hidden);
 	ArmorWidget->SetVisibility(ESlateVisibility::Hidden);
 
-	CloseUI();
 }
 
 void UTestInventoryWidget::OpenUI()

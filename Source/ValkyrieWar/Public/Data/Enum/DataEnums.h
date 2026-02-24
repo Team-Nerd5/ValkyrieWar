@@ -7,6 +7,7 @@
 UENUM(BlueprintType)
 enum class EGoodsType : uint8
 {
+	None,
 	Ticket,
 	Gem,
 	Gold,
