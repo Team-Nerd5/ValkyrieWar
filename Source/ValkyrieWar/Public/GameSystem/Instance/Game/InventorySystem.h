@@ -26,10 +26,6 @@ public:
 
 	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EEquipGroup InItemGroup);
 
-	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup);
-
-	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup);
-
 	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)
