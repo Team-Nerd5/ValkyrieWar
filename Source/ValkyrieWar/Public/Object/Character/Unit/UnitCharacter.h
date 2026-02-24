@@ -111,6 +111,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TArray<FUnitEngagementSlotData> EngagementSlots;
 
+	// ===== Debug / Test Effect =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug|TestEffect")
+	TSubclassOf<UGameplayEffect> DebugTestEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug|TestEffect")
+	float DebugTestEffectLevel = 1.0f;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Targeting")
 	EUnitCombatType CombatType = EUnitCombatType::Melee;

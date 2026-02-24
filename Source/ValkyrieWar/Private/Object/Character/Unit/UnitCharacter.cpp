@@ -61,10 +61,12 @@ void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AUnitCharacter::SetData(UUnitData* InData)
 {
+	if (!InData) return;
+
 	Data = InData;
 
 	//기본 무기에 따른 공격/스킬 적용
-	AttackData = InData->GetAttackData();
+	if (InData->GetAttackData()) AttackData = InData->GetAttackData();
 
 	SkillDataList = InData->GetSkillData();
 }
@@ -631,22 +633,51 @@ void AUnitCharacter::SetNeedToEscapeBB(bool bValue)
 void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 {
 	if (!TargetActor || IsDead()) return;
-	if (!AbilitySystemComponent || !AttackData) return;
+	if (!AbilitySystemComponent) return;
 
-	// 타깃 ASC 가져오기
 	UAbilitySystemComponent* TargetASC =
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
 
 	if (!TargetASC) return;
 
+	// ============================================
+	// 1. 더미 테스트 이펙트 먼저 적용
+	// ============================================
+	if (DebugTestEffect)
+	{
+		FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
+		Context.AddSourceObject(this);
+
+		FGameplayEffectSpecHandle SpecHandle =
+			AbilitySystemComponent->MakeOutgoingSpec(DebugTestEffect, DebugTestEffectLevel, Context);
+
+		if (SpecHandle.IsValid())
+		{
+			FActiveGameplayEffectHandle Handle =
+				AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(
+					*SpecHandle.Data.Get(), TargetASC);
+
+			UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Applied = %s"),
+				Handle.IsValid() ? TEXT("TRUE") : TEXT("FALSE"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Spec invalid"));
+		}
+	}
+
+	// ============================================
+	// 기존 데이터 기반 이펙트 적용 로직
+	// ============================================
+
+	if (!AttackData) return;
+
 	const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
 	if (Effects.IsEmpty()) return;
 
-	// 컨텍스트 생성
 	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
 	Context.AddSourceObject(this);
 
-	// AttackData의 EffectList를 순회하면서 모두 적용
 	for (USkillEffectData* EffectData : Effects)
 	{
 		if (!EffectData) continue;
@@ -654,10 +685,7 @@ void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 		UGameplayEffect* GEDef = BuildGameplayEffect(EffectData);
 		if (!GEDef) continue;
 
-		// 런타임 GE 인스턴스를 기반으로 Spec 생성 후 Target에 적용
 		FGameplayEffectSpec Spec(GEDef, Context, 1.0f);
-
-		// Source -> Target 적용
 		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
 	}
 }
