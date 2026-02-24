@@ -57,6 +57,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool PerformAttack(AActor* Target);
 
+	virtual void ApplyAttack(AActor* InTargetActor) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ApplyAttackDamage(AActor* Target);
 
@@ -102,6 +104,9 @@ private:
 
 	void SetNeedToEscapeBB(bool bValue);
 
+	void ApplyAttackEffects_GAS(AActor* TargetActor);
+	UGameplayEffect* BuildGameplayEffect_FromSkillEffect(USkillEffectData* EffectData) const;
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TArray<FUnitEngagementSlotData> EngagementSlots;
@@ -134,9 +139,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UUnitBrainComponent> Brain;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
-	bool bDrawDebug = false;
+	bool bDrawDebug = true;
 
 	// ===== Speed tuning =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")

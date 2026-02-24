@@ -8,16 +8,20 @@
 #include "GameSystem/Base/BaseUnitSpawner.h"
 #include "Data/Struct/UnitEngagementSlotData.h"
 
+#include "AbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 AUnitCharacter::AUnitCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
 
 	Brain = CreateDefaultSubobject<UUnitBrainComponent>(TEXT("Brain"));
 
@@ -29,6 +33,11 @@ AUnitCharacter::AUnitCharacter()
 void AUnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
 
 	CurrentHP = MaxHP;
 	bDead = false;
@@ -108,7 +117,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 	const float Now = World->GetTimeSeconds();
 	if (!CanAttackNow(Now)) return false; // 쿨타임 체크 활성화
 
-	ApplyAttackDamage(Target);
+	ApplyAttack(Target);
 
 	// 2. 애니메이션 재생
 	if (AttackMontage)
@@ -135,12 +144,20 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 	return true;
 }
 
+void AUnitCharacter::ApplyAttack(AActor* InTargetActor)
+{
+	ApplyAttackDamage(InTargetActor);
+	ApplyAttackEffects_GAS(InTargetActor);
+
+	Super::ApplyAttack(InTargetActor);
+}
+
 void AUnitCharacter::ApplyAttackDamage(AActor* Target)
 {
 	if (!Target || IsDead()) return;
 
-	AController* InstigatorCtrl = GetController();
-	UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorCtrl, this, UDamageType::StaticClass());
+	//AController* InstigatorCtrl = GetController();
+	//UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorCtrl, this, UDamageType::StaticClass());
 
 	if (bDrawDebug)
 	{
@@ -275,6 +292,11 @@ void AUnitCharacter::HandleDeath(AController* Killer, AActor* DamageCauser)
 
 void AUnitCharacter::OnGet_Implementation()
 {
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+
 	// 풀에서 꺼내질 때마다(재사용 포함) 초기화 + 서브시스템 등록
 	ResetForReuse();
 
@@ -303,6 +325,18 @@ void AUnitCharacter::OnRelease_Implementation()
 
 	// 풀로 반환될 때마다 서브시스템 해제
 	UnregisterFromBattleDirector(true);
+
+	if (AbilitySystemComponent)
+	{
+		// 진행중인 능력 중단
+		AbilitySystemComponent->CancelAllAbilities();
+
+		// 남아있는 큐/이펙트 정리 (버프/디버프/쿨다운 잔재 방지)
+		AbilitySystemComponent->RemoveAllGameplayCues();
+		AbilitySystemComponent->RemoveActiveEffectsWithSourceTags(FGameplayTagContainer());
+
+		AbilitySystemComponent->ClearAllAbilities();
+	}
 
 	// 타이머/이동 잔여 정리
 	if (UWorld* World = GetWorld())
@@ -592,4 +626,98 @@ void AUnitCharacter::SetNeedToEscapeBB(bool bValue)
 	if (!BB) return;
 
 	BB->SetValueAsBool(BB_NeedToEscapeKey, bValue);
+}
+
+void AUnitCharacter::ApplyAttackEffects_GAS(AActor* TargetActor)
+{
+	if (!TargetActor || IsDead()) return;
+	if (!AbilitySystemComponent || !AttackData) return;
+
+	// 타깃 ASC 가져오기
+	UAbilitySystemComponent* TargetASC =
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+
+	if (!TargetASC) return;
+
+	const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
+	if (Effects.IsEmpty()) return;
+
+	// 컨텍스트 생성
+	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
+	Context.AddSourceObject(this);
+
+	// AttackData의 EffectList를 순회하면서 모두 적용
+	for (USkillEffectData* EffectData : Effects)
+	{
+		if (!EffectData) continue;
+
+		UGameplayEffect* GEDef = BuildGameplayEffect_FromSkillEffect(EffectData);
+		if (!GEDef) continue;
+
+		// 런타임 GE 인스턴스를 기반으로 Spec 생성 후 Target에 적용
+		FGameplayEffectSpec Spec(GEDef, Context, 1.0f);
+
+		// Source -> Target 적용
+		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
+	}
+}
+
+UGameplayEffect* AUnitCharacter::BuildGameplayEffect_FromSkillEffect(USkillEffectData* EffectData) const
+{
+	if (!EffectData) return nullptr;
+
+	UGameplayEffect* GE = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None, RF_Transient);
+
+	if (!GE) return nullptr;
+
+	GE->DurationPolicy = EffectData->GetDurationPolicy();
+
+	if (GE->DurationPolicy == EGameplayEffectDurationType::HasDuration)
+	{
+		GE->DurationMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(EffectData->GetDuration()));
+	}
+
+	// Periodic (주기 적용)
+	const float Period = EffectData->GetPeriod();
+	if (Period > 0.f)
+	{
+		GE->Period = FScalableFloat(Period);
+	}
+
+	// Granted Tags
+	{
+		FInheritedTagContainer GamePlayTags;
+		GamePlayTags.Added = EffectData->GetGrantedTags();
+		GE->InheritableOwnedTagsContainer = GamePlayTags;
+	}
+
+	// GameplayCue
+	if (EffectData->GetCueTag().IsValid())
+	{
+		FGameplayEffectCue Cue;
+		Cue.GameplayCueTags.AddTag(EffectData->GetCueTag());
+		GE->GameplayCues.Add(Cue);
+	}
+
+	// Modifier (Attribute 변화)
+	// - Value를 단순 add/mul/override 등 Op로 적용
+	// - TargetAttribute를 수정
+	{
+		const FGameplayAttribute TargetAttr = EffectData->GetTargetAttribute();
+		if (TargetAttr.IsValid())
+		{
+			FGameplayModifierInfo Mod;
+			Mod.Attribute = TargetAttr;
+			Mod.ModifierOp = EffectData->GetOp();
+
+			// 값 적용 방식: 기본은 고정 값
+			// bUseSourceAttribute 같은 “소스 스탯 기반 계산”은 여기서 확장 가능
+			const float Value = EffectData->GetApplyValue();
+			Mod.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(Value));
+
+			GE->Modifiers.Add(Mod);
+		}
+	}
+
+	return GE;
 }
