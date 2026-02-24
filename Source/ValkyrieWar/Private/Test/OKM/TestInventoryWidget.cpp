@@ -90,9 +90,10 @@ void UTestInventoryWidget::FilterEquipment()
 	UIType = EUIType::PopupCharacterInfo;
 
 	CachedItemList.Empty();
-	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Weapon));
-	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Armor));
-	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Helmet));
+	//나눠서 넣는 이유..?
+	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::Equip));
+	CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EItemGroup::GrowthItem));
+	//CachedItemList.Append(InventorySystem->GetFilteredInventoryList(EEquipGroup::Helmet));
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 
@@ -104,9 +105,9 @@ void UTestInventoryWidget::FilterEquipment()
 
 void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID)
 {
-	UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Weapon);
-	UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Helmet);
-	UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EItemGroup::Armor);
+	UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Weapon);
+	UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Helmet);
+	UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Armor);
 
 	if (WeaponWidget)
 		WeaponWidget->EquipInfo(WeaponData);
@@ -122,28 +123,28 @@ void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID)
 
 void UTestInventoryWidget::FilterWeapon()
 {
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Weapon);
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Weapon);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 }
 
 void UTestInventoryWidget::FilterArmor()
 {
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Armor);
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Armor);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 }
 
 void UTestInventoryWidget::FilterHelmet()
 {
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Helmet);
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Helmet);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 }
 
 void UTestInventoryWidget::FIlterGrowth()
 {	
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Growth);
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::GrowthItem);
 	TileView->SetListItems(CachedItemList);
 	TileView->RegenerateAllEntries();
 	

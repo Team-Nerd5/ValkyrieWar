@@ -61,8 +61,7 @@ void UTestPopupWidget::InitMenu(UItemData* ItemData, EUIType InUIType)
 		Btn_Sell->SetVisibility(ESlateVisibility::Visible);
 
 		// 장비가 아닐 때만 사용 버튼 표시
-		if (CachedItemData->GetItemGroup() == EItemGroup::None ||
-			CachedItemData->GetItemGroup() == EItemGroup::Growth)
+		if (CachedItemData->GetItemGroup() != EItemGroup::Equip)
 		{
 			Btn_Use->SetVisibility(ESlateVisibility::Visible);
 		}

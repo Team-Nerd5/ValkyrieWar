@@ -19,19 +19,21 @@ public:
 	UPROPERTY(EditAnywhere)
 	EItemType ItemType = EItemType::None;
 	UPROPERTY(EditAnywhere)
-	EItemGroup ItemGroup = EItemGroup::None;
-	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<UStaticMesh> Mesh = nullptr;
+	bool IsSkeletal = false;
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==false"))
+	TSoftObjectPtr<UStaticMesh> StaticMesh = nullptr;
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==true"))
+	TSoftObjectPtr<USkeletalMesh> SkeletalMesh = nullptr;
 	UPROPERTY(EditAnywhere)
 	int32 SellPrice = 0;
 
 	//장비용
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
+	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
+	UPROPERTY(EditAnywhere)
 	int32 AttackId = 0;
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "ItemType==EItemType::Equip"))
+	UPROPERTY(EditAnywhere)
 	TArray<int32> SkillId;
 };

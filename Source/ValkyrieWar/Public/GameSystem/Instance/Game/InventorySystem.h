@@ -22,9 +22,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	TArray<UItemData*> GetFilteredInventoryList(EItemGroup InItemGroup);
+	TArray<UItemData*> GetFilteredInventoryList(EItemGroup InItemGroup, EEquipGroup InEquipGroup = EEquipGroup::None);
 
-	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup);
+	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EEquipGroup InItemGroup);
 
 	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
 

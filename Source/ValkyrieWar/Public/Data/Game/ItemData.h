@@ -21,16 +21,8 @@ public:
 	void Equip(uint64 InEquipCharacter);
 
 
-	FORCEINLINE EItemGroup GetItemGroup()
-	{
-		if (!TableData)
-		{
-			return EItemGroup::None;
-		}
-
-		return TableData->ItemGroup;
-	}
-
+	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
+	FORCEINLINE EEquipGroup GetEquipGroup() { return EquipGroup; }
 	FORCEINLINE int32 GetAmount() { return Amount; }
 	FORCEINLINE int32 GetAttackID() { return TableData ? TableData->AttackId : 0; }
 	FORCEINLINE TArray<int32> GetSkillID() { return TableData ? TableData->SkillId : TArray<int32>(); }
@@ -39,14 +31,20 @@ public:
 	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
 
 private:
+	const FItemDataRow* TableData = nullptr;
+
 	UPROPERTY()
 	uint64 UID = 0;
-
-	const FItemDataRow* TableData = nullptr;
 
 	UPROPERTY()
 	int32 Amount = 0;
 
 	//장비인 경우 : 장착한 캐릭터 UID
+	UPROPERTY()
 	uint64 EquipCharacter;
+
+	UPROPERTY()
+	EItemGroup ItemGroup = EItemGroup::None;
+	UPROPERTY()
+	EEquipGroup EquipGroup = EEquipGroup::None;
 };

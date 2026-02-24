@@ -20,7 +20,7 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 	GetFilteredInventoryList(EItemGroup::None);
 }
 
-TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemGroup)
+TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemGroup, EEquipGroup InEquipGroup)
 {
 	TArray<UItemData*> FilteredResult;
 
@@ -48,7 +48,7 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 		for (auto& Data : DataManager->GetItemModule()->GetItems())
 		{
 			UItemData* Item = Data.Value;
-			if (Item && Item->GetItemGroup() == InItemGroup)
+			if (Item && Item->GetItemGroup() == InItemGroup && Item->GetEquipGroup() == InEquipGroup)
 			{
 				FilteredResult.Add(Item);
 			}
@@ -57,7 +57,7 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 	return FilteredResult;
 }
 
-UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EItemGroup InItemGroup)
+UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEquipGroup InItemGroup)
 {
 #pragma region 유효성 검사
 	if (!(DataManager->GetItemModule()))
@@ -75,7 +75,7 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EItem
 			return nullptr;
 		}
 
-		if (Item && Item->GetEquipCharacter() == InCharacterUID && Item->GetItemGroup() == InItemGroup)
+		if (Item && Item->GetEquipCharacter() == InCharacterUID && Item->GetItemGroup() == EItemGroup::Equip)
 		{
 			return Item;
 		}
@@ -106,16 +106,15 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 	if (Item)
 	{
 		// 아이템이 있을 때
-		if (Item->GetItemGroup() == EItemGroup::None ||
-			Item->GetItemGroup() == EItemGroup::Growth)
-		{
-			// 장비가 아닐 때
-			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);
-		}
-		else
+		if (Item->GetItemGroup() == EItemGroup::Equip)
 		{
 			// 장비일 때
 			DataManager->GetItemModule()->AddItem(Item->GetTableData()->DataId, InAmount);
+		}
+		else
+		{
+			// 장비가 아닐 때
+			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);
 		}
 		return;
 	}
@@ -138,19 +137,18 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 		if (Data)
 		{
 			// 아이템이 있을 때
-			if (Data->GetItemGroup() == EItemGroup::None ||
-				Data->GetItemGroup() == EItemGroup::Growth)
-			{
-				// 장비가 아닐 때
-				DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);
-			}
-			else
+			if (Data->GetItemGroup() == EItemGroup::Equip)
 			{
 				// 장비일 때
 				for (int32 i = 0; i < InAmount; ++i)
 				{
 					DataManager->GetItemModule()->AddItem(InDataId, 1);
 				}
+			}
+			else
+			{
+				// 장비가 아닐 때
+				DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);
 			}
 		}
 		else
@@ -236,8 +234,7 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 해당 ItemData UID의 아이템을 찾을 수 없습니다"));
 		return;
 	}
-	if (InItem->GetItemGroup() == EItemGroup::Growth ||
-		InItem->GetItemGroup() == EItemGroup::None)
+	if (InItem->GetItemGroup() != EItemGroup::Equip)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 장착할 수 없는 아이템 입니다"));
 		return;

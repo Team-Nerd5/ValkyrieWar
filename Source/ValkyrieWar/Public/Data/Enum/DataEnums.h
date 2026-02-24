@@ -13,12 +13,57 @@ enum class EGoodsType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EGradeType : uint8
+{
+	None,
+	Common,
+	Uncommon,
+	Rare,
+	Epic,
+	Legend,
+};
+UENUM(BlueprintType)
 enum class EItemType : uint8
 {
 	None,
-	Goods,
-	Equip,
-	Item,
+	Gold,
+	Gem,
+	Ticket,
+
+	//무기
+	OneHandSword,
+	TwoHandSword,
+	OneHandAxe,
+	TwoHandAxe,
+	Staff,				//양손
+	Wand,				//한손
+	Shield,
+	Bow,				//양손, 화살통 없음
+
+	Helmet,
+	Armor,
+
+	//성장 아이템
+	BowMasteryPiece,		//활 업글 아이템
+	SwordMasteryPiece,		//검 업글 아이템
+	AxeMasteryPiece,
+	StaffMasteryPiece,
+	WandMasteryPiece,
+	ShieldMasteryPiece,
+};
+
+UENUM(BlueprintType)
+enum class EEquipType : uint8
+{
+	None,
+	Sword,
+	Axe,
+	Staff,
+	Wand,
+	Shield,
+	Bow,
+	Armor,
+	Helmet,
 };
 
 //아이템 필터용 그룹
@@ -26,10 +71,18 @@ UENUM(BlueprintType)
 enum class EItemGroup : uint8
 {
 	None,
+	Goods,
+	Equip,
+	GrowthItem,
+};
+
+UENUM(BlueprintType)
+enum class EEquipGroup : uint8
+{
+	None,
 	Weapon,
-	Armor,
 	Helmet,
-	Growth,
+	Armor,
 };
 
 UENUM(BlueprintType)

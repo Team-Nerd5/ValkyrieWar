@@ -3,6 +3,7 @@
 
 #include "Data/Game/ItemData.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Library/GameDataHelper.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
@@ -11,6 +12,12 @@ void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableDa
 	UID = InUID;
 	Amount = InAmount;
 	TableData = InTableData;
+
+	if (InTableData)
+	{
+		ItemGroup = UGameDataHelper::GetItemGroup(InTableData->ItemType);
+		EquipGroup = UGameDataHelper::GetEquipGroup(InTableData->ItemType);
+	}
 }
 
 void UItemData::AddAmount(int32 InAmount)
