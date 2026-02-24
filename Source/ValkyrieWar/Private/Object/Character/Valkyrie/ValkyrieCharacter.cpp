@@ -130,7 +130,7 @@ void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
 	if (LoadedMesh)
 	{
 		WeaponComp->SetStaticMesh(LoadedMesh);
-		UE_LOG(LogTemp, Warning, TEXT("🎉 [최종 성공] %llu번 무기 메쉬 장착 완료!!! 🎉"), InEquipUID);
+	
 	}
 
 	if (WeaponRow->AttackId > 0)
@@ -166,25 +166,22 @@ void AValkyrieCharacter::Attack()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (!AnimInst || !ComboMontage) return;
 
-	// 1. 완전 처음 1타 시작 (몽타주 안 도는 중)
+	
 	if (!AnimInst->Montage_IsPlaying(ComboMontage))
 	{
-		// 🚨 내가 빼먹었던 거 복구 & 형의 커스텀 변수 ON!!
+		
 		CurrentComboCount = 1;
-		bIsComboActive = true; // (형 코드에 이 변수 있으면 무조건 true로 켜줘야 해!)
+		bIsComboActive = true; 
 
 		bCanNextCombo = false;
 		bIsComboInputOn = false;
 
 		AnimInst->Montage_Play(ComboMontage);
 		AnimInst->Montage_JumpToSection(FName("Combo1"), ComboMontage);
-
-		UE_LOG(LogTemp, Warning, TEXT("⚔️ 콤보 시작! 1타 발사"));
 	}
 	else
 	{
 		bIsComboInputOn = true;
-		UE_LOG(LogTemp, Warning, TEXT("📩 예약 완료! (현재 타수: %d)"), CurrentComboCount);
 	}
 }
 
@@ -192,8 +189,6 @@ void AValkyrieCharacter::BeginComboWindow()
 {
 	bIsInComboWindow = true;
 	bCanNextCombo = true;
-	UE_LOG(LogTemp, Warning, TEXT("🟢 [BeginComboWindow] 호출됨 - ComboCount: %d, bIsComboActive: %d, bIsComboInputOn: %d"),
-		CurrentComboCount, bCanNextCombo, bIsComboInputOn);
 }
 
 void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
@@ -210,21 +205,17 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 		bIsComboInputOn = false;
 		CurrentComboCount++;
 
-		// 🎯 다음 콤보로 점프!!
 		AnimInst->Montage_JumpToSection(NextSectionName, ComboMontage);
-		UE_LOG(LogTemp, Warning, TEXT("➡️ 다음 콤보 발사: %s"), *NextSectionName.ToString());
 
 		if (NextSectionName == FName("Finish"))
 		{
 			CurrentComboCount = 0;
-			// bIsComboActive = false; // 피니시 나갈 때 꺼줘도 됨
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ 클릭 안함! 콤보 완전 종료"));
 		CurrentComboCount = 0;
-		bIsComboActive = false; // 🚨 콤보 끊기면 State Machine도 대기 상태로!
+		bIsComboActive = false; 
 	}
 }
 
