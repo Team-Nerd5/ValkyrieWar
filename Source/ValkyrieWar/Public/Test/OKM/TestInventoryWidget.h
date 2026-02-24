@@ -25,6 +25,7 @@ class VALKYRIEWAR_API UTestInventoryWidget : public UBaseWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 public:
 	UFUNCTION(BlueprintCallable)
