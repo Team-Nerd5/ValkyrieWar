@@ -103,7 +103,11 @@ void UTestInventoryWidget::FilterEquipment()
 	ArmorWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
-void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID)
+void UTestInventoryWidget::UpdateInventory()
+{
+}
+
+void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EItemGroup InItemGroup)
 {
 	UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Weapon);
 	UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Helmet);
