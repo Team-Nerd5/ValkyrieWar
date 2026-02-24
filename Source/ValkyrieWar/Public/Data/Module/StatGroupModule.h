@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseModule.h"
-#include "Data/Table/GameData/UnitDataRow.h"
-#include "UnitModule.generated.h"
+#include "Data/Table/GameData/StatGroupDataRow.h"
+#include "StatGroupModule.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UUnitModule : public UBaseModule
+class VALKYRIEWAR_API UStatGroupModule : public UBaseModule
 {
 	GENERATED_BODY()
 public:
@@ -19,5 +19,5 @@ public:
 protected:
 	virtual void MakeData() override;
 private:
-	TMap<int32, FUnitDataRow*> TableDataByDataId;
+	TMap<int32, FStatGroupDataRow*> TableDataByDataId;
 };

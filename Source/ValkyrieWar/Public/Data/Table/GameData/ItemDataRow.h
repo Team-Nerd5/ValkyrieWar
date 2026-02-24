@@ -19,6 +19,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	EItemType ItemType = EItemType::None;
 	UPROPERTY(EditAnywhere)
+	FString Name = TEXT("");
+	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
 	bool IsSkeletal = false;

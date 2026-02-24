@@ -7,7 +7,7 @@
 #include "GoodsDataRow.generated.h"
 
 /**
- * 
+ * 컨텐츠 상위에 표기되는 재화 표기
  */
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FGoodsDataRow : public FTableRowBase
@@ -17,9 +17,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	EGoodsType Type = EGoodsType::Gold;
+	bool bIsBackButton = true;				//false이면 계정정보
 	UPROPERTY(EditAnywhere)
-	FString Name = TEXT("");
+	EGoodsType Type_1 = EGoodsType::None;
 	UPROPERTY(EditAnywhere)
-	int32 Order = 0;
+	EGoodsType Type_2 = EGoodsType::None;
+	UPROPERTY(EditAnywhere)
+	EGoodsType Type_3 = EGoodsType::None;
 };

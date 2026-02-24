@@ -10,6 +10,10 @@
 #include "Data/Module/AttackModule.h"
 #include "Data/Module/SkillModule.h"
 #include "Data/Module/SkillEffectModule.h"
+#include "Data/Module/ContentsModule.h"
+#include "Data/Module/GoodsModule.h"
+#include "Data/Module/UnitModule.h"
+#include "Data/Module/StatGroupModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -32,6 +36,10 @@ public:
 	FORCEINLINE UAttackModule* GetAttackModule() const { return AttackModule; }
 	FORCEINLINE USkillModule* GetSkillModule() const { return SkillModule; }
 	FORCEINLINE USkillEffectModule* GetSkillEffectModule() const { return SkillEffectModule; }
+	FORCEINLINE UContentsModule* GetContentsModule() const { return ContentsModule; }
+	FORCEINLINE UGoodsModule* GetGoodsModule() const { return GoodsModule; }
+	FORCEINLINE UUnitModule* GetUnitModule() const { return UnitModule; }
+	FORCEINLINE UStatGroupModule* GetStatGroupModule() const { return StatGroupModule; }
 
 private:
 	template<typename T>
@@ -47,6 +55,14 @@ private:
 	TObjectPtr<USkillModule> SkillModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<USkillEffectModule> SkillEffectModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UContentsModule> ContentsModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UGoodsModule> GoodsModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UUnitModule> UnitModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UStatGroupModule> StatGroupModule = nullptr;
 
 
 	UPROPERTY()

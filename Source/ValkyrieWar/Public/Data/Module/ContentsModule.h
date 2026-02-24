@@ -4,20 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseModule.h"
-#include "Data/Table/GameData/UnitDataRow.h"
-#include "UnitModule.generated.h"
+#include "Data/Table/GameData/ContentsDataRow.h"
+#include "ContentsModule.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UUnitModule : public UBaseModule
+class VALKYRIEWAR_API UContentsModule : public UBaseModule
 {
 	GENERATED_BODY()
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
+
+	TArray<FContentsDataRow*> GetAllDataSorted();
+
 protected:
 	virtual void MakeData() override;
+
+public:
+	FContentsDataRow* const GetTableData(int32 InDataId);
 private:
-	TMap<int32, FUnitDataRow*> TableDataByDataId;
+	TMap<int32, FContentsDataRow*> TableDataByDataId;
 };

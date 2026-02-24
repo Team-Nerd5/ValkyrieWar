@@ -24,5 +24,6 @@ public:
 	EUIType OpenPopup = EUIType::None;
 	UPROPERTY(EditAnywhere)
 	int32 Order = 0;
-
+	UPROPERTY(EditAnywhere)
+	int32 GoodsId;
 };

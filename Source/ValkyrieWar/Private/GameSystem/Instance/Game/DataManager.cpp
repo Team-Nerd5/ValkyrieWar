@@ -16,14 +16,19 @@ int32 UDataManager::CreateData()
 	UE_LOG(LogTemp, Log, TEXT("TableData Start Create"));
 	TaskCount = 0;
 
-	InitializeData(ItemModule);
-	InitializeData(ValkyrieModule);
+	InitializeData(GoodsModule);
+	InitializeData(ContentsModule);
+	InitializeData(StatGroupModule);
 
 	//Skill, Attack 에서 사용중이라 먼저 해야함.
 	InitializeData(SkillEffectModule);
 
 	InitializeData(AttackModule);
 	InitializeData(SkillModule);
+
+	InitializeData(ItemModule);
+	InitializeData(UnitModule);
+	InitializeData(ValkyrieModule);
 
 	return TaskCount;
 }
