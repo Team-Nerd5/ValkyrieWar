@@ -23,14 +23,8 @@ public:
 	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
 
 	UPROPERTY(EditAnywhere, Category = "Combat") // 에디터에서 추가함
-	TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
+		TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
 
-	//급선회
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Movement")
-	bool bIsPivotLocked = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-	FRotator TargetPivotRotation;
 
 public:
 	virtual void Tick(float InDeltaTime) override;
@@ -43,8 +37,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
-	UFUNCTION(BlueprintCallable, Category = "Attack Test")
-	void Attack();
 
 	virtual void EquipWeapon(uint64 InEquipUID) override;
 
@@ -64,28 +56,22 @@ protected:
 	TObjectPtr<UValkyrieData> Data = nullptr;
 
 public: // 일반 공격
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void DoLightAttack();
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void DoHeavyAttack();
+	UFUNCTION(BlueprintCallable, Category = "Attack Test")
+	void Attack();
+	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
+	void BeginComboWindow();
+	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
+	void EndComboWindow(FName NextSectionName);
 
-	// 콤보
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ContinueCombo();
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ResetCombo();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
-	int32 ComboCount = 0;
-	//최대 콤보수 4로 정하고있음
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
-	int32 MaxComboCount = 4;
-	//공격중에는 다른 움직임 막기용
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
-	bool bIsAttacking = false;
-
-	// 공격 몽타주 재생중에 미리 누른 내용 저장
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
-	bool bSaveAttack = false;
-
+private:
+	int32 CurrentComboCount = 0; // 현 콤보수
+	bool bCanNextCombo = false; // 콤보 이어지나
+	bool bIsComboActive = false;
+	bool bIsComboInputOn = false; // 타이머안에 클릭은 했냐
+	bool bIsInComboWindow = false;
+	//DT로 관리할거라 몽타주 하나에 애니메이션을 이어붙일 예정
+	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
+	TObjectPtr<UAnimMontage> ComboMontage;
+	// 일반공격 랜덤 돌릴거임
+	TArray<int32> AvailableCombos;
 };

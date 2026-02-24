@@ -36,6 +36,8 @@ public:
 
 	//저장데이터 로드되면 세팅용
 	void UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID);
+	// 게임 인스턴트 초기화 함수
+	virtual void Init() override;
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Widget")

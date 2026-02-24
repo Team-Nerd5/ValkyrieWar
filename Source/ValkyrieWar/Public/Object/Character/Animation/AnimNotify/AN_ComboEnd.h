@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "UValkyrieAN_ComboCheck.generated.h"
+#include "AN_ComboEnd.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UUValkyrieAN_ComboCheck : public UAnimNotify
+class VALKYRIEWAR_API UAN_ComboEnd : public UAnimNotify
 {
 	GENERATED_BODY()
-
-	
 };

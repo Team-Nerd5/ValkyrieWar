@@ -44,15 +44,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bIsMoving = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool bIsAcceleration; // 조이스틱 밀고있어?
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	bool bShouldPivot; // 급선회 트리거
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement|Montage")
-	class UAnimMontage* PivotMontage; //급 선회 몽타주
-
-
 };

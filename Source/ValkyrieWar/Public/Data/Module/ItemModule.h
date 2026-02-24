@@ -44,7 +44,11 @@ public:
 
 
 	FORCEINLINE TMap<uint64, UItemData*> GetItems() { return OwnItems; }
-	FORCEINLINE UItemData* GetItem(uint64 InUID) { return *OwnItems.Find(InUID); }
+	FORCEINLINE UItemData* GetItem(uint64 InUID)
+	{
+		UItemData** FoundItem = OwnItems.Find(InUID);
+		return FoundItem ? *FoundItem : nullptr; // 없으면 터지지말고 nullptr
+	}
 
 	FItemDataRow* GetTableDataById(int32 InDataId);
 protected:

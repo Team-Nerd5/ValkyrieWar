@@ -4,6 +4,7 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/Widget/WidgetClassTableData.h"
 #include "Data/Table/Map/MapLinkTableData.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 #include <Kismet/GameplayStatics.h>
 
 TSubclassOf<UBaseWidget> UGameManager::GetUIClass(EUIType InUIType)
@@ -53,4 +54,15 @@ void UGameManager::UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID)
 {
     ItemUID = InItemUID;
     CharacterUID = InCharacterUID;
+}
+
+void UGameManager::Init()
+{
+    Super::Init();
+
+    //엑셀데이터 읽어오기
+    if (UDataManager* DataManager = GetSubsystem<UDataManager>())
+    {
+        DataManager->CreateData();
+    }
 }

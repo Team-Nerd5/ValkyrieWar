@@ -138,6 +138,11 @@ void AValkyrieCharacterController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnTouchReleased);
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Canceled, this, &AValkyrieCharacterController::OnTouchReleased);
 		}
+		// 공격 바인딩
+		if (AttackAction)
+		{
+			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnAttackTap); // 약공격
+		}
 	}
 }
 
@@ -215,14 +220,7 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
 	
 	if (CurrentControlMode == EInputControlMode::Auto) return;
-	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
-	{
-		if (ControlledCharacter->bIsPivotLocked || ControlledCharacter->bIsAttacking)
-		{
-			return;
-		}
-	}
-
+	
 	FVector2D MovementVector = InValue.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
@@ -252,20 +250,9 @@ void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InVa
 
 void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
 {
-	if (CurrentControlMode == EInputControlMode::Auto) return;
-
-	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
+	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
 	{
-		ControlledCharacter->DoLightAttack();
-	}
-}
-
-void AValkyrieCharacterController::OnAttackHold(const FInputActionValue& InValue)
-{
-	if (CurrentControlMode == EInputControlMode::Auto) return;
-	if (AValkyrieCharacter* ControlledCharacter = Cast<AValkyrieCharacter>(GetPawn()))
-	{
-		ControlledCharacter->DoHeavyAttack();
+		ControlledChar->Attack();
 	}
 }
 

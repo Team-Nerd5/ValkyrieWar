@@ -22,6 +22,12 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
+#include "Data/Module/ItemModule.h"
+#include "Data/Module/AttackModule.h"
+#include "Data/Game/AttackData.h"
+
+#include "Object/Character/Animation/AnimNotifyState/ANS_ComboWindow.h"
+
 AValkyrieCharacter::AValkyrieCharacter()
 {
 	bUseControllerRotationPitch = false;
@@ -60,67 +66,9 @@ void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-}
 
-void AValkyrieCharacter::DoLightAttack()
-{
-	if (bIsAttacking)
-	{
-		if (ComboCount < MaxComboCount)
-		{
-			bSaveAttack = true;
-		}
-	}
-	else
-	{
-		bIsAttacking = true;
-		ComboCount = 1;
-
-		if (AbilitySystemComponent)
-		{
-			FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
-			FGameplayTagContainer TagContainer(MyTestTag);
-			AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
-		}
-	}
-}
-
-void AValkyrieCharacter::DoHeavyAttack()
-{
-	bSaveAttack = false; // 강공격 커맨드 들어오면 약공격 예약 다 찌부시켜버리고 강공격 우선
-	ResetCombo();
-	ApplySkill(0, nullptr);
-}
-
-void AValkyrieCharacter::ContinueCombo()
-{
-
-	if (bSaveAttack)
-	{
-		bSaveAttack = false;
-		ComboCount++;
-
-		if (AbilitySystemComponent)
-		{
-			FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
-			FGameplayTagContainer TagContainer(MyTestTag);
-			bool bSuccess = AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
-		}
-	}
-	else
-	{
-
-		bIsAttacking = false;
-		ComboCount = 0;
-	}
-}
-
-void AValkyrieCharacter::ResetCombo() // 콤보끝나면 싹 초기화
-{
-	bIsAttacking = false;
-
-	bSaveAttack = false;
-	ComboCount = 0;
+	// 디버그용
+	EquipWeapon(400001); // 활임
 }
 
 void AValkyrieCharacter::Tick(float InDeltaTime)
@@ -133,42 +81,73 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-
-void AValkyrieCharacter::Attack()
-{
-	if (AttackData)
-	{
-		UAnimMontage* MontageToPlay = AttackData->GetAnimMontage();
-
-		if (MontageToPlay)
-		{
-			GetCharacterMovement()->StopMovementImmediately();
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-
-			PlayAnimMontage(MontageToPlay);
-		}
-	}
-}
-
 void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
 {
-	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+	UE_LOG(LogTemp, Warning, TEXT("=========== [EquipWeapon 시작] 무기 ID: %llu ==========="), InEquipUID);
 
-	if (DataManager)
+	UGameInstance* GameInst = GetGameInstance();
+	if (!GameInst)
 	{
-		EquippedWeapon = DataManager->GetItemModule()->GetItem(InEquipUID);
-		if (EquippedWeapon)
-		{
-			EquippedWeapon->Equip(Data->GetUID());
-
-			TArray<USkillData*> SkillData = DataManager->GetSkillModule()->GetSkillData(EquippedWeapon->GetSkillID());
-
-			Data->UpdateWeapon(EquippedWeapon, GetGameInstance<UGameManager>());
-
-			AttackData = Data->GetAttackData();
-			SkillDataList = Data->GetSkillData();
-		}		
+		return;
 	}
+
+	UDataManager* DataManager = GameInst->GetSubsystem<UDataManager>();
+	if (!DataManager)
+	{
+		return;
+	}
+
+	UItemModule* ItemModulePtr = DataManager->GetItemModule();
+	if (!ItemModulePtr)
+	{
+		return;
+	}
+
+	// 여기서 걸리면 Init()에서 엑셀을 못 읽었거나 400001번이 없는 거임!
+	const FItemDataRow* WeaponRow = ItemModulePtr->GetTableDataById(static_cast<int32>(InEquipUID));
+	if (!WeaponRow)
+	{
+		
+		return;
+	}
+	UStaticMeshComponent* WeaponComp = nullptr;
+	TArray<UStaticMeshComponent*> AllSkeletalMeshes;
+	GetComponents<UStaticMeshComponent>(AllSkeletalMeshes);
+
+	for (UStaticMeshComponent* MeshComp : AllSkeletalMeshes)
+	{
+		if (MeshComp->GetName().Contains(TEXT("WeaponMesh")))
+		{
+			WeaponComp = MeshComp;
+			break;
+		}
+	}
+	if (!WeaponComp)
+	{
+		return;
+	}
+	UStaticMesh* LoadedMesh = WeaponRow->Mesh.LoadSynchronous();
+	if (LoadedMesh)
+	{
+		WeaponComp->SetStaticMesh(LoadedMesh);
+		UE_LOG(LogTemp, Warning, TEXT("🎉 [최종 성공] %llu번 무기 메쉬 장착 완료!!! 🎉"), InEquipUID);
+	}
+
+	if (WeaponRow->AttackId > 0)
+	{
+		// 데이터 행 빼오기
+		UAttackModule* AttackModulePtr = DataManager->GetAttackModule();
+
+		if (AttackModulePtr)
+		{
+			UAttackData* AttackObj = AttackModulePtr->GetAttackData(WeaponRow->AttackId);
+			if (AttackObj)
+			{
+				this->ComboMontage = AttackObj->GetAnimMontage();
+			}
+		}
+	}
+	
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)
@@ -180,3 +159,73 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	SkillDataList = InData->GetSkillData();
 }
+
+// 기본공격 콤보 노티파이 스테이트
+void AValkyrieCharacter::Attack()
+{
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (!AnimInst || !ComboMontage) return;
+
+	// 1. 완전 처음 1타 시작 (몽타주 안 도는 중)
+	if (!AnimInst->Montage_IsPlaying(ComboMontage))
+	{
+		// 🚨 내가 빼먹었던 거 복구 & 형의 커스텀 변수 ON!!
+		CurrentComboCount = 1;
+		bIsComboActive = true; // (형 코드에 이 변수 있으면 무조건 true로 켜줘야 해!)
+
+		bCanNextCombo = false;
+		bIsComboInputOn = false;
+
+		AnimInst->Montage_Play(ComboMontage);
+		AnimInst->Montage_JumpToSection(FName("Combo1"), ComboMontage);
+
+		UE_LOG(LogTemp, Warning, TEXT("⚔️ 콤보 시작! 1타 발사"));
+	}
+	else
+	{
+		bIsComboInputOn = true;
+		UE_LOG(LogTemp, Warning, TEXT("📩 예약 완료! (현재 타수: %d)"), CurrentComboCount);
+	}
+}
+
+void AValkyrieCharacter::BeginComboWindow()
+{
+	bIsInComboWindow = true;
+	bCanNextCombo = true;
+	UE_LOG(LogTemp, Warning, TEXT("🟢 [BeginComboWindow] 호출됨 - ComboCount: %d, bIsComboActive: %d, bIsComboInputOn: %d"),
+		CurrentComboCount, bCanNextCombo, bIsComboInputOn);
+}
+
+void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
+{
+	if (!bCanNextCombo) return;
+
+	bCanNextCombo = false;
+
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (!AnimInst) return;
+
+	if (bIsComboInputOn)
+	{
+		bIsComboInputOn = false;
+		CurrentComboCount++;
+
+		// 🎯 다음 콤보로 점프!!
+		AnimInst->Montage_JumpToSection(NextSectionName, ComboMontage);
+		UE_LOG(LogTemp, Warning, TEXT("➡️ 다음 콤보 발사: %s"), *NextSectionName.ToString());
+
+		if (NextSectionName == FName("Finish"))
+		{
+			CurrentComboCount = 0;
+			// bIsComboActive = false; // 피니시 나갈 때 꺼줘도 됨
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("❌ 클릭 안함! 콤보 완전 종료"));
+		CurrentComboCount = 0;
+		bIsComboActive = false; // 🚨 콤보 끊기면 State Machine도 대기 상태로!
+	}
+}
+
+

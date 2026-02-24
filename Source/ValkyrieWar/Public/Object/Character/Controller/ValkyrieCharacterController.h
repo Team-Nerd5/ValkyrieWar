@@ -18,14 +18,18 @@ class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
 public:
 	AValkyrieCharacterController();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	TObjectPtr<UInputAction> MoveAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	TObjectPtr<UInputAction> CameraDragAction;
+
+	//일반공격
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> AttackAction;
 
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
