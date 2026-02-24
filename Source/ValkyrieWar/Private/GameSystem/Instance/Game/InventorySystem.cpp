@@ -120,25 +120,20 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 		Item = DataManager->GetItemModule()->GetItem(InUID);
 	}
 
-	// UID로 찾았을 경우
-	if (Item)
+	if (Item)	// UID로 찾았을 경우
 	{
-		// 아이템이 있을 때
-		if (Item->GetItemGroup() == EItemGroup::Equip)
+		if (Item->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
 		{
-			// 장비일 때
-			DataManager->GetItemModule()->AddItem(Item->GetTableData()->DataId, InAmount);
+			DataManager->GetItemModule()->AddItem(Item->GetTableData()->DataId, InAmount);	// 장비일 때
 		}
 		else
 		{
-			// 장비가 아닐 때
-			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);
+			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);			// 장비가 아닐 때
 		}
 		return;
 	}
 
-	// UID로 못찾았을 경우
-	if (!Item)
+	if (!Item)	// UID로 못찾았을 경우
 	{
 		UItemData* Data = nullptr;
 		for (auto& Pair : DataManager->GetItemModule()->GetItems())
@@ -151,22 +146,18 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 			}
 		}
 
-		// DataID로 찾았을 경우
-		if (Data)
+		if (Data)	// DataID로 찾았을 경우
 		{
-			// 아이템이 있을 때
-			if (Data->GetItemGroup() == EItemGroup::Equip)
+			if (Data->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
 			{
-				// 장비일 때
-				for (int32 i = 0; i < InAmount; ++i)
+				for (int32 i = 0; i < InAmount; ++i)									// 장비일 때
 				{
 					DataManager->GetItemModule()->AddItem(InDataId, 1);
 				}
 			}
 			else
 			{
-				// 장비가 아닐 때
-				DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);
+				DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);	// 장비가 아닐 때
 			}
 		}
 		else
