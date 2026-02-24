@@ -125,3 +125,13 @@ void UCharacterInfoWidget::ItemClicked(UObject* InItemData)
 
 	EquipButtonWidget->SetupEquipItem(ItemData);
 }
+
+void UCharacterInfoWidget::ItemClicked(UObject* InItemData)
+{
+
+}
+
+void UCharacterInfoWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
+{
+
+}
