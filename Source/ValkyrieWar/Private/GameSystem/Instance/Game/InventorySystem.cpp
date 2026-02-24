@@ -15,7 +15,7 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 	DataManager = Cast<UDataManager>(GetGameInstance()->GetSubsystem<UDataManager>());
 
 	// 인벤토리 데이터 테스트용
-	//DataManager->CreateData();
+	DataManager->CreateData();
 
 	GetFilteredInventoryList(EItemGroup::None);
 }
@@ -44,13 +44,28 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 	}
 	else
 	{
-		// 특정 아이템그룹만 불러오기
-		for (auto& Data : DataManager->GetItemModule()->GetItems())
+		if (InEquipGroup == EEquipGroup::None)
 		{
-			UItemData* Item = Data.Value;
-			if (Item && Item->GetItemGroup() == InItemGroup && Item->GetEquipGroup() == InEquipGroup)
+			// 특정 아이템 그룹 전부 불러오기
+			for (auto& Data : DataManager->GetItemModule()->GetItems())
 			{
-				FilteredResult.Add(Item);
+				UItemData* Item = Data.Value;
+				if (Item && Item->GetItemGroup() == InItemGroup)
+				{
+					FilteredResult.Add(Item);
+				}
+			}
+		}
+		else
+		{
+			// 특정 아이템 그룹 내 특정 장비 그룹 불러오기
+			for (auto& Data : DataManager->GetItemModule()->GetItems())
+			{
+				UItemData* Item = Data.Value;
+				if (Item && Item->GetItemGroup() == InItemGroup && Item->GetEquipGroup() == InEquipGroup)
+				{
+					FilteredResult.Add(Item);
+				}
 			}
 		}
 	}
@@ -75,7 +90,10 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 			return nullptr;
 		}
 
-		if (Item && Item->GetEquipCharacter() == InCharacterUID && Item->GetItemGroup() == EItemGroup::Equip)
+		if (Item &&
+			Item->GetEquipCharacter() == InCharacterUID &&
+			Item->GetItemGroup() == EItemGroup::Equip &&
+			Item->GetEquipGroup() == InItemGroup)
 		{
 			return Item;
 		}
@@ -300,6 +318,8 @@ void UInventorySystem::TestAddItem()
 	AddItem(1000000006, 6, 1);
 	AddItem(1000000007, 7, 1);
 	AddItem(1000000008, 8, 1);
+	AddItem(1000000009, 9, 1);
+	AddItem(1000000010, 10, 1);
 
 	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
 	WorldEvent->Widget.OnUpdateInventory.Broadcast();

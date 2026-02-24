@@ -10,7 +10,7 @@
  * 위젯 관련 이벤트 구조체
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeEquipCharacter, uint64, InUID, EItemGroup, InItemGroup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeEquipCharacter, uint64, InUID, EEquipGroup, InEquipGroup);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData

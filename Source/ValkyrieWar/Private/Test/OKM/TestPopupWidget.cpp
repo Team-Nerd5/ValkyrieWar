@@ -133,6 +133,9 @@ void UTestPopupWidget::Sell()
 	InventorySystem->SellItem(CachedItemData, 1);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	// 판매 아이템이 장착아이템이라면 장착해제
+	if(!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
+		WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetEquipGroup());
 	CachedItemData = nullptr;
 
 	PopupSetHidden();
@@ -187,7 +190,7 @@ void UTestPopupWidget::Equip()
 	InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID, CachedItemData->GetItemGroup());
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID, CachedItemData->GetEquipGroup());
 
 	PopupSetHidden();
 }
@@ -210,7 +213,7 @@ void UTestPopupWidget::UnEquip()
 	InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetItemGroup());
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetEquipGroup());
 
 	PopupSetHidden();
 }

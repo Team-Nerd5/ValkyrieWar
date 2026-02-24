@@ -35,15 +35,12 @@ public:
 
 	UFUNCTION()
 	void FilterReset();
+	// 인벤토리창
 	UFUNCTION()
 	void FilterInventory();
+	// 장비창
 	UFUNCTION()
 	void FilterEquipment();
-	UFUNCTION()
-	void UpdateInventory();
-
-	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID, EItemGroup InItemGroup);
 
 	UFUNCTION()
 	void FilterWeapon();
@@ -53,9 +50,15 @@ public:
 	void FilterHelmet();
 	UFUNCTION()
 	void FIlterGrowth();
+	UFUNCTION()
+	void FIlterGoods();
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
+
+	// 장착한 장비 UI 정보 갱신용
+	UFUNCTION()
+	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
 
 private:
 	void SortInventory();
@@ -88,6 +91,8 @@ protected:
 	TObjectPtr<UButton> Btn_FilterHelmet = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterGrowth = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTestPopupWidget> PopupWidget = nullptr;
