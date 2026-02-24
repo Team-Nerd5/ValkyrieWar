@@ -66,3 +66,13 @@ void UCharacterInfoWidget::FilterHelmet()
 {
 
 }
+
+void UCharacterInfoWidget::ItemClicked(UObject* InItemData)
+{
+
+}
+
+void UCharacterInfoWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
+{
+
+}

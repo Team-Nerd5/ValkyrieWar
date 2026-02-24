@@ -80,3 +80,13 @@ void UInventoryWidget::FIlterGoods()
 {
 
 }
+
+void UInventoryWidget::ItemClicked(UObject* InItemData)
+{
+
+}
+
+void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
+{
+
+}
