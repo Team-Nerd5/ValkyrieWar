@@ -147,7 +147,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 void AUnitCharacter::ApplyAttack(AActor* InTargetActor)
 {
 	ApplyAttackDamage(InTargetActor);
-	ApplyAttackEffects_GAS(InTargetActor);
+	ApplyAttackEffects(InTargetActor);
 
 	Super::ApplyAttack(InTargetActor);
 }
@@ -628,7 +628,7 @@ void AUnitCharacter::SetNeedToEscapeBB(bool bValue)
 	BB->SetValueAsBool(BB_NeedToEscapeKey, bValue);
 }
 
-void AUnitCharacter::ApplyAttackEffects_GAS(AActor* TargetActor)
+void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 {
 	if (!TargetActor || IsDead()) return;
 	if (!AbilitySystemComponent || !AttackData) return;
@@ -651,7 +651,7 @@ void AUnitCharacter::ApplyAttackEffects_GAS(AActor* TargetActor)
 	{
 		if (!EffectData) continue;
 
-		UGameplayEffect* GEDef = BuildGameplayEffect_FromSkillEffect(EffectData);
+		UGameplayEffect* GEDef = BuildGameplayEffect(EffectData);
 		if (!GEDef) continue;
 
 		// 런타임 GE 인스턴스를 기반으로 Spec 생성 후 Target에 적용
@@ -662,7 +662,7 @@ void AUnitCharacter::ApplyAttackEffects_GAS(AActor* TargetActor)
 	}
 }
 
-UGameplayEffect* AUnitCharacter::BuildGameplayEffect_FromSkillEffect(USkillEffectData* EffectData) const
+UGameplayEffect* AUnitCharacter::BuildGameplayEffect(USkillEffectData* EffectData) const
 {
 	if (!EffectData) return nullptr;
 

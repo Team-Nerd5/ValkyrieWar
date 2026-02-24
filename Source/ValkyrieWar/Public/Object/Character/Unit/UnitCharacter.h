@@ -104,8 +104,8 @@ private:
 
 	void SetNeedToEscapeBB(bool bValue);
 
-	void ApplyAttackEffects_GAS(AActor* TargetActor);
-	UGameplayEffect* BuildGameplayEffect_FromSkillEffect(USkillEffectData* EffectData) const;
+	void ApplyAttackEffects(AActor* TargetActor);
+	UGameplayEffect* BuildGameplayEffect(USkillEffectData* EffectData) const;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
