@@ -65,6 +65,10 @@ void UTestPopupWidget::InitMenu(UItemData* ItemData, EUIType InUIType)
 		{
 			Btn_Use->SetVisibility(ESlateVisibility::Visible);
 		}
+		else
+		{
+			Btn_Use->SetVisibility(ESlateVisibility::Hidden);
+		}
 
 		Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
 		Btn_UnEquip->SetVisibility(ESlateVisibility::Hidden);
@@ -183,7 +187,7 @@ void UTestPopupWidget::Equip()
 	InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID, CachedItemData->GetItemGroup());
 
 	PopupSetHidden();
 }
@@ -206,7 +210,7 @@ void UTestPopupWidget::UnEquip()
 	InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0);
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetItemGroup());
 
 	PopupSetHidden();
 }

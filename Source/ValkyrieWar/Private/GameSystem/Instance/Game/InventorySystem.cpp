@@ -300,8 +300,6 @@ void UInventorySystem::TestAddItem()
 	AddItem(1000000006, 6, 1);
 	AddItem(1000000007, 7, 1);
 	AddItem(1000000008, 8, 1);
-	AddItem(1000000009, 9, 1);
-	AddItem(1000000010, 10, 1);
 
 	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
 	WorldEvent->Widget.OnUpdateInventory.Broadcast();

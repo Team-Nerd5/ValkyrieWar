@@ -25,6 +25,7 @@ class VALKYRIEWAR_API UTestInventoryWidget : public UBaseWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -38,9 +39,11 @@ public:
 	void FilterInventory();
 	UFUNCTION()
 	void FilterEquipment();
+	UFUNCTION()
+	void UpdateInventory();
 
 	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID);
+	void UpdateEquipmentUi(uint64 InCharacterUID, EItemGroup InItemGroup);
 
 	UFUNCTION()
 	void FilterWeapon();
@@ -53,6 +56,9 @@ public:
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
+
+private:
+	void SortInventory();
 
 public:
 	FORCEINLINE void SetCurrentCharacterUID(uint64 inUID) { CurrentCharacterUID = inUID; }
@@ -96,6 +102,7 @@ private:
 
 	UWorldEventSystem* EventSystem;
 
+	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
 
 	EUIType UIType;
