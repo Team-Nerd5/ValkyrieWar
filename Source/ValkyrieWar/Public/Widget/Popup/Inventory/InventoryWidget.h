@@ -47,6 +47,7 @@ protected:
 	UFUNCTION()
 	void FIlterGoods();
 
+	UFUNCTION()
 	void UpdateInventory();
 
 	UFUNCTION()

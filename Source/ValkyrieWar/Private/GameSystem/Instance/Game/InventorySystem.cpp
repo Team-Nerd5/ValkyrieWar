@@ -215,9 +215,6 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 		DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
 
 		// 아이템 가격에 따른 플레이어 골드 추가 필요
-		// 테스트용
-		//const FItemDataRow* Table = InItem->GetTableData();
-		//SetMoney(Table->SellPrice);
 	}
 	else
 	{

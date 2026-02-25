@@ -17,8 +17,10 @@ void UInventoryEntryWidget::Init(UObject* InData)
 	if (!ItemData)
 		return;
 
-	if(ItemData->GetItemGroup() == EItemGroup::Goods || ItemData->GetItemGroup() == EItemGroup::GrowthItem)
+	if (ItemData->GetItemGroup() == EItemGroup::Goods || ItemData->GetItemGroup() == EItemGroup::GrowthItem)
 		Amount->SetText(FText::AsNumber(ItemData->GetAmount()));
+	else
+		Amount->SetText(FText::AsNumber(0));
 
 	UTexture2D* IconTexture = ItemData->GetTableData()->Icon.LoadSynchronous();
 	if(IconTexture)

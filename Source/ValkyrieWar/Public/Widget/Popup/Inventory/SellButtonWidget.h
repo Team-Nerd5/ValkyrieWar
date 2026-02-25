@@ -22,7 +22,9 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	UFUNCTION()
 	virtual void OpenUI() override;
+	UFUNCTION()
 	virtual void CloseUI() override;
 
 public:
@@ -30,6 +32,7 @@ public:
 	void SetupSellItem(UItemData* InItemData);
 
 protected:
+	UFUNCTION()
 	void Sell();
 
 protected:
