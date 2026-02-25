@@ -72,7 +72,10 @@ void USellButtonWidget::Sell()
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	// 판매 아이템이 장착아이템이라면 장착해제
 	if (!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
+	{
+		InventorySystem->UnEquipItem(CachedItemData);
 		WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetEquipGroup());
+	}
 	CachedItemData = nullptr;
 
 	CloseUI();

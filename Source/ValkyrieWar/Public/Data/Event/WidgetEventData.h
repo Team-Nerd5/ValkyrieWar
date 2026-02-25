@@ -10,6 +10,7 @@
  * 위젯 관련 이벤트 구조체
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateEquipment);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeEquipCharacter, uint64, InUID, EEquipGroup, InEquipGroup);
 
 USTRUCT(BlueprintType)
@@ -19,8 +20,10 @@ struct VALKYRIEWAR_API FWidgetEventData
 
 	//위젯 이벤트 Delegate 모음
 public:
-	// 인벤토리 갱신용
+	// 인벤토리 Tileview 갱신용
 	FOnUpdateInventory OnUpdateInventory;
+	// 장비창 Tileview 갱신용
+	FOnUpdateEquipment OnUpdateEquipment;
 	// 장비 장착시 인벤토리UI 아이템의 장착한 케릭터UID 갱신용
 	FOnChangeEquipCharacter OnChangeEquipCharacter;
 };

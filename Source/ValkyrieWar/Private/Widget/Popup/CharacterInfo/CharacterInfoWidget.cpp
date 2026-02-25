@@ -26,15 +26,18 @@ void UCharacterInfoWidget::NativeConstruct()
 	if (Btn_FilterHelmet)
 		Btn_FilterHelmet->OnClicked.AddDynamic(this, &UCharacterInfoWidget::FilterHelmet);
 
-	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UCharacterInfoWidget::FilterReset);
+	EventSystem->Widget.OnUpdateEquipment.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentInventory);
 	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentUi);
 
-	TileView->OnItemClicked().AddUObject(this, &UCharacterInfoWidget::ItemClicked);
+	EquipmentTileView->OnItemClicked().AddUObject(this, &UCharacterInfoWidget::ItemClicked);
 }
 
 void UCharacterInfoWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
+
+	EventSystem->Widget.OnUpdateEquipment.RemoveDynamic(this, &UCharacterInfoWidget::UpdateEquipmentInventory);
+	EventSystem->Widget.OnChangeEquipCharacter.RemoveDynamic(this, &UCharacterInfoWidget::UpdateEquipmentUi);
 }
 
 void UCharacterInfoWidget::OpenUI()
@@ -49,30 +52,75 @@ void UCharacterInfoWidget::CloseUI()
 
 void UCharacterInfoWidget::FilterReset()
 {
+	CurrentEquipGroup = EEquipGroup::None;
 
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, CurrentEquipGroup);
+	EquipmentTileView->SetListItems(CachedItemList);
+	EquipmentTileView->RegenerateAllEntries();
 }
 
 void UCharacterInfoWidget::FilterWeapon()
 {
+	CurrentEquipGroup = EEquipGroup::Weapon;
 
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, CurrentEquipGroup);
+	EquipmentTileView->SetListItems(CachedItemList);
+	EquipmentTileView->RegenerateAllEntries();
 }
 
 void UCharacterInfoWidget::FilterArmor()
 {
+	CurrentEquipGroup = EEquipGroup::Armor;
 
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, CurrentEquipGroup);
+	EquipmentTileView->SetListItems(CachedItemList);
+	EquipmentTileView->RegenerateAllEntries();
 }
 
 void UCharacterInfoWidget::FilterHelmet()
 {
+	CurrentEquipGroup = EEquipGroup::Helmet;
 
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, CurrentEquipGroup);
+	EquipmentTileView->SetListItems(CachedItemList);
+	EquipmentTileView->RegenerateAllEntries();
 }
 
-void UCharacterInfoWidget::ItemClicked(UObject* InItemData)
+void UCharacterInfoWidget::UpdateEquipmentInventory()
 {
-
+	switch (CurrentEquipGroup)
+	{
+	case EEquipGroup::Weapon:
+		FilterWeapon();
+		break;
+	case EEquipGroup::Helmet:
+		FilterHelmet();
+		break;
+	case EEquipGroup::Armor:
+		FilterArmor();
+		break;
+	default:
+		FilterReset();
+		break;
+	}
 }
 
 void UCharacterInfoWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
 {
+	
+}
 
+void UCharacterInfoWidget::ItemClicked(UObject* InItemData)
+{
+	UItemData* ItemData = Cast<UItemData>(InItemData);
+
+#pragma region 유효성 검사
+	if (!ItemData)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[CharacterInfoWidget(ItemClicked)] ItemData가 없습니다"));
+		return;
+	}
+#pragma endregion
+
+	EquipButtonWidget->SetupEquipItem(ItemData);
 }

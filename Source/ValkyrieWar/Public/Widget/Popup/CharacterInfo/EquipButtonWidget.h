@@ -8,13 +8,13 @@
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
-#include "SellButtonWidget.generated.h"
+#include "EquipButtonWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API USellButtonWidget : public UBaseWidget
+class VALKYRIEWAR_API UEquipButtonWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
@@ -29,15 +29,20 @@ public:
 
 public:
 	// 선택한 아이템 받는 함수
-	void SetupSellItem(UItemData* InItemData);
+	UFUNCTION()
+	void SetupEquipItem(UItemData* InItemData);
 
 protected:
 	UFUNCTION()
-	void Sell();
+	void Equip();
+	UFUNCTION()
+	void Unequip();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_Sell = nullptr;
+	TObjectPtr<UButton> Btn_Equip = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Unequip = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Cancel = nullptr;
 

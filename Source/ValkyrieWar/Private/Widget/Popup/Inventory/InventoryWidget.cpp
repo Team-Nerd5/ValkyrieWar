@@ -32,7 +32,7 @@ void UInventoryWidget::NativeConstruct()
 
 	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateInventory);
 
-	TileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
+	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
 }
 
 void UInventoryWidget::NativeDestruct()
@@ -56,9 +56,9 @@ void UInventoryWidget::FilterReset()
 {
 	CurrentItemGroup = EItemGroup::None;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterWeapon()
@@ -66,9 +66,9 @@ void UInventoryWidget::FilterWeapon()
 	CurrentItemGroup = EItemGroup::Equip;
 	CurrentEquipGroup = EEquipGroup::Weapon;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Weapon);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterArmor()
@@ -76,9 +76,9 @@ void UInventoryWidget::FilterArmor()
 	CurrentItemGroup = EItemGroup::Equip;
 	CurrentEquipGroup = EEquipGroup::Armor;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Armor);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterHelmet()
@@ -86,27 +86,27 @@ void UInventoryWidget::FilterHelmet()
 	CurrentItemGroup = EItemGroup::Equip;
 	CurrentEquipGroup = EEquipGroup::Helmet;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Helmet);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FIlterGrowth()
 {
 	CurrentItemGroup = EItemGroup::GrowthItem;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::GrowthItem);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FIlterGoods()
 {
 	CurrentItemGroup = EItemGroup::Goods;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Goods);
-	TileView->SetListItems(CachedItemList);
-	TileView->RegenerateAllEntries();
+	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
+	InventoryTileView->SetListItems(CachedItemList);
+	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::UpdateInventory()

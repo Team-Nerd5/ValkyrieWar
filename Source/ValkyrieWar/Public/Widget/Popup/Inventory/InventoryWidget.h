@@ -47,6 +47,7 @@ protected:
 	UFUNCTION()
 	void FIlterGoods();
 
+	// 현재 필터링된 인벤토리 업데이트 함수
 	UFUNCTION()
 	void UpdateInventory();
 
@@ -55,7 +56,7 @@ protected:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTileView> TileView = nullptr;
+	TObjectPtr<UTileView> InventoryTileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Close = nullptr;
@@ -84,6 +85,7 @@ private:
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
 
+	// 현재 필터가 적용된 인벤토리 확인용
 	EItemGroup CurrentItemGroup = EItemGroup::None;
 	EEquipGroup CurrentEquipGroup = EEquipGroup::None;
 };

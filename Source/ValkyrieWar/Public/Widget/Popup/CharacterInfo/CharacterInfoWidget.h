@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "Components/TileView.h"
 #include "Components/Button.h"
+#include "Widget/Popup/CharacterInfo/EquipButtonWidget.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -41,16 +42,24 @@ protected:
 	void FilterArmor();
 	UFUNCTION()
 	void FilterHelmet();
+	
+	// 현재 필터링된 캐릭터 장비 인벤토리 업데이트 함수
+	UFUNCTION()
+	void UpdateEquipmentInventory();
+
+	// 선택된 캐릭터가 장착한 장비 UI업데이트 함수
+	UFUNCTION()
+	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
 
-	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
+public:
+	FORCEINLINE void SetSelectedCharacterUID(uint64 InCharacterUID) { SelectedCharacterUID = InCharacterUID; }
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTileView> TileView = nullptr;
+	TObjectPtr<UTileView> EquipmentTileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Close = nullptr;
@@ -64,6 +73,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterHelmet = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UEquipButtonWidget> EquipButtonWidget = nullptr;
+
 private:
 	UInventorySystem* InventorySystem;
 
@@ -72,6 +84,8 @@ private:
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
 
+	EEquipGroup CurrentEquipGroup = EEquipGroup::None;
+
 	// 현재 선택한 캐릭터 UID 저장용
-	uint64 CurrentCharacterUID = 0;
+	uint64 SelectedCharacterUID = 0;
 };
