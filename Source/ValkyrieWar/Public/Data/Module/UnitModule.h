@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseModule.h"
 #include "Data/Table/GameData/UnitDataRow.h"
+#include "Data/Game/UnitData.h"
 #include "UnitModule.generated.h"
 
 /**
@@ -20,4 +21,7 @@ protected:
 	virtual void MakeData() override;
 private:
 	TMap<int32, FUnitDataRow*> TableDataByDataId;
+
+	//TODO: 임시 보유 유닛 데이터(전체 보유로 판단)
+	TMap<int32, UUnitData*> OwnUnits;
 };
