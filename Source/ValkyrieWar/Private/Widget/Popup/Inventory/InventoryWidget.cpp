@@ -30,8 +30,7 @@ void UInventoryWidget::NativeConstruct()
 	if (Btn_FilterGoods)
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FIlterGoods);
 
-	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::FilterReset);
-	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UInventoryWidget::UpdateEquipmentUi);
+	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateInventory);
 
 	TileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
 }
@@ -39,6 +38,8 @@ void UInventoryWidget::NativeConstruct()
 void UInventoryWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
+
+	EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::FilterReset);
 }
 
 void UInventoryWidget::OpenUI()
@@ -53,40 +54,90 @@ void UInventoryWidget::CloseUI()
 
 void UInventoryWidget::FilterReset()
 {
-
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterWeapon()
 {
-
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Weapon);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterArmor()
 {
-
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Armor);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterHelmet()
 {
-
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip, EEquipGroup::Helmet);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FIlterGrowth()
 {
-
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::GrowthItem);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FIlterGoods()
 {
+	CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Goods);
+	TileView->SetListItems(CachedItemList);
+	TileView->RegenerateAllEntries();
+}
 
+void UInventoryWidget::UpdateInventory()
+{
+	switch (CurrentItemGroup)
+	{
+	case EItemGroup::Goods:
+		FIlterGoods();
+		break;
+	case EItemGroup::GrowthItem:
+		FIlterGrowth();
+		break;
+	case EItemGroup::Equip:
+		switch (CurrentEquipGroup)
+		{
+		case EEquipGroup::Weapon:
+			FilterWeapon();
+			break;
+		case EEquipGroup::Helmet:
+			FilterHelmet();
+			break;
+		case EEquipGroup::Armor:
+			FilterArmor();
+			break;
+		default:
+			FilterReset();
+			break;
+		}
+		break;
+	default:
+		FilterReset();
+		break;
+	}
 }
 
 void UInventoryWidget::ItemClicked(UObject* InItemData)
 {
+	UItemData* ItemData = Cast<UItemData>(InItemData);
 
-}
+#pragma region 유효성 검사
+	if (!ItemData)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(ItemClicked)] ItemData가 없습니다"));
+		return;
+	}
+#pragma endregion
 
-void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
-{
-
+	SellButtonWidget->SetupSellItem(ItemData);
 }

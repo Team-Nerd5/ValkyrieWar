@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "Components/TileView.h"
 #include "Components/Button.h"
+#include "Widget/Popup/Inventory/SellButtonWidget.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -46,11 +47,10 @@ protected:
 	UFUNCTION()
 	void FIlterGoods();
 
-	UFUNCTION()
-	void ItemClicked(UObject* InItemData);
+	void UpdateInventory();
 
 	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
+	void ItemClicked(UObject* InItemData);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -72,6 +72,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USellButtonWidget> SellButtonWidget = nullptr;
+
 private:
 	UInventorySystem* InventorySystem;
 
@@ -79,4 +82,7 @@ private:
 
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
+
+	EItemGroup CurrentItemGroup = EItemGroup::None;
+	EEquipGroup CurrentEquipGroup = EEquipGroup::None;
 };

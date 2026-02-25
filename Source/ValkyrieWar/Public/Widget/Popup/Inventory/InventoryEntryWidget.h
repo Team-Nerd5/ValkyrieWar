@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "InventoryEntryWidget.generated.h"
 
 /**
@@ -20,4 +22,15 @@ protected:
 
 	UFUNCTION()
 	void Init(UObject* InData);
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> Amount = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Icon = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> BackGround = nullptr;
+
 };

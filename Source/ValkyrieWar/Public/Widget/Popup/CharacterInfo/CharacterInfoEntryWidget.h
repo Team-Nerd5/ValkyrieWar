@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "Components/Image.h"
 #include "CharacterInfoEntryWidget.generated.h"
 
 /**
@@ -20,4 +21,11 @@ protected:
 
 	UFUNCTION()
 	void Init(UObject* InData);
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Icon = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> BackGround = nullptr;
 };

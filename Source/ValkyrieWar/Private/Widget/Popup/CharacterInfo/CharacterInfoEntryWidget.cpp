@@ -2,6 +2,7 @@
 
 
 #include "Widget/Popup/CharacterInfo/CharacterInfoEntryWidget.h"
+#include "Data/Game/ItemData.h"
 
 void UCharacterInfoEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
@@ -12,5 +13,11 @@ void UCharacterInfoEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObjec
 
 void UCharacterInfoEntryWidget::Init(UObject* InData)
 {
+	UItemData* ItemData = Cast<UItemData>(InData);
+	if (!ItemData)
+		return;
 
+	UTexture2D* IconTexture = ItemData->GetTableData()->Icon.LoadSynchronous();
+	if (IconTexture)
+		Icon->SetBrushFromTexture(IconTexture);
 }
