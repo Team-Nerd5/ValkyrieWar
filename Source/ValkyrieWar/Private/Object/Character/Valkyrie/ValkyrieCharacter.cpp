@@ -126,12 +126,15 @@ void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
 	{
 		return;
 	}
-	UStaticMesh* LoadedMesh = WeaponRow->Mesh.LoadSynchronous();
-	if (LoadedMesh)
+	if (WeaponRow->StaticMesh)
 	{
-		WeaponComp->SetStaticMesh(LoadedMesh);
-	
+		UStaticMesh* LoadedMesh = WeaponRow->StaticMesh.LoadSynchronous();
+		if (LoadedMesh)
+		{
+			WeaponComp->SetStaticMesh(LoadedMesh);
+		}
 	}
+	
 
 	if (WeaponRow->AttackId > 0)
 	{
