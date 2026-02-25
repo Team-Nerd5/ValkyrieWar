@@ -29,6 +29,9 @@ void UItemModule::MakeData()
 			TableDataByDataId.Add(Item->DataId, Item);
 		}
 	}
+	if (DataTable == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("❌ [ItemModule] 데이터 테이블 에셋이 연결되지 않았습니다!!!"));
+	}
 }
 
 void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
@@ -83,5 +86,12 @@ void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 
 FItemDataRow* UItemModule::GetTableDataById(int32 InDataId)
 {
-	return *TableDataByDataId.Find(InDataId);
+	FItemDataRow** FoundRow = TableDataByDataId.Find(InDataId);
+
+	if (FoundRow)
+	{
+		return *FoundRow;
+	}
+	UE_LOG(LogTemp, Error, TEXT("ID %d마 이거없다 아이가 터진다 이거 "), InDataId);
+	return nullptr;
 }
