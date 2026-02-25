@@ -23,7 +23,7 @@ public:
 	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
 
 	UPROPERTY(EditAnywhere, Category = "Combat") // 에디터에서 추가함
-		TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
+	TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
 
 
 public:
@@ -72,6 +72,5 @@ private:
 	//DT로 관리할거라 몽타주 하나에 애니메이션을 이어붙일 예정
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;
-	// 일반공격 랜덤 돌릴거임
-	TArray<int32> AvailableCombos;
+	
 };
