@@ -107,6 +107,9 @@ private:
 	void ApplyAttackEffects(AActor* TargetActor);
 	UGameplayEffect* BuildGameplayEffect(USkillEffectData* EffectData) const;
 
+	void CellSyncTick();
+	void StopCellUpdate();
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TArray<FUnitEngagementSlotData> EngagementSlots;
@@ -147,7 +150,7 @@ protected:
 	TObjectPtr<UUnitBrainComponent> Brain;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
-	bool bDrawDebug = true;
+	bool bDrawDebug = false;
 
 	// ===== Speed tuning =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
@@ -217,4 +220,13 @@ private:
 
 	float StuckAccumSeconds = 0.f;
 	float LastEscapeRequestTime = -10000.f;
+
+	FTimerHandle CellSyncTimerHandle;
+	FIntPoint LastCellKey = FIntPoint(INT32_MAX, INT32_MAX);
+
+	UPROPERTY(EditAnywhere, Category = "AI|Reservation")
+	float CellSyncInterval = 0.25f;
+
+	UPROPERTY(Transient)
+	mutable TMap<TObjectPtr<USkillEffectData>, TObjectPtr<UGameplayEffect>> CachedRuntimeGEs;
 };

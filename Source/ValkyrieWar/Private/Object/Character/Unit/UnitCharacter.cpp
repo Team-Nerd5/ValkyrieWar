@@ -28,6 +28,9 @@ AUnitCharacter::AUnitCharacter()
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	GetMesh()->bEnableUpdateRateOptimizations = true;
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 }
 
 void AUnitCharacter::BeginPlay()
@@ -51,6 +54,7 @@ void AUnitCharacter::PostInitializeComponents()
 void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	StopStuckMonitor();
+	StopCellUpdate();
 
 	// Destroy 되는 예외 대비 안전장치
 	UnregisterFromBattleDirector(true);
@@ -66,6 +70,15 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	SkillDataList = InData->GetSkillData();
+
+	if (AttackData)
+	{
+		const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
+		for (USkillEffectData* SingleEffect : Effects)
+		{
+			BuildGameplayEffect(SingleEffect);
+		}
+	}
 }
 
 void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
@@ -145,7 +158,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 
 void AUnitCharacter::ApplyAttack(AActor* InTargetActor)
 {
-	ApplyAttackDamage(InTargetActor);
+	//ApplyAttackDamage(InTargetActor);
 	ApplyAttackEffects(InTargetActor);
 
 	Super::ApplyAttack(InTargetActor);
@@ -517,6 +530,16 @@ void AUnitCharacter::ResetForReuse()
 
 	// 정체 모니터 시작
 	StartStuckMonitor();
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			CellSyncTimerHandle,
+			FTimerDelegate::CreateUObject(this, &AUnitCharacter::CellSyncTick),
+			FMath::Max(0.05f, CellSyncInterval),
+			true
+		);
+	}
 }
 
 void AUnitCharacter::ApplyMoveSpeed(float NewSpeed)
@@ -634,52 +657,12 @@ void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 
 	UAbilitySystemComponent* TargetASC =
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-
 	if (!TargetASC) return;
 
-	// ============================================
-	// 1. 더미 테스트 이펙트 먼저 적용
-	// ============================================
-	//if (DebugTestEffect)
-	//{
-	//	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
-	//	Context.AddSourceObject(this);
+	if (!AttackData) return;
 
-	//	FGameplayEffectSpecHandle SpecHandle =
-	//		AbilitySystemComponent->MakeOutgoingSpec(DebugTestEffect, DebugTestEffectLevel, Context);
-
-	//	if (SpecHandle.IsValid())
-	//	{
-	//		FActiveGameplayEffectHandle Handle =
-	//			AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(
-	//				*SpecHandle.Data.Get(), TargetASC);
-
-	//		UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Applied = %s"),
-	//			Handle.IsValid() ? TEXT("TRUE") : TEXT("FALSE"));
-	//	}
-	//	else
-	//	{
-	//		UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Spec invalid"));
-	//	}
-	//}
-
-	// ============================================
-	// 기존 데이터 기반 이펙트 적용 로직
-	// ============================================
-
-	if (!AttackData)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] No AttackData!"));
-		return;
-	}
-
-	const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
-
-	if (Effects.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] No Effects!"));
-		return;
-	}
+	const TArray<USkillEffectData*>& Effects = AttackData->GetEffectList();
+	if (Effects.Num() == 0) return;
 
 	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
 	Context.AddSourceObject(this);
@@ -689,40 +672,13 @@ void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 		if (!EffectData) continue;
 
 		UGameplayEffect* GEDef = BuildGameplayEffect(EffectData);
-		if (!GEDef)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] BuildGameplayEffect FAILED. Unit=%s Target=%s"),
-				*GetName(), *GetNameSafe(TargetActor));
-			continue;
-		}
+		if (!GEDef) continue;
 
 		FGameplayEffectSpec Spec(GEDef, Context, 1.0f);
 
-		// 적용 결과 핸들로 성공/실패 판별
-		FActiveGameplayEffectHandle Handle =
-			AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
+		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
 
-		// 로그(성공/실패 + 어떤 이펙트인지)
-		const bool bApplied = Handle.IsValid();
-
-		// (가능한 정보들) 클래스명 / DurationPolicy / Period / GrantedTags / ModifierCount
-		const FString GEName = GEDef->GetClass() ? GEDef->GetClass()->GetName() : TEXT("None");
-		const float Period = GEDef->Period.GetValueAtLevel(1.0f);
-		const int32 ModCount = GEDef->Modifiers.Num();
-
-		FGameplayTagContainer GrantedTags =
-			GEDef->InheritableOwnedTagsContainer.Added;
-
-		UE_LOG(LogTemp, Log,
-			TEXT("[ATTACK EFFECT] Applied | Unit=%s Target=%s | GE=%s | DurationPolicy=%d Period=%.2f Mods=%d Tags=%s"),
-			*GetName(),
-			*GetNameSafe(TargetActor),
-			*GEName,
-			(int32)GEDef->DurationPolicy,
-			Period,
-			ModCount,
-			*GrantedTags.ToString()
-		);
+		UE_LOG(LogTemp, Log, TEXT("ApplyGameplayEffectSpecToTarget : %s"), *GEDef->GetFName().ToString());
 	}
 }
 
@@ -730,18 +686,33 @@ UGameplayEffect* AUnitCharacter::BuildGameplayEffect(USkillEffectData* EffectDat
 {
 	if (!EffectData) return nullptr;
 
-	UGameplayEffect* GE = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None, RF_Transient);
+	if (TObjectPtr<UGameplayEffect>* Found = CachedRuntimeGEs.Find(EffectData))
+	{
+		if (IsValid(Found->Get()))
+		{
+			return Found->Get();
+		}
+		CachedRuntimeGEs.Remove(EffectData);
+	}
 
+	UObject* Outer = const_cast<AUnitCharacter*>(this);
+
+	UGameplayEffect* GE = NewObject<UGameplayEffect>(
+		Outer,
+		UGameplayEffect::StaticClass(),
+		NAME_None,
+		RF_Transient
+	);
 	if (!GE) return nullptr;
 
 	GE->DurationPolicy = EffectData->GetDurationPolicy();
 
 	if (GE->DurationPolicy == EGameplayEffectDurationType::HasDuration)
 	{
-		GE->DurationMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(EffectData->GetDuration()));
+		GE->DurationMagnitude =
+			FGameplayEffectModifierMagnitude(FScalableFloat(EffectData->GetDuration()));
 	}
 
-	// Periodic (주기 적용)
 	const float Period = EffectData->GetPeriod();
 	if (Period > 0.f)
 	{
@@ -749,11 +720,7 @@ UGameplayEffect* AUnitCharacter::BuildGameplayEffect(USkillEffectData* EffectDat
 	}
 
 	// Granted Tags
-	{
-		FInheritedTagContainer GamePlayTags;
-		GamePlayTags.Added = EffectData->GetGrantedTags();
-		GE->InheritableOwnedTagsContainer = GamePlayTags;
-	}
+	GE->InheritableOwnedTagsContainer.Added = EffectData->GetGrantedTags();
 
 	// GameplayCue
 	if (EffectData->GetCueTag().IsValid())
@@ -763,25 +730,42 @@ UGameplayEffect* AUnitCharacter::BuildGameplayEffect(USkillEffectData* EffectDat
 		GE->GameplayCues.Add(Cue);
 	}
 
-	// Modifier (Attribute 변화)
-	// - Value를 단순 add/mul/override 등 Op로 적용
-	// - TargetAttribute를 수정
+	// Modifier
+	const FGameplayAttribute TargetAttr = EffectData->GetTargetAttribute();
+	if (TargetAttr.IsValid())
 	{
-		const FGameplayAttribute TargetAttr = EffectData->GetTargetAttribute();
-		if (TargetAttr.IsValid())
-		{
-			FGameplayModifierInfo Mod;
-			Mod.Attribute = TargetAttr;
-			Mod.ModifierOp = EffectData->GetOp();
+		FGameplayModifierInfo Mod;
+		Mod.Attribute = TargetAttr;
+		Mod.ModifierOp = EffectData->GetOp();
 
-			// 값 적용 방식: 기본은 고정 값
-			// bUseSourceAttribute 같은 “소스 스탯 기반 계산”은 여기서 확장 가능
-			const float Value = EffectData->GetApplyValue();
-			Mod.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(Value));
+		const float Value = EffectData->GetApplyValue();
+		Mod.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(Value));
 
-			GE->Modifiers.Add(Mod);
-		}
+		GE->Modifiers.Add(Mod);
 	}
 
+	CachedRuntimeGEs.Add(EffectData, GE);
 	return GE;
+}
+
+void AUnitCharacter::CellSyncTick()
+{
+	if (IsDead()) return;
+	if (!bRegisteredToBattleDirector) return;
+
+	UBattleDirectorSubsystem* BD = GetBattleDirector();
+	if (!BD) return;
+
+	// 셀 계산은 BD와 동일한 규칙이어야 함.
+	// 가장 깔끔한 방법: BD가 "셀 키 계산 함수"를 공개하거나,
+	// BD->NotifyUnitMoved 안에서 계산하게 한다.
+	BD->NotifyUnitMoved(this);
+}
+
+void AUnitCharacter::StopCellUpdate()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(CellSyncTimerHandle);
+	}
 }
