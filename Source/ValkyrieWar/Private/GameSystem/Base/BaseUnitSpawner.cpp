@@ -4,6 +4,7 @@
 #include "GameSystem/Base/BaseUnitSpawner.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "Object/Character/Unit/UnitCharacter.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 
 ABaseUnitSpawner::ABaseUnitSpawner()
 {
@@ -237,6 +238,24 @@ void ABaseUnitSpawner::HandleSpawnTick()
 		// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
 		Unit->SetOwnerSpawner(this);
 		Unit->SetPoolType(PickType);
+
+		UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+		if (DataManager && DataManager->GetUnitModule())
+		{
+			if (UUnitData* InData = DataManager->GetUnitModule()->GetUnitDataById(Entry->UnitDataId))
+			{
+				Unit->SetData(InData);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitData not found. PoolType=%d UnitDataId=%d"),
+					(int32)PickType, Entry->UnitDataId);
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitModule is null (cannot SetData)."));
+		}
 
 		RegisterAlive(Unit);
 		SpawnedThisWave++;

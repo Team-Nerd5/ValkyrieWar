@@ -23,6 +23,9 @@ struct FPoolEntry
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ReserveSize = 50;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 UnitDataId = 0;
 };
 
 USTRUCT(BlueprintType)

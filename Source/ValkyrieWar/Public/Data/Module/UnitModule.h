@@ -17,6 +17,12 @@ class VALKYRIEWAR_API UUnitModule : public UBaseModule
 	GENERATED_BODY()
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
+
+	FORCEINLINE UUnitData* GetUnitDataById(int32 InDataId) const
+	{
+		return OwnUnits.FindRef(InDataId);
+	}
+
 protected:
 	virtual void MakeData() override;
 private:

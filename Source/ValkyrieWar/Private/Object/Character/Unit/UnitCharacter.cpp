@@ -61,13 +61,10 @@ void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AUnitCharacter::SetData(UUnitData* InData)
 {
-	if (!InData) return;
-
 	Data = InData;
 
 	//기본 무기에 따른 공격/스킬 적용
-	if (InData->GetAttackData()) AttackData = InData->GetAttackData();
-
+	AttackData = InData->GetAttackData();
 	SkillDataList = InData->GetSkillData();
 }
 
@@ -643,37 +640,46 @@ void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 	// ============================================
 	// 1. 더미 테스트 이펙트 먼저 적용
 	// ============================================
-	if (DebugTestEffect)
-	{
-		FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
-		Context.AddSourceObject(this);
+	//if (DebugTestEffect)
+	//{
+	//	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
+	//	Context.AddSourceObject(this);
 
-		FGameplayEffectSpecHandle SpecHandle =
-			AbilitySystemComponent->MakeOutgoingSpec(DebugTestEffect, DebugTestEffectLevel, Context);
+	//	FGameplayEffectSpecHandle SpecHandle =
+	//		AbilitySystemComponent->MakeOutgoingSpec(DebugTestEffect, DebugTestEffectLevel, Context);
 
-		if (SpecHandle.IsValid())
-		{
-			FActiveGameplayEffectHandle Handle =
-				AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(
-					*SpecHandle.Data.Get(), TargetASC);
+	//	if (SpecHandle.IsValid())
+	//	{
+	//		FActiveGameplayEffectHandle Handle =
+	//			AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(
+	//				*SpecHandle.Data.Get(), TargetASC);
 
-			UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Applied = %s"),
-				Handle.IsValid() ? TEXT("TRUE") : TEXT("FALSE"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Spec invalid"));
-		}
-	}
+	//		UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Applied = %s"),
+	//			Handle.IsValid() ? TEXT("TRUE") : TEXT("FALSE"));
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Warning, TEXT("[DEBUG TEST EFFECT] Spec invalid"));
+	//	}
+	//}
 
 	// ============================================
 	// 기존 데이터 기반 이펙트 적용 로직
 	// ============================================
 
-	if (!AttackData) return;
+	if (!AttackData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] No AttackData!"));
+		return;
+	}
 
 	const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
-	if (Effects.IsEmpty()) return;
+
+	if (Effects.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] No Effects!"));
+		return;
+	}
 
 	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
 	Context.AddSourceObject(this);
@@ -683,10 +689,40 @@ void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
 		if (!EffectData) continue;
 
 		UGameplayEffect* GEDef = BuildGameplayEffect(EffectData);
-		if (!GEDef) continue;
+		if (!GEDef)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[ATTACK EFFECT] BuildGameplayEffect FAILED. Unit=%s Target=%s"),
+				*GetName(), *GetNameSafe(TargetActor));
+			continue;
+		}
 
 		FGameplayEffectSpec Spec(GEDef, Context, 1.0f);
-		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
+
+		// 적용 결과 핸들로 성공/실패 판별
+		FActiveGameplayEffectHandle Handle =
+			AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
+
+		// 로그(성공/실패 + 어떤 이펙트인지)
+		const bool bApplied = Handle.IsValid();
+
+		// (가능한 정보들) 클래스명 / DurationPolicy / Period / GrantedTags / ModifierCount
+		const FString GEName = GEDef->GetClass() ? GEDef->GetClass()->GetName() : TEXT("None");
+		const float Period = GEDef->Period.GetValueAtLevel(1.0f);
+		const int32 ModCount = GEDef->Modifiers.Num();
+
+		FGameplayTagContainer GrantedTags =
+			GEDef->InheritableOwnedTagsContainer.Added;
+
+		UE_LOG(LogTemp, Log,
+			TEXT("[ATTACK EFFECT] Applied | Unit=%s Target=%s | GE=%s | DurationPolicy=%d Period=%.2f Mods=%d Tags=%s"),
+			*GetName(),
+			*GetNameSafe(TargetActor),
+			*GEName,
+			(int32)GEDef->DurationPolicy,
+			Period,
+			ModCount,
+			*GrantedTags.ToString()
+		);
 	}
 }
 
