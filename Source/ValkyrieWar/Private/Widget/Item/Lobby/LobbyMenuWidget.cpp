@@ -16,12 +16,12 @@ void ULobbyMenuWidget::NativeConstruct()
 	}
 }
 
-void ULobbyMenuWidget::SetData(UTexture2D* Icon, FString Name, EUIType InOpenUIType)
+void ULobbyMenuWidget::SetData(FContentsDataRow* InTableData)
 {
-
-
-	if (Icon)
+	if (InTableData->Icon.IsValid())
 	{
+		UTexture2D* IconTexture = InTableData->Icon.LoadSynchronous();
+
 		//FButtonStyle Style;
 		//FSlateBrush Brush;
 		//Brush.
@@ -31,21 +31,17 @@ void ULobbyMenuWidget::SetData(UTexture2D* Icon, FString Name, EUIType InOpenUIT
 
 	if (MenuName)
 	{
-		MenuName->SetText(FText::FromString(Name));
+		MenuName->SetText(FText::FromString(InTableData->Name));
 	}
 
-	ConnectedUIType = InOpenUIType;
-	//연결 UIType...
+	CurrentMenuType = InTableData->MenuType;
 }
+
 
 void ULobbyMenuWidget::OnClickMenu()
 {
-	if (ConnectedUIType != EUIType::None)
+	if (CurrentMenuType != EUIType::None)
 	{
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
-		{
-			//이거 음..클래스 가져오는걸 음...
-			UIManager->OpenUI<UBaseWidget>(ConnectedUIType);
-		}
+		OnMenuButtonClicked.Broadcast(CurrentMenuType);
 	}
 }

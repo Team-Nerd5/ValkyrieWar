@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Widget/Item/Lobby/LobbyMenuWidget.h"
+#include "Data/Enum/DataEnums.h"
 #include "LobbyWidget.generated.h"
 
 /**
@@ -16,7 +17,12 @@ class VALKYRIEWAR_API ULobbyWidget : public UBaseWidget
 	GENERATED_BODY()
 
 public:
+	virtual void NativeConstruct() override;
 	virtual void OpenUI() override;
+
+	virtual void CreateTopMenu() override;
+
+	void ShowStage(int32 InChapter, int32 InStageNum);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -24,4 +30,17 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ULobbyMenuWidget> MenuItemClass = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> StageButton = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UCanvasPanel> LobbyCanvas = nullptr;
+private:
+	void ShowInventory();
+
+	UFUNCTION()
+	void ShowStageInternal();
+
+	UFUNCTION()
+	void OnClickInventory(EUIType InMenuType);
 };

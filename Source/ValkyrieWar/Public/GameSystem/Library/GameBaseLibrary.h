@@ -21,7 +21,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "MyGame|Utils", meta = (WorldContext = "WorldContextObject"))
 	static UObjectPoolSubsystem* GetObjectPoolSystem(const UObject* WorldContextObject);
 
-
 	template<typename T>
 	static bool CheckClassImplements(TSubclassOf<T> InClass, UClass* InInterface);
 };

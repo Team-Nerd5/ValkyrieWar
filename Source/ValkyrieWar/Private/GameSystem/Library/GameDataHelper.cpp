@@ -2,6 +2,7 @@
 
 
 #include "GameSystem/Library/GameDataHelper.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 
 EItemGroup UGameDataHelper::GetItemGroup(EItemType InItemType)
 {
@@ -46,4 +47,23 @@ EEquipGroup UGameDataHelper::GetEquipGroup(EItemType InItemType)
 	default:
 		return EEquipGroup::None;
 	}
+}
+
+bool UGameDataHelper::GetGoodsData(EUIType InUIType, UGameInstance* GameInstance, FGoodsDataRow& OutGoodsData)
+{
+	if (UDataManager* DataManager = GameInstance->GetSubsystem<UDataManager>())
+	{
+		int32 GoodsId = DataManager->GetContentsModule()->GetGoodsId(InUIType);
+		if (GoodsId > 0)
+		{
+			FGoodsDataRow* Goods = DataManager->GetGoodsModule()->GetGoodsTable(GoodsId);
+			if (Goods)
+			{
+				OutGoodsData = *Goods;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }

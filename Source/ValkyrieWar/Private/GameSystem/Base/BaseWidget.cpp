@@ -24,3 +24,7 @@ void UBaseWidget::OnFocusGained()
 void UBaseWidget::OnFocusLost()
 {
 }
+
+void UBaseWidget::CreateTopMenu()
+{
+}

@@ -5,6 +5,7 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/SaveManager.h"
+#include "GameSystem/Instance/Game/GameManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "Engine/AssetManager.h"
@@ -22,6 +23,29 @@ void ULevelManager::Deinitialize()
     Super::Deinitialize();
 }
 
+void ULevelManager::LoadBattleMap()
+{
+	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+	{
+		LoadLevelAsync(GameManager->GetMapObject(EMapType::Battle));
+
+		//우선은 찬걸로 세팅
+		DataLoadProgress = 1.0f;
+		StartMapLoading();
+	}
+}
+
+void ULevelManager::LoadLobbyMap()
+{
+	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+	{
+		LoadLevelAsync(GameManager->GetMapObject(EMapType::Lobby));
+
+		StartDataLoading();
+	}
+
+}
+
 void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
 {
 	if (InMap.IsNull()) return;
@@ -34,9 +58,6 @@ void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
 	{
 		UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
 	}
-
-	// 3. 데이터 로딩부터 시작
-	StartDataLoading();
 }
 
 void ULevelManager::InitEvent()
@@ -96,7 +117,6 @@ void ULevelManager::OnMapLoadCompleted()
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
-		//클래스 만들고..
 		UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 	}
 

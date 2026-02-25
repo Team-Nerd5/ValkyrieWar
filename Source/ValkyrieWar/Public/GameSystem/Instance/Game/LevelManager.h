@@ -20,9 +20,12 @@ protected:
 
 	virtual void Deinitialize() override;
 
-public:
 	UFUNCTION(BlueprintCallable, Category = "LevelManager")
 	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap);
+
+public:
+	void LoadBattleMap();
+	void LoadLobbyMap();	
 
 	void InitEvent();
 

@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Data/Enum/CommonEnums.h"
+#include "Data/Enum/DataEnums.h"
+#include "Data/Table/GameData/ContentsDataRow.h"
 #include "LobbyMenuWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMenuButtonClicked, EUIType, InUIType);
 /**
  * 
  */
@@ -22,12 +24,16 @@ private:
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<class UTextBlock> MenuName = nullptr;
 
-	EUIType ConnectedUIType = EUIType::None;
+	EUIType CurrentMenuType = EUIType::None;
+
+public:
+	UPROPERTY()
+	FOnMenuButtonClicked OnMenuButtonClicked;
 
 public:
 	virtual void NativeConstruct() override;
 
-	void SetData(UTexture2D* Icon, FString Name, EUIType InOpenUIType);
+	void SetData(FContentsDataRow* InTableData);
 
 protected:
 	UFUNCTION()

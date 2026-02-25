@@ -18,15 +18,24 @@ void UContentsModule::Initialize(UGameManager* InGameManager)
 
 TArray<FContentsDataRow*> UContentsModule::GetAllDataSorted()
 {
-	TArray<FContentsDataRow*> ReturnArray;
-
-	TableDataByDataId.GenerateValueArray(ReturnArray);
-	//낮은 순서로 정렬..
-	ReturnArray.Sort([](const FContentsDataRow& A, const FContentsDataRow& B) {
+	MenuContents.Sort([](const FContentsDataRow& A, const FContentsDataRow& B) {
 		return A.Order < B.Order;
 		});
 
-	return ReturnArray;
+	return MenuContents;
+}
+
+int32 UContentsModule::GetGoodsId(EUIType InUIType)
+{
+	for (auto data : TableDataByDataId)
+	{
+		if (data.Value->MenuType == InUIType)
+		{
+			return data.Value->GoodsId;
+		}
+	}
+
+	return 0;
 }
 
 void UContentsModule::MakeData()
@@ -39,6 +48,11 @@ void UContentsModule::MakeData()
 		for (FContentsDataRow* Item : AllRows)
 		{
 			TableDataByDataId.Add(Item->DataId, Item);
+
+			if (Item->ContentType == EContentType::Menu)
+			{
+				MenuContents.Add(Item);
+			}
 		}
 	}
 }

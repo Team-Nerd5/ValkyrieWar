@@ -16,6 +16,8 @@ class VALKYRIEWAR_API UGoodsModule : public UBaseModule
 	GENERATED_BODY()
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
+
+	FGoodsDataRow* GetGoodsTable(int32 InKey);
 protected:
 	virtual void MakeData() override;
 

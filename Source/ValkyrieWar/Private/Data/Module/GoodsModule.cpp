@@ -16,6 +16,11 @@ void UGoodsModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
+FGoodsDataRow* UGoodsModule::GetGoodsTable(int32 InKey)
+{
+	return *TableDataByDataId.Find(InKey);
+}
+
 void UGoodsModule::MakeData()
 {
 	if (DataTable)

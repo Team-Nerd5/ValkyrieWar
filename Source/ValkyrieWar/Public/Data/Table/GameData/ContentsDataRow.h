@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/CommonEnums.h"
+#include "Data/Enum/DataEnums.h"
 #include "ContentsDataRow.generated.h"
 
 /**
@@ -21,7 +22,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
-	EUIType OpenPopup = EUIType::None;
+	EContentType ContentType = EContentType::None;
+	UPROPERTY(EditAnywhere)
+	EUIType MenuType = EUIType::None;
 	UPROPERTY(EditAnywhere)
 	int32 Order = 0;
 	UPROPERTY(EditAnywhere)

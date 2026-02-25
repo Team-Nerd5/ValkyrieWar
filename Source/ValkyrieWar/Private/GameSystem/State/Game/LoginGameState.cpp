@@ -86,10 +86,10 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 				UIManager->CloseAllPopupUI();
 				UIManager->ResetAllUIStates();
 			}
-			//실행되나..?
+
 			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 			{
-				LevelManager->LoadLevelAsync(GameManager->GetMapObject(EMapType::Lobby));
+				LevelManager->LoadLobbyMap();
 			}
 		}
 

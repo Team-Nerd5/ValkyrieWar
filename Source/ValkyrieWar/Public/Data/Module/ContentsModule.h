@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseModule.h"
 #include "Data/Table/GameData/ContentsDataRow.h"
+#include "Data/Enum/DataEnums.h"
 #include "ContentsModule.generated.h"
 
 /**
@@ -19,6 +20,8 @@ public:
 
 	TArray<FContentsDataRow*> GetAllDataSorted();
 
+	int32 GetGoodsId(EUIType InUIType);
+
 protected:
 	virtual void MakeData() override;
 
@@ -26,4 +29,5 @@ public:
 	FContentsDataRow* const GetTableData(int32 InDataId);
 private:
 	TMap<int32, FContentsDataRow*> TableDataByDataId;
+	TArray<FContentsDataRow*> MenuContents;
 };

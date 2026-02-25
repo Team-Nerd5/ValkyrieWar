@@ -14,6 +14,8 @@ enum class EUILayer : uint8
 	PERSISTENT UMETA(DisplayName = "Persistent"),
 	POPUP UMETA(DisplayName = "Popup"),
 };
+
+class UTopMenuWidget;
 /**
  * 
  */
@@ -36,6 +38,9 @@ public:
 
 	/** 이 UI 위에 다른 팝업이 열렸을 때 호출 */
 	virtual void OnFocusLost();
+
+	/**/
+	virtual void CreateTopMenu();
 
 	/** UI가 현재 열려있는지 확인 */
 	FORCEINLINE bool IsOpen() const { return bIsOpen; }
@@ -60,4 +65,7 @@ public:
 	/** 뷰포트 내 표시 순서 (높을수록 위에 렌더링) */
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	int32 ZOrder = 0;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UTopMenuWidget> TopMenuClass = nullptr;
 };

@@ -142,3 +142,12 @@ enum class ESaveType : uint8
 	UnitUpgrade,
 	Valkyrie
 };
+
+UENUM(BlueprintType)
+enum class EContentType : uint8
+{
+	None,
+	HUD,
+	Menu,
+	Popup,
+};

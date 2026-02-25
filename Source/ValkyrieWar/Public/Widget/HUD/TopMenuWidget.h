@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
+#include "Data/Table/GameData/GoodsDataRow.h"
 #include "TopMenuWidget.generated.h"
 
+class UGoodsItemWidget;
 /**
  * 
  */
@@ -13,8 +15,26 @@ UCLASS()
 class VALKYRIEWAR_API UTopMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	//로비에 있으면 백버튼 꺼주고 계정정보...
-	//다른 컨텐츠 있으면 백버튼 켜주고 계정정보 꺼주고..
+public:
+	virtual void NativeConstruct() override;
 
-	//기본은 재화 표기
+	void SetData(FGoodsDataRow* InData);
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UHorizontalBox> GoodsItemRoot = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> BackButton = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class USizeBox> BackButtonPanel = nullptr;
+	//계정정보 위젯 추가...
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UGoodsItemWidget> GoodsItemClass;
+
+	TMap<EGoodsType, UGoodsItemWidget*> GoodsWidgets;
+
+protected:
+	UFUNCTION()
+	void OnClickBackButton();
 };
