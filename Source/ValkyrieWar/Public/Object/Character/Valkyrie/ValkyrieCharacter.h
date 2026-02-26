@@ -37,6 +37,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	USceneComponent* GetActiveWeaponComponent();
 
 	virtual void EquipWeapon(uint64 InEquipUID) override;
 

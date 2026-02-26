@@ -63,6 +63,34 @@ void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
 	CurrentWeaponType = InNewType;
 }
 
+USceneComponent* AValkyrieCharacter::GetActiveWeaponComponent()
+{
+	TArray<USkeletalMeshComponent*> AllSkeletalMeshes;
+	this->GetComponents<USkeletalMeshComponent>(AllSkeletalMeshes);
+
+	for (USkeletalMeshComponent* SkelComp : AllSkeletalMeshes)
+	{
+
+		if (SkelComp->GetName().Contains(TEXT("WeaponMeshSk")) && SkelComp->GetSkeletalMeshAsset() != nullptr)
+		{
+			return SkelComp;
+		}
+	}
+
+	TArray<UStaticMeshComponent*> AllStaticMeshes;
+	this->GetComponents<UStaticMeshComponent>(AllStaticMeshes);
+
+	for (UStaticMeshComponent* MeshComp : AllStaticMeshes)
+	{
+		// 이름이 WeaponMesh 이고, 현재 메쉬가 장착되어 있다면 반환
+		if (MeshComp->GetName().Contains(TEXT("WeaponMesh")) && MeshComp->GetStaticMesh() != nullptr)
+		{
+			return MeshComp;
+		}
+	}
+	return nullptr;
+}
+
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -72,6 +100,20 @@ void AValkyrieCharacter::BeginPlay()
 void AValkyrieCharacter::Tick(float InDeltaTime)
 {
 	Super::Tick(InDeltaTime);
+	if (GetController() && IsLocallyControlled())
+	{
+		if (USceneComponent* WeaponComp = GetActiveWeaponComponent())
+		{
+			FVector WeaponLoc = WeaponComp->GetComponentLocation();
+			FVector SocketLoc = WeaponComp->GetSocketLocation(FName("ArrowSocket"));
+
+			FString DebugMsg = FString::Printf(TEXT("무기: %s \n소켓: %s"), *WeaponLoc.ToString(), *SocketLoc.ToString());
+			if (GEngine) GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, DebugMsg);
+
+			DrawDebugSphere(GetWorld(), SocketLoc, 10.0f, 12, FColor::Red, false, -1.0f);
+		}
+	}
+
 }
 
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
