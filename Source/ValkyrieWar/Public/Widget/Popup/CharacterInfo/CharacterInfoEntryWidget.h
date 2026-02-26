@@ -19,13 +19,11 @@ class VALKYRIEWAR_API UCharacterInfoEntryWidget : public UBaseWidget, public IUs
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 
+	// 캐릭터 정보 인벤토리 타일뷰에서 들어온 아이템을 UI에 표시하기 위한 함수
 	UFUNCTION()
 	void Init(UObject* InData);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Icon = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> BackGround = nullptr;
 };

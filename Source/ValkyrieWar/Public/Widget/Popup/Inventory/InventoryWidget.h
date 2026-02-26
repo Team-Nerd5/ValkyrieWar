@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void CloseUI() override;
 
+public:
+	void UpdateInventoryMode(EUIType InUIType);
+
 protected:
 	UFUNCTION()
 	void FilterReset();
@@ -53,7 +56,11 @@ protected:
 
 	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
-	void ItemClicked(UObject* InItemData);
+	void OnItemClicked(UObject* InItemData);
+
+private:
+	// UIType에 따라 인벤토리 세팅하기 위한 함수
+	void RefreshUIByMode();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -85,6 +92,8 @@ private:
 
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
+
+	EUIType SelectedInventoryMode = EUIType::None;
 
 	// 현재 필터가 적용된 인벤토리 확인용
 	EItemGroup CurrentItemGroup = EItemGroup::None;

@@ -14,6 +14,9 @@ void UEquipmentSlotWidget::NativeConstruct()
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
 	}
 
+	WeaponIcon->SetVisibility(ESlateVisibility::Hidden);
+	HelmetIcon->SetVisibility(ESlateVisibility::Hidden);
+	ArmorIcon->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UEquipmentSlotWidget::RefreshEquipment(uint64 InCharacterUID)

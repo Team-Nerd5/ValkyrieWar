@@ -21,6 +21,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
+	// 장착 및 장착 해제시 장비칸 UI 갱신용
 	UFUNCTION()
 	void RefreshEquipment(uint64 InCharacterUID);
 

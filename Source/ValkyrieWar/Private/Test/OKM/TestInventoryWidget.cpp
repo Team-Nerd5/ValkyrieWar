@@ -165,7 +165,7 @@ void UTestInventoryWidget::ItemClicked(UObject* InItemData)
 	UItemData* ItemData = Cast<UItemData>(InItemData);
 	if (!ItemData)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(ItemClicked)] ItemData가 없습니다"));
+		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(EquipmentTileItemClicked)] ItemData가 없습니다"));
 		return;
 	}
 #pragma endregion
