@@ -51,6 +51,7 @@ protected:
 	UFUNCTION()
 	void UpdateInventory();
 
+	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
 

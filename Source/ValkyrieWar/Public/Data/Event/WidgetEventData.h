@@ -24,6 +24,6 @@ public:
 	FOnUpdateInventory OnUpdateInventory;
 	// 장비창 Tileview 갱신용
 	FOnUpdateEquipment OnUpdateEquipment;
-	// 장비 장착시 인벤토리UI 아이템의 장착한 케릭터UID 갱신용
+	// 장비 장착 및 해제시 캐릭터 정보 장비칸 UI 갱신용
 	FOnChangeEquipCharacter OnChangeEquipCharacter;
 };

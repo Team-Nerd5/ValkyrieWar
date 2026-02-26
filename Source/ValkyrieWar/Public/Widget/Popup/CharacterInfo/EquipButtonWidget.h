@@ -33,8 +33,10 @@ public:
 	void SetupEquipItem(UItemData* InItemData);
 
 protected:
+	// 장착 버튼 클릭시 실행
 	UFUNCTION()
 	void Equip();
+	// 장착 해제 버튼 클릭시 실행
 	UFUNCTION()
 	void Unequip();
 
@@ -53,5 +55,5 @@ private:
 
 	UItemData* CachedItemData = nullptr;
 
-	const uint64 TempCharacterUID = 1001001;	// 임시 캐릭터UID
+	const uint64 TempCharacterUID = 1001001;	// 테스트용 캐릭터UID(케릭터 선택창 구현시 삭제 예정)
 };

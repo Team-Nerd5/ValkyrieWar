@@ -28,10 +28,11 @@ public:
 	virtual void CloseUI() override;
 
 public:
-	// 선택한 아이템 받는 함수
+	// 인벤토리에서 선택한 아이템 받는 함수
 	void SetupSellItem(UItemData* InItemData);
 
 protected:
+	// 판매 버튼 클릭시 실행
 	UFUNCTION()
 	void Sell();
 
