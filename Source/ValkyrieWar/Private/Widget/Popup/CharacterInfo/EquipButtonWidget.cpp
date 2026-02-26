@@ -2,6 +2,7 @@
 
 
 #include "Widget/Popup/CharacterInfo/EquipButtonWidget.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 void UEquipButtonWidget::NativeConstruct()
 {
@@ -11,13 +12,13 @@ void UEquipButtonWidget::NativeConstruct()
 	if (World)
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-		WorldEventSystem = World->GetSubsystem<UWorldEventSystem>();
 	}
+	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 
 	if (Btn_Equip)
 		Btn_Equip->OnClicked.AddDynamic(this, &UEquipButtonWidget::Equip);
 	if (Btn_Unequip)
-		Btn_Unequip->OnClicked.AddDynamic(this, &UEquipButtonWidget::Equip);
+		Btn_Unequip->OnClicked.AddDynamic(this, &UEquipButtonWidget::Unequip);
 	if (Btn_Cancel)
 		Btn_Cancel->OnClicked.AddDynamic(this, &UEquipButtonWidget::CloseUI);
 
@@ -75,11 +76,13 @@ void UEquipButtonWidget::Equip()
 #pragma endregion
 
 	// 추후 선택한 케릭터UID 입력 필요
-	const uint64 TempCharacterUID = 1001001;	// 임시 캐릭터UID
+	
 	InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateEquipment.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID, CachedItemData->GetEquipGroup());
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
+
+	CachedItemData = nullptr;
 
 	CloseUI();
 }
@@ -101,7 +104,9 @@ void UEquipButtonWidget::Unequip()
 	InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateEquipment.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetEquipGroup());
+	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
+
+	CachedItemData = nullptr;
 
 	CloseUI();
 }

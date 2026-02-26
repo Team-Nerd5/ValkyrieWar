@@ -7,6 +7,7 @@
 #include "Components/TileView.h"
 #include "Components/Button.h"
 #include "Widget/Popup/CharacterInfo/EquipButtonWidget.h"
+#include "Widget/Popup/CharacterInfo/EquipmentSlotWidget.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -45,11 +46,11 @@ protected:
 	
 	// 현재 필터링된 캐릭터 장비 인벤토리 업데이트 함수
 	UFUNCTION()
-	void UpdateEquipmentInventory();
+	void UpdateFilteredInventory();
 
 	// 선택된 캐릭터가 장착한 장비 UI업데이트 함수
 	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
+	void UpdateEquipmentForUID(uint64 InCharacterUID);
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
@@ -76,10 +77,13 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UEquipButtonWidget> EquipButtonWidget = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UEquipmentSlotWidget> EquipmentSlotWidget = nullptr;
+
 private:
 	UInventorySystem* InventorySystem;
 
-	UWorldEventSystem* EventSystem;
+	UWorldEventSystem* WorldEventSystem;
 
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
