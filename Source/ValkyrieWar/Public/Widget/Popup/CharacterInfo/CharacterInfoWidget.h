@@ -47,22 +47,28 @@ protected:
 	// 현재 필터링된 캐릭터 장비 인벤토리 업데이트 함수
 	UFUNCTION()
 	void UpdateFilteredInventory();
-
 	// 선택된 캐릭터가 장착한 장비칸 UI업데이트 함수
 	UFUNCTION()
 	void UpdateEquipmentForUID(uint64 InCharacterUID);
 
-	// 캐릭터 장비 인벤토리 타일뷰 클릭했을 때 실행될 함수
+	// 장비 인벤토리 타일뷰 클릭했을 때 실행될 함수
 	UFUNCTION()
-	void ItemClicked(UObject* InItemData);
+	void EquipmentTileItemClicked(UObject* InItemData);
+	// 캐릭터 목록 타일뷰 클릭했을 때 실행될 함수
+	//UFUNCTION()
+	//void CharacterTileItemClicked(UObject* InItemData);
 
 public:
 	// 선택한 캐릭터 UID저장용(아직 사용x)
 	FORCEINLINE void SetSelectedCharacterUID(uint64 InCharacterUID) { SelectedCharacterUID = InCharacterUID; }
 
 protected:
+	// 장비 인벤토리
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> EquipmentTileView = nullptr;
+	// 캐릭터 목록
+	//UPROPERTY(meta = (BindWidget))
+	//TObjectPtr<UTileView> CharacterTileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Close = nullptr;
