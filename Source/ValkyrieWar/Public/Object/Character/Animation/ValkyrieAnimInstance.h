@@ -26,9 +26,6 @@ protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
-
-
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComp;
 protected:

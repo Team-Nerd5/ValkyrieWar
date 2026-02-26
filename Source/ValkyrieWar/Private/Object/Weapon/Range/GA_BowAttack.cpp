@@ -7,29 +7,23 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
-UGA_BowAttack::UGA_BowAttack()
-{
-	// 이벤트 받을 때만 실행
-	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-}
-
 void UGA_BowAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	UGameplayAbility::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	ACharacter* Char = Cast<ACharacter>(ActorInfo->AvatarActor.Get());
-	if (!Char || !ProjectileClass)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-		return;
-	}
+	CommitAbility(Handle, ActorInfo, ActivationInfo);
+}
 
-	//가까운 적 찾기
+void UGA_BowAttack::FireArrow()
+{
+	ACharacter* Char = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+	if (!Char || !ProjectileClass){return;}
+
+	// 가까운 적 찾기
 	FVector MyLocation = Char->GetActorLocation();
 	AActor* ClosestEnemy = nullptr;
 	float MinDistance = AutoAimRadius;
 
-	// 싹싹뒤지기
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), FoundActors);
 
@@ -38,7 +32,7 @@ void UGA_BowAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		if (Enemy == Char) continue;
 
 		float Dist = FVector::Dist(MyLocation, Enemy->GetActorLocation());
-		if(Dist < MinDistance)
+		if (Dist < MinDistance)
 		{
 			MinDistance = Dist;
 			ClosestEnemy = Enemy;
@@ -55,6 +49,4 @@ void UGA_BowAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	// 발샷~!
 	FVector SpawnPos = MyLocation + (Char->GetActorForwardVector() * 100.0f);
 	GetWorld()->SpawnActor<AArrowProjectile>(ProjectileClass, SpawnPos, Char->GetActorRotation());
-
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

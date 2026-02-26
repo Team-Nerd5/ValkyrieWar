@@ -3,29 +3,18 @@
 
 #include "Object/Character/Animation/AnimNotifyState/ANS_ComboWindow.h"
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+	
 
-void UANS_ComboWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UANS_ComboWindow::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
-	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
+	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 
-	if (MeshComp && MeshComp->GetOwner())
+	// *** MODIFIED: AYourCharacter를 형의 실제 캐릭터 클래스 이름으로 바꿔야 해! ***
+	if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
 	{
-		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
+		if (Character->bIsAttackSaved)
 		{
-			Character->BeginComboWindow();
+			Character->ExecuteCombo(NextSectionName);
 		}
 	}
-}
-
-void UANS_ComboWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
-{
-	Super::NotifyEnd(MeshComp, Animation, EventReference);
-	if (MeshComp && MeshComp->GetOwner())
-	{
-		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
-		{
-			// 📢 "창문 닫힘! 형, 내가 들고 온 'NextSectionName'으로 점프해!"
-			Character->EndComboWindow(NextSectionName);
-		}
-	}	
 }
