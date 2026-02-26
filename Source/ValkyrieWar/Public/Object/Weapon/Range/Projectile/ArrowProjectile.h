@@ -24,4 +24,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
+	virtual void BeginPlay();
+
 };
