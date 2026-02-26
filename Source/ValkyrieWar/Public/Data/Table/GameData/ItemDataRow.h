@@ -28,6 +28,8 @@ public:
 	TSoftObjectPtr<UStaticMesh> StaticMesh = nullptr;
 	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==true"))
 	TSoftObjectPtr<USkeletalMesh> SkeletalMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TSubclassOf<class UGameplayAbility> AttackAbilityClass;
 	UPROPERTY(EditAnywhere)
 	int32 SellPrice = 0;
 
