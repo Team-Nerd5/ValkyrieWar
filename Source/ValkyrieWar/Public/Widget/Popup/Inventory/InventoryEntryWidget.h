@@ -20,6 +20,7 @@ class VALKYRIEWAR_API UInventoryEntryWidget : public UBaseWidget, public IUserOb
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 
+	// 인벤토리 타일뷰에서 들어온 아이템을 UI에 표시하기 위한 함수
 	UFUNCTION()
 	void Init(UObject* InData);
 
