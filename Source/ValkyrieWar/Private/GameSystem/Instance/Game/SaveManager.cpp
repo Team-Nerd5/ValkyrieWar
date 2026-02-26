@@ -48,9 +48,6 @@ int32 USaveManager::LoadAllData()
 	{
 		for (int32 i = 1; i < EnumPtr->NumEnums(); ++i)
 		{
-			// 숨겨진 메타데이터(예: "umax")는 제외하고 싶을 때 체크
-			if (EnumPtr->HasMetaData(TEXT("Hidden"), i)) continue;
-
 			// 이름(FString) 가져오기
 			FString EnumName = EnumPtr->GetNameStringByIndex(i);
 
