@@ -42,7 +42,6 @@ private:
 
 	float CalculateCombinedProgress() const;
 
-
 	UFUNCTION()
 	void OnDataLoadComplete();
 

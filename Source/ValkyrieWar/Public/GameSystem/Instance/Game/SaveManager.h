@@ -24,7 +24,7 @@ protected:
 
 public:
 	FORCEINLINE class UCheckAccountSaveGame* GetCheckAccount() { return CheckAccount; }
-	FORCEINLINE class UAccountSaveGame* GeAccount() { return Account; }
+	FORCEINLINE class UAccountSaveGame* GetAccount() { return Account; }
 	FORCEINLINE class UGachaSaveGame* GetGacha() { return Gacha; }
 	FORCEINLINE class UGoodsSaveGame* GetGoods() { return Goods; }
 	FORCEINLINE class UItemSaveGame* GetItem() { return Item; }
@@ -54,6 +54,7 @@ private:
 	TObjectPtr<class UValkyrieSaveGame> Valkyrie = nullptr;
 
 	int32 LoadTask = 0;
+	bool bIsNewAccount = false;
 protected:
 
 	void InitSetDataAction();
@@ -69,6 +70,8 @@ protected:
 	UFUNCTION()
 	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
 
+	void SetAccountData();
+	void SetValkyrieData();
 	void SetItemData();
 public:
 	int32 LoadAllData();

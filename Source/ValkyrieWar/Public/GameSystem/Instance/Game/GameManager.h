@@ -12,6 +12,7 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "GameManager.generated.h"
 
+class UValkyrieData;
 /**
  * 
  */
@@ -33,11 +34,15 @@ public:
 	{
 		return CharacterUID++;
 	}
+	FORCEINLINE UValkyrieData* const GetSelectedValkyrie() { return SelectedValkyrie; }
 
 	//저장데이터 로드되면 세팅용
 	void UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID);
 	// 게임 인스턴트 초기화 함수
 	virtual void Init() override;
+
+	void SelectVakyrie(int64 InValkyrieUID);
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Widget")
@@ -51,4 +56,7 @@ protected:
 private:
 	uint64 ItemUID = 100000000;
 	uint64 CharacterUID = 0;
+
+	UPROPERTY()
+	TObjectPtr<UValkyrieData> SelectedValkyrie = nullptr;
 };

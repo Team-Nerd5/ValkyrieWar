@@ -28,7 +28,9 @@ public:
 
 	bool HasValkyrie(int32 InDataId);
 
-	void CreateValkyrie(int32 InDataId);
+	uint64 CreateValkyrie(int32 InDataId);
+
+	void LoadData(uint64 InUID, int32 InDataId);
 protected:
 	virtual void MakeData() override;
 private:

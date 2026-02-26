@@ -27,16 +27,26 @@ bool UValkyrieModule::HasValkyrie(int32 InDataId)
 	return false;
 }
 
-void UValkyrieModule::CreateValkyrie(int32 InDataId)
+uint64 UValkyrieModule::CreateValkyrie(int32 InDataId)
 {
 	if (HasValkyrie(InDataId))
 	{
-		//조각 아이템 생성
-		return;
+		//TODO : 조각 아이템 생성
+		return 0;
 	}
 
 	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
 	NewValkyrie->Initialize(*TableDataByDataId.Find(InDataId), GameManager.Get());
+
+	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
+
+	return NewValkyrie->GetUID();
+}
+
+void UValkyrieModule::LoadData(uint64 InUID, int32 InDataId)
+{
+	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
+	NewValkyrie->LoadData(InUID, *TableDataByDataId.Find(InDataId), GameManager.Get());
 
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
 }

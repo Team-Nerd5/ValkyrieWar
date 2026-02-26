@@ -67,8 +67,6 @@ void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 디버그용
-	EquipWeapon(400001); // 활임
 }
 
 void AValkyrieCharacter::Tick(float InDeltaTime)

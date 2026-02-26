@@ -66,3 +66,11 @@ void UGameManager::Init()
         DataManager->CreateData();
     }
 }
+
+void UGameManager::SelectVakyrie(int64 InValkyrieUID)
+{
+    if (UDataManager* DataManager = GetSubsystem<UDataManager>())
+    {
+        SelectedValkyrie = DataManager->GetValkyrieModule()->GetExistValkyrie(InValkyrieUID);
+    }
+}

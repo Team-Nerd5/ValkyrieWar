@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
 
+#include "GameSystem/GameMode/ValkyrieWarGameMode.h"
+
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "Object/Character/Controller/CameraBoundsVolume.h"
 
@@ -114,7 +116,9 @@ void AValkyrieCharacterController::BeginPlay()
 	{
 		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
 	}
-	
+
+
+	SpawnValkyrie();
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
@@ -341,4 +345,28 @@ void AValkyrieCharacterController::OnTouchReleased()
 {
 	bIsTouch = false;
 	bIsDragging = false;
+}
+
+void AValkyrieCharacterController::SpawnValkyrie()
+{
+	if (UGameManager* GameManager = GetGameInstance<UGameManager>())
+	{
+		UValkyrieData* Selected = GameManager->GetSelectedValkyrie();
+
+		if (Selected)
+		{
+			AValkyrieWarGameMode* GameMode = GetWorld()->GetAuthGameMode<AValkyrieWarGameMode>();
+			if (GameMode)
+			{
+				if (auto SpawnClass = Selected->GetSpawnClass())
+				{
+					AValkyrieCharacter* Valkyrie = GameMode->SpawnValkyrie(this, SpawnClass);
+					if (Valkyrie)
+					{
+						Valkyrie->SetData(Selected);
+					}
+				}				
+			}
+		}
+	}
 }

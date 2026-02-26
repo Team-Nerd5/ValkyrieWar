@@ -2,10 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
+
 #include "Data/Enum/CommonEnums.h"
+
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+
 #include "CameraBoundsVolume.h"
 #include "ValkyrieCharacterController.generated.h"
 
@@ -88,10 +93,6 @@ public:
 	float MaxLeadDistance = 400.0f;
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
 
-
-	
-
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -109,7 +110,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
 	void OnControlModeChanged(EInputControlMode InNewMode);
 
-	
+	//우선은 BeginPlay에서 생성되도록
+	void SpawnValkyrie();
 
 private:
 	

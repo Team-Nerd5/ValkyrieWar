@@ -3,6 +3,7 @@
 
 #include "GameSystem/Instance/Game/SaveManager.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/Game/GameManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/DataEncryptHelper.h"
 #include "GameSystem/Library/GameSaveHelper.h"
@@ -99,7 +100,11 @@ bool USaveManager::IsAcountExist()
 void USaveManager::InitSetDataAction()
 {
 	//ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::Account, [this](USaveGame* InData) { Account = Cast<UAccountSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Account, [this](USaveGame* InData)
+		{
+			Account = Cast<UAccountSaveGame>(InData);
+			SetAccountData();
+		});
 	ActionSetData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Item, [this](USaveGame* InData)
@@ -109,7 +114,11 @@ void USaveManager::InitSetDataAction()
 		});
 	ActionSetData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData) { Valkyrie = Cast<UValkyrieSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData)
+		{
+			Valkyrie = Cast<UValkyrieSaveGame>(InData);
+			SetValkyrieData();
+		});
 }
 
 void USaveManager::InitSaveDataAction()
@@ -189,7 +198,7 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 	}
 }
 
-
+#pragma region Add save data
 void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter)
 {
 	ItemDataStruct* ItemData = *Item->ItemDataList.Find(InUID);
@@ -202,7 +211,12 @@ void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharac
 
 	SaveInternal(ESaveType::Item);
 }
+#pragma endregion
 
+
+
+
+#pragma region Set data after load saved data
 void USaveManager::SetItemData()
 {
 	if (Item)
@@ -212,18 +226,73 @@ void USaveManager::SetItemData()
 		if (DataManager)
 		{
 			for (auto Data : Item->ItemDataList)
-			{				
+			{
 				DataManager->GetItemModule()->LoadItem(Data.Value->UID, Data.Value->Amount, Data.Value->EquipCharacter);
 			}
 		}
 	}
 }
 
+void USaveManager::SetAccountData()
+{
+	if (Account)
+	{
+		UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
+
+		if (GameManager)
+		{
+			GameManager->SelectVakyrie(Account->SelectedValkyrie);
+		}
+
+		//TODO : 계정 데이터 모듈에 세팅필요
+		//계정 레벨이라던지...
+	}
+}
+
+void USaveManager::SetValkyrieData()
+{
+	//현재 예상 : 계정 생성 시에 DataManager에 새 캐릭터를 넣어줬음
+	//발키리 로드가 계정 생성 이후에 되니까 이미 데이터 세팅이 완료되야함.
+	if (Valkyrie)
+	{
+		UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+
+		if (DataManager)
+		{
+			for (auto Data : Valkyrie->ValkyrieData)
+			{
+				DataManager->GetValkyrieModule()->LoadData(Data.Value->GetUID(), Data.Value->GetDataID());
+			}
+		}
+
+		if (bIsNewAccount)
+		{
+			//발키리 데이터를 로드했는데 신규 계정 생성한거면 파일 저장
+			SaveInternal(ESaveType::Valkyrie);
+			bIsNewAccount = false;
+		}
+	}
+}
+
+#pragma endregion
+
+//기본 함수
 void USaveManager::CreateAccount(FString& InNickname)
 {
 	if (Account)
 	{
 		Account->Nickname = InNickname;
+
+		//계정생성
+		//초기 캐릭터를 넣어줌
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			uint64 UID = DataManager->GetValkyrieModule()->CreateValkyrie(110001);
+			
+			Account->SelectedValkyrie = UID;
+
+			bIsNewAccount = true;
+		}
 
 		SaveInternal(ESaveType::Account);
 	}

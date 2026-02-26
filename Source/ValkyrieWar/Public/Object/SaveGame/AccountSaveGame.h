@@ -24,4 +24,7 @@ public:
 	UPROPERTY()
 	int32 Exp = 0;
 
+	UPROPERTY()
+	int64 SelectedValkyrie = 0;
+
 };
