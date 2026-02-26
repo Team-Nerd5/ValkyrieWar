@@ -58,7 +58,7 @@ public:
 
 	// 장착한 장비 UI 정보 갱신용
 	UFUNCTION()
-	void UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup);
+	void UpdateEquipmentUi(uint64 InCharacterUID);
 
 private:
 	void SortInventory();

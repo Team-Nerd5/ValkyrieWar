@@ -80,7 +80,7 @@ protected:
 private:
 	UInventorySystem* InventorySystem;
 
-	UWorldEventSystem* EventSystem;
+	UWorldEventSystem* WorldEventSystem;
 
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;

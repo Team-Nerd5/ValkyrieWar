@@ -176,20 +176,19 @@ void UTestInventoryWidget::ItemClicked(UObject* InItemData)
 	}
 }
 
-void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
+void UTestInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID)
 {
-	UItemData* ItemData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, InEquipGroup);
+	UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Weapon);
+	if (WeaponWidget && WeaponData)
+		WeaponWidget->EquipInfo(WeaponData);
 
-	if (WeaponWidget && InEquipGroup == EEquipGroup::Weapon)
-		WeaponWidget->EquipInfo(ItemData);
+	UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Helmet);
+	if (HelmetWidget && HelmetData)
+		HelmetWidget->EquipInfo(HelmetData);
 
-	if (HelmetWidget && InEquipGroup == EEquipGroup::Helmet)
-		HelmetWidget->EquipInfo(ItemData);
-
-	if (ArmorWidget && InEquipGroup == EEquipGroup::Armor)
-		ArmorWidget->EquipInfo(ItemData);
-
-	return;
+	UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Armor);
+	if (ArmorWidget && ArmorData)
+		ArmorWidget->EquipInfo(ArmorData);
 }
 
 void UTestInventoryWidget::SortInventory()

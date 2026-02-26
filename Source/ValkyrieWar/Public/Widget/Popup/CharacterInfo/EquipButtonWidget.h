@@ -52,4 +52,6 @@ private:
 	UWorldEventSystem* WorldEventSystem;
 
 	UItemData* CachedItemData = nullptr;
+
+	const uint64 TempCharacterUID = 1001001;	// 임시 캐릭터UID
 };

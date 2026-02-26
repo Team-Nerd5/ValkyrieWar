@@ -2,6 +2,7 @@
 
 
 #include "Widget/Popup/Inventory/SellButtonWidget.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 void USellButtonWidget::NativeConstruct()
 {
@@ -11,8 +12,8 @@ void USellButtonWidget::NativeConstruct()
 	if (World)
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-		WorldEventSystem = World->GetSubsystem<UWorldEventSystem>();
 	}
+	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 
 	if (Btn_Sell)
 		Btn_Sell->OnClicked.AddDynamic(this, &USellButtonWidget::Sell);
@@ -74,7 +75,7 @@ void USellButtonWidget::Sell()
 	if (!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
 	{
 		InventorySystem->UnEquipItem(CachedItemData);
-		WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(0, CachedItemData->GetEquipGroup());
+		WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(CachedItemData->GetEquipCharacter());
 	}
 	CachedItemData = nullptr;
 

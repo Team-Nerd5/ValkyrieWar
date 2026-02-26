@@ -259,7 +259,7 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 			continue;
 
 		// 장착하고 있는 아이템 그룹과 장착할려고하는 아이템의 그룹이 같지 않을 때 스킵
-		if (Existing->GetItemGroup() != InItem->GetItemGroup())
+		if (Existing->GetEquipGroup() != InItem->GetEquipGroup())
 			continue;
 
 		// 이미 같은 캐릭터에 장착되어있다면 기존 장비 장착 해제

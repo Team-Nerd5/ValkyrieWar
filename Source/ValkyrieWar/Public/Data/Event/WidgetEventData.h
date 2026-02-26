@@ -11,7 +11,7 @@
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateEquipment);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChangeEquipCharacter, uint64, InUID, EEquipGroup, InEquipGroup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeEquipCharacter, uint64, InCharacterUID);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
