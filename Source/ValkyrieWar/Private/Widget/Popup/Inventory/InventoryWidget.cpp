@@ -28,9 +28,9 @@ void UInventoryWidget::NativeConstruct()
 	if (Btn_FilterHelmet)
 		Btn_FilterHelmet->OnClicked.AddDynamic(this, &UInventoryWidget::FilterHelmet);
 	if (Btn_FilterGrowth)
-		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UInventoryWidget::FIlterGrowth);
+		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGrowth);
 	if (Btn_FilterGoods)
-		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FIlterGoods);
+		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGoods);
 
 	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
 }
@@ -114,10 +114,10 @@ void UInventoryWidget::UpdateInventory()
 	switch (CurrentItemGroup)
 	{
 	case EItemGroup::Goods:
-		FIlterGoods();
+		FilterGoods();
 		break;
 	case EItemGroup::GrowthItem:
-		FIlterGrowth();
+		FilterGrowth();
 		break;
 	case EItemGroup::Equip:
 		switch (CurrentEquipGroup)
