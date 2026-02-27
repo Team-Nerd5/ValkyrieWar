@@ -64,4 +64,10 @@ protected:
 
 	UPROPERTY()
 	TArray<TObjectPtr<USkillData>> SkillDataList;
+
+	UPROPERTY()
+	TObjectPtr<USkeletalMeshComponent> SkeletalWeapon = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> StaticWeapon = nullptr;
 };

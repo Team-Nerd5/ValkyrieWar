@@ -27,7 +27,6 @@ public:
 
 
 public:
-	virtual void Tick(float InDeltaTime) override;
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
@@ -37,8 +36,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	USceneComponent* GetActiveWeaponComponent();
 
 	virtual void EquipWeapon(uint64 InEquipUID) override;
 
@@ -51,35 +48,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* TopDownCameraComponent;
 
+	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
+	TObjectPtr<UAnimMontage> ComboMontage;
+
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* CameraBoom;
 
 	TObjectPtr<UValkyrieData> Data = nullptr;
 
-	FGameplayAbilitySpecHandle CurrentAttackHandle;
-
-	virtual void PossessedBy(AController* NewController) override;
 public: // 일반 공격
 	UFUNCTION(BlueprintCallable, Category = "Attack Test")
 	void Attack();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat|Combo")
-	bool bCanSaveCombo = false; // 콤보 예약을 받을 수 있는 상태인지
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat|Combo")
-	bool bIsAttackSaved = false; // 유저가 공격키를 미리 눌러서 예약했는지
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat|Combo")
-	int32 ComboIndex = 0; // 현재 콤보 단계
+	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
+	void BeginComboWindow();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
-	void SetComboEnable(bool bEnable); // ANS_ComboSave에서 호출할 함수
-
-	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
-	void ExecuteCombo(FName NextSectionName); // ANS_ComboSkip에서 호출할 함수
-
-	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
-	void ResetCombo(); // 공격 끝났을때 콤보 리셋
-
+	void EndComboWindow(FName NextSectionName);
+private:
+	int32 CurrentComboCount = 0; // 현 콤보수
+	bool bCanNextCombo = false; // 콤보 이어지나
+	bool bIsComboActive = false;
+	bool bIsComboInputOn = false; // 타이머안에 클릭은 했냐
+	bool bIsInComboWindow = false;
 };

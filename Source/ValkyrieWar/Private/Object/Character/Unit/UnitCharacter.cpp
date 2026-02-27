@@ -2,7 +2,7 @@
 
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
-#include "Object/AI/Controller/UnitAIController.h"
+#include "Object/Unit/AI/Controller/UnitAIController.h"
 #include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "GameSystem/Base/BaseUnitSpawner.h"
