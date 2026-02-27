@@ -12,6 +12,8 @@ void UInventoryWidget::NativeConstruct()
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
 		EventSystem = World->GetSubsystem<UWorldEventSystem>();
+
+		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateInventory);
 	}
 
 	if (Btn_Close)
@@ -29,8 +31,6 @@ void UInventoryWidget::NativeConstruct()
 		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UInventoryWidget::FIlterGrowth);
 	if (Btn_FilterGoods)
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FIlterGoods);
-
-	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateInventory);
 
 	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
 }

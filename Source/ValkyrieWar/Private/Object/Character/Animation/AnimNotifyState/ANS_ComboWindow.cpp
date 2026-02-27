@@ -20,9 +20,12 @@ void UANS_ComboWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequen
 void UANS_ComboWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
-	if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
+	if (MeshComp && MeshComp->GetOwner())
 	{
-		// 📢 "창문 닫힘! 형, 내가 들고 온 'NextSectionName'으로 점프해!"
-		Character->EndComboWindow(NextSectionName);
-	}
+		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
+		{
+			// 📢 "창문 닫힘! 형, 내가 들고 온 'NextSectionName'으로 점프해!"
+			Character->EndComboWindow(NextSectionName);
+		}
+	}	
 }
