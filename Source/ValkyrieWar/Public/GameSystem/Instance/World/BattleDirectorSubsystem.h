@@ -1,6 +1,4 @@
-﻿// BattleDirectorSubsystem.h
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
@@ -9,6 +7,21 @@
 
 class AUnitCharacter;
 
+/**
+ * BattleDirectorSubsystem
+ *
+ * 월드 단위 전투 오케스트레이터.
+ * 팀별 유닛을 관리하고, 그리드 기반 후보 탐색을 통해
+ * 타겟 예약(Engagement Slot)과 전투 매칭을 조율한다.
+ *
+ * - 팀/유닛 등록 및 해제 관리
+ * - 공간 분할(Grid) 기반 적 후보 수집
+ * - 타겟 선택 및 Engagement Slot 예약 처리
+ * - 주기적 Cleanup을 통한 데이터 무결성 유지
+ *
+ * Cleanup은 타이머가 "요청"만 수행하며,
+ * 실제 실행은 안전한 지점에서 MaybeCleanup()을 통해 처리된다.
+ */
 UCLASS()
 class VALKYRIEWAR_API UBattleDirectorSubsystem : public UWorldSubsystem
 {
@@ -17,6 +30,9 @@ class VALKYRIEWAR_API UBattleDirectorSubsystem : public UWorldSubsystem
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
+
+    /** 중앙 업데이트 루프에서 1회 호출 권장 (Cleanup 실행 지점) */
+    void TickCleanup();
 
     void RegisterUnit(AUnitCharacter* Unit);
     void UnregisterUnit(AUnitCharacter* Unit);
@@ -32,19 +48,22 @@ public:
     void NotifyUnitMoved(AUnitCharacter* Unit);
 
 private:
-    // ===== 기존 =====
+    // ===============================
+    // 팀 관리
+    // ===============================
     TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArray(ETeam Team);
     const TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArrayConst(ETeam Team) const;
 
     AActor* GetEnemyBaseFor(const AUnitCharacter* Unit) const;
 
     const TArray<TWeakObjectPtr<AActor>>& GetTeamWallAnchorsConst(ETeam Team) const;
-
-    // (기존 의미 유지용 - 지금은 최적화 버전에서 거의 안 씀)
     float DistanceToNearestWallAnchorSq(const FVector& P, ETeam WallTeam) const;
 
-    // ===== 버전3(그리드) 추가 =====
+    // ===============================
+    // Grid (공간 분할)
+    // ===============================
     FIntPoint WorldToCell2D(const FVector& P) const;
+
     TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGrid(ETeam Team);
     const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGridConst(ETeam Team) const;
 
@@ -58,7 +77,6 @@ private:
 
     AActor* GetNearestWallAnchorTo(const FVector& From, ETeam Team) const;
 
-    // 후보 선택 (TargetingPolicy 반영) - 이제 "그리드 후보"만 대상으로 평가
     AUnitCharacter* FindBestTargetWithFreeSlot_Grid(
         AUnitCharacter* Attacker,
         float Now,
@@ -66,16 +84,29 @@ private:
     ) const;
 
     bool TryReserve(AUnitCharacter* Attacker, AUnitCharacter* Target, float Now);
-    void CleanupInvalidReferences();
 
-    // 청소를 유닛마다 하지 말고 주기적으로
+    // ===============================
+    // Cleanup
+    // ===============================
+    void CleanupInvalidReferences();
     void MarkCleanupDirty();
     void MaybeCleanup(float Now);
+    void RequestCleanupFromTimer();   // 타이머 콜백 (실제 Cleanup 실행 X)
 
     void NotifyTargetAssigned(AUnitCharacter* Unit, AActor* NewTarget);
 
+    // ===============================
+    // Debug
+    // ===============================
+    void DrawCellDebug(const FIntPoint& Cell, FColor Color, float Duration);
+
 public:
-    // 매칭 갱신 주기(현재 BTService가 0.25s, 여기 값은 문서용)
+    UFUNCTION(BlueprintCallable)
+    void DrawAllGridDebug();
+
+    // ===============================
+    // Tuning
+    // ===============================
     UPROPERTY(EditAnywhere, Category = "Tuning")
     float UpdateInterval = 0.25f;
 
@@ -88,25 +119,24 @@ public:
     UPROPERTY(EditAnywhere, Category = "Tuning")
     float NoSlotGraceSeconds = 0.6f;
 
-    // ===== 버전3 튜닝 =====
-    // 그리드 셀 크기(보통 SearchRadius의 0.5~1.0배 권장)
+    // Grid
     UPROPERTY(EditAnywhere, Category = "BD|Grid")
     float GridCellSize = 1000.f;
 
-    // 후보를 모을 때 셀 반경 상한 (너무 크게 잡으면 버전3 의미가 약해짐)
     UPROPERTY(EditAnywhere, Category = "BD|Grid")
     int32 MaxCellRadius = 2;
 
-    // 후보 상한(G cap). 이 값이 사실상 G를 상수로 “봉인”해줌
     UPROPERTY(EditAnywhere, Category = "BD|Grid")
     int32 CandidateCap = 48;
 
-    // ===== 청소 주기 =====
+    // Cleanup
     UPROPERTY(EditAnywhere, Category = "BD|Perf")
     float CleanupInterval = 1.0f;
 
 private:
-    // 팀별 유닛 목록(유지: 디버그/폴백/일반 관리)
+    // ===============================
+    // 팀 데이터
+    // ===============================
     UPROPERTY()
     TArray<TWeakObjectPtr<AUnitCharacter>> TeamAUnits;
 
@@ -125,15 +155,22 @@ private:
     UPROPERTY()
     TArray<TWeakObjectPtr<AActor>> TeamBWallAnchors;
 
-    // ===== 그리드 저장소 =====
-    // TeamA / TeamB
+    // ===============================
+    // Grid 데이터
+    // ===============================
     TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridA;
     TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridB;
 
-    // 유닛 -> 현재 셀(역인덱스)
     UPROPERTY()
     TMap<TWeakObjectPtr<AUnitCharacter>, FIntPoint> UnitToCell;
 
+    // ===============================
+    // Cleanup 상태
+    // ===============================
     float LastCleanupTime = -FLT_MAX;
     bool bCleanupDirty = true;
+    bool bCleanupInProgress = false;
+
+    /** 타이머 핸들 (Cleanup 요청용) */
+    FTimerHandle CleanupRequestTimerHandle;
 };
