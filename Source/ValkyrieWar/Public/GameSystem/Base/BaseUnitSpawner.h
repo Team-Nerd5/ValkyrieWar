@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseActor.h"
@@ -24,6 +22,7 @@ struct FPoolEntry
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ReserveSize = 50;
 
+	// UnitModule에서 찾아서 SetData에 넣을 ID
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 UnitDataId = 0;
 };
@@ -38,6 +37,10 @@ struct FWaveOption
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Weight = 1;
+
+	// 병종(옵션)별: 이 옵션이 뽑혔을 때 한 번에 몇 마리 스폰할지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 SpawnCount = 1;
 };
 
 USTRUCT(BlueprintType)
@@ -51,22 +54,12 @@ struct FWaveConfig
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SpawnInterval = 2.f;
 
-	// <= 0이면 무한 스폰
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 TotalToSpawn = 20;
-
-	// 이 스포너 기준 동시 생존 최대
+	// TotalToSpawn 삭제, "인구 유지형" 스폰: MaxAlive만 채움
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 MaxAlive = 30;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FWaveOption> Options;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float EndDelay = 2.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 SpawnCount = 1;
 };
 
 UCLASS()
@@ -101,21 +94,15 @@ protected:
 	void BP_OnWaveStarted(int32 WaveIndex);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
-	void BP_OnWaveFinished(int32 WaveIndex);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
 	void BP_OnUnitSpawned(AUnitCharacter* Unit, int32 WaveIndex, EPoolTypes PoolType);
 
 private:
-	// ---- Timer callbacks (람다 없음) ----
+	// ---- Timer callbacks ----
 	UFUNCTION()
 	void HandleWaveStart();
 
 	UFUNCTION()
 	void HandleSpawnTick();
-
-	UFUNCTION()
-	void HandleWaveEnd();
 
 	UFUNCTION()
 	void HandleCleanupTick();
@@ -127,9 +114,11 @@ private:
 	const FPoolEntry* FindPoolEntry(EPoolTypes PoolType) const;
 
 	void StartWaveInternal(int32 WaveIndex);
-	void EndWaveInternal();
 
-	EPoolTypes PickWeightedPoolType(const FWaveConfig& Wave) const;
+	// Option 자체를 가중치로 뽑아야 SpawnCount를 쓸 수 있음
+	const FWaveOption* PickWeightedOption(const FWaveConfig& Wave) const;
+
+	// 사각형 스폰
 	FTransform MakeSpawnTransform() const;
 
 	void RegisterAlive(AUnitCharacter* Unit);
@@ -145,8 +134,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	TObjectPtr<AActor> SpawnPointActor = nullptr;
 
+	// 원형 반경 → 사각형 Half Extent (스폰 포인트 기준 Forward/Right로 퍼짐)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-	float SpawnRadius = 200.f;
+	FVector2D SpawnHalfExtent = FVector2D(200.f, 200.f);
 
 	// ===== Waves =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
@@ -155,23 +145,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
 	bool bAutoStart = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
-	bool bLoopWaves = true;
-
 	// 안전장치(NotifyUnitReleased를 못 받는 경우 대비)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
 	float CleanupInterval = 1.0f;
 
 private:
 	int32 CurrentWaveIndex = INDEX_NONE;
-	int32 SpawnedThisWave = 0;
 
-	// 동시 소환 한계치 최대 10마리
+	// 이번 Tick에 너무 많이 뽑지 않게 상한(성능 보호)
+	UPROPERTY(EditAnywhere, Category = "Wave")
 	int32 MaxSpawnCount = 10;
 
 	FTimerHandle WaveStartHandle;
 	FTimerHandle SpawnTickHandle;
-	FTimerHandle WaveEndHandle;
 	FTimerHandle CleanupHandle;
 
 	UPROPERTY()
