@@ -26,7 +26,7 @@
 #include "Data/Module/AttackModule.h"
 #include "Data/Game/AttackData.h"
 
-#include "Object/Character/Animation/AnimNotifyState/ANS_ComboWindow.h"
+#include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
 
 AValkyrieCharacter::AValkyrieCharacter()
 {
@@ -63,59 +63,11 @@ void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
 	CurrentWeaponType = InNewType;
 }
 
-USceneComponent* AValkyrieCharacter::GetActiveWeaponComponent()
-{
-	TArray<USkeletalMeshComponent*> AllSkeletalMeshes;
-	this->GetComponents<USkeletalMeshComponent>(AllSkeletalMeshes);
-
-	for (USkeletalMeshComponent* SkelComp : AllSkeletalMeshes)
-	{
-
-		if (SkelComp->GetName().Contains(TEXT("WeaponMeshSk")) && SkelComp->GetSkeletalMeshAsset() != nullptr)
-		{
-			return SkelComp;
-		}
-	}
-
-	TArray<UStaticMeshComponent*> AllStaticMeshes;
-	this->GetComponents<UStaticMeshComponent>(AllStaticMeshes);
-
-	for (UStaticMeshComponent* MeshComp : AllStaticMeshes)
-	{
-		// 이름이 WeaponMesh 이고, 현재 메쉬가 장착되어 있다면 반환
-		if (MeshComp->GetName().Contains(TEXT("WeaponMesh")) && MeshComp->GetStaticMesh() != nullptr)
-		{
-			return MeshComp;
-		}
-	}
-	return nullptr;
-}
-
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
-
-void AValkyrieCharacter::Tick(float InDeltaTime)
-{
-	Super::Tick(InDeltaTime);
-	if (GetController() && IsLocallyControlled())
-	{
-		if (USceneComponent* WeaponComp = GetActiveWeaponComponent())
-		{
-			FVector WeaponLoc = WeaponComp->GetComponentLocation();
-			FVector SocketLoc = WeaponComp->GetSocketLocation(FName("ArrowSocket"));
-
-			FString DebugMsg = FString::Printf(TEXT("무기: %s \n소켓: %s"), *WeaponLoc.ToString(), *SocketLoc.ToString());
-			if (GEngine) GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Cyan, DebugMsg);
-
-			DrawDebugSphere(GetWorld(), SocketLoc, 10.0f, 12, FColor::Red, false, -1.0f);
-		}
-	}
-
-}
-
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -123,74 +75,42 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("=========== [EquipWeapon 시작] 무기 ID: %llu ==========="), InEquipUID);
-
-	UGameInstance* GameInst = GetGameInstance();
-	if (!GameInst)
+	//TODO : Inventory에서 Get 해야함. 수정필요
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
-		return;
-	}
-
-	UDataManager* DataManager = GameInst->GetSubsystem<UDataManager>();
-	if (!DataManager)
-	{
-		return;
-	}
-
-	UItemModule* ItemModulePtr = DataManager->GetItemModule();
-	if (!ItemModulePtr)
-	{
-		return;
-	}
-
-	// 여기서 걸리면 Init()에서 엑셀을 못 읽었거나 400001번이 없는 거임!
-	const FItemDataRow* WeaponRow = ItemModulePtr->GetTableDataById(static_cast<int32>(InEquipUID));
-	if (!WeaponRow)
-	{
-		
-		return;
-	}
-	UStaticMeshComponent* WeaponComp = nullptr;
-	TArray<UStaticMeshComponent*> AllSkeletalMeshes;
-	GetComponents<UStaticMeshComponent>(AllSkeletalMeshes);
-
-	for (UStaticMeshComponent* MeshComp : AllSkeletalMeshes)
-	{
-		if (MeshComp->GetName().Contains(TEXT("WeaponMesh")))
+		if (UItemModule* ItemModule = DataManager->GetItemModule())
 		{
-			WeaponComp = MeshComp;
-			break;
-		}
-	}
-	if (!WeaponComp)
-	{
-		return;
-	}
-	if (WeaponRow->StaticMesh)
-	{
-		UStaticMesh* LoadedMesh = WeaponRow->StaticMesh.LoadSynchronous();
-		if (LoadedMesh)
-		{
-			WeaponComp->SetStaticMesh(LoadedMesh);
-		}
-	}
-	
+			UItemData* EquipItem = ItemModule->GetItem(InEquipUID);
 
-	if (WeaponRow->AttackId > 0)
-	{
-		// 데이터 행 빼오기
-		UAttackModule* AttackModulePtr = DataManager->GetAttackModule();
-
-		if (AttackModulePtr)
-		{
-			UAttackData* AttackObj = AttackModulePtr->GetAttackData(WeaponRow->AttackId);
-			if (AttackObj)
+			if (!EquipItem || EquipItem->GetItemGroup() != EItemGroup::Equip)
 			{
-				this->ComboMontage = AttackObj->GetAnimMontage();
+				//장비가 아님
+				return;
+			}
+
+			if (EquipItem->IsSkeletalWeapon() && EquipItem->GetSkeletalMesh().IsValid())
+			{
+				if (SkeletalWeapon)
+				{
+					SkeletalWeapon->SetSkeletalMesh(EquipItem->GetSkeletalMesh().LoadSynchronous());
+				}
+			}
+
+			if (!EquipItem->IsSkeletalWeapon() && EquipItem->GetStaticMesh().IsValid())
+			{
+				if (StaticWeapon)
+				{
+					StaticWeapon->SetStaticMesh(EquipItem->GetStaticMesh().LoadSynchronous());
+				}
 			}
 		}
 	}
-	
+
+	AttackData = Data->GetAttackData();
+	SkillDataList = Data->GetSkillData();
+
+	ComboMontage = AttackData->GetAnimMontage();
+	//TODO : AnimInstance 바꾸는거 확인 필요
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)

@@ -20,7 +20,7 @@ public:
 	void AddAmount(int32 InAmount);
 	void Equip(uint64 InEquipCharacter);
 
-
+	FORCEINLINE EItemType GetItemType() { return TableData->ItemType; }
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
 	FORCEINLINE EEquipGroup GetEquipGroup() { return EquipGroup; }
 	FORCEINLINE int32 GetAmount() { return Amount; }
@@ -29,6 +29,9 @@ public:
 	FORCEINLINE uint64 GetEquipCharacter() { return EquipCharacter; }
 	FORCEINLINE const uint64 GetUID() { return UID; }
 	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
+	FORCEINLINE bool IsSkeletalWeapon() { return TableData->IsSkeletal; }
+	FORCEINLINE TSoftObjectPtr<USkeletalMesh> GetSkeletalMesh() { return TableData->SkeletalMesh; }
+	FORCEINLINE TSoftObjectPtr<UStaticMesh> GetStaticMesh() { return TableData->StaticMesh; }
 
 private:
 	const FItemDataRow* TableData = nullptr;

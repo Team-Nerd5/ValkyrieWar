@@ -42,9 +42,26 @@ void ABaseCharacter::OnConstruction(const FTransform& Transform)
     {
         if (Part == LeaderMesh) continue;
 
-        if (Part->ComponentHasTag(TEXT("Weapon"))) continue;
+        if (Part->ComponentHasTag(TEXT("Weapon")))
+        {
+            SkeletalWeapon = Part;
+            continue;
+        }
 
         Part->SetLeaderPoseComponent(LeaderMesh);
+    }
+
+    TArray<UStaticMeshComponent*> StaticParts;
+    GetComponents<UStaticMeshComponent>(StaticParts);
+
+    for (UStaticMeshComponent* Part : StaticParts)
+    {
+
+        if (Part->ComponentHasTag(TEXT("Weapon")))
+        {
+            StaticWeapon = Part;
+            break;
+        }
     }
 }
 
