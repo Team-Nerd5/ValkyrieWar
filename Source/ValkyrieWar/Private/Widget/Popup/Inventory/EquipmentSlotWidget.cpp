@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Widget/Popup/CharacterInfo/EquipmentSlotWidget.h"
+#include "Widget/Popup/Inventory/EquipmentSlotWidget.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 void UEquipmentSlotWidget::NativeConstruct()

@@ -8,13 +8,13 @@
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
-#include "SellButtonWidget.generated.h"
+#include "ActionButtonWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API USellButtonWidget : public UBaseWidget
+class VALKYRIEWAR_API UActionButtonWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 
@@ -28,17 +28,33 @@ public:
 	virtual void CloseUI() override;
 
 public:
+	// 인벤토리 타입에 따라 표시할 버튼 세팅
+	void SetVisibleButton(EUIType InCurrentUIType);
+
 	// 인벤토리에서 선택한 아이템 받는 함수
-	void SetupSellItem(UItemData* InItemData);
+	void SetupItem(UItemData* InItemData);
+
+	// 선택된 캐릭터 UID 받는 함수
+	void SetupCharacterUID(uint64 InCharacterUID);
 
 protected:
 	// 판매 버튼 클릭시 실행
 	UFUNCTION()
 	void Sell();
+	// 장착 버튼 클릭시 실행
+	UFUNCTION()
+	void Equip();
+	// 장착 해제 버튼 클릭시 실행
+	UFUNCTION()
+	void Unequip();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Sell = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Equip = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> Btn_Unequip = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Cancel = nullptr;
 
@@ -48,4 +64,6 @@ private:
 	UWorldEventSystem* WorldEventSystem;
 
 	UItemData* CachedItemData = nullptr;
+	uint64 CachedCharacterUID = 0;
+
 };

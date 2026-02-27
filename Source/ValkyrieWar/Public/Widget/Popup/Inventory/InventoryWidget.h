@@ -6,7 +6,8 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "Components/TileView.h"
 #include "Components/Button.h"
-#include "Widget/Popup/Inventory/SellButtonWidget.h"
+#include "Widget/Popup/Inventory/ActionButtonWidget.h"
+#include "Widget/Popup/Inventory/EquipmentSlotWidget.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -19,9 +20,6 @@ UCLASS()
 class VALKYRIEWAR_API UInventoryWidget : public UBaseWidget
 {
 	GENERATED_BODY()
-	// 인벤토리 위젯
-	// 아이템 판매 및 사용 기능
-	// 모든 아이템 확인 가능
 
 protected:
 	virtual void NativeConstruct() override;
@@ -34,7 +32,9 @@ public:
 	virtual void CloseUI() override;
 
 public:
-	void UpdateInventoryMode(EUIType InUIType);
+	// 인벤토리 타입 변경 함수
+	UFUNCTION(BlueprintCallable)
+	void UpdateInventoryType(EUIType InUIType);
 
 protected:
 	UFUNCTION()
@@ -46,14 +46,16 @@ protected:
 	UFUNCTION()
 	void FilterHelmet();
 	UFUNCTION()
-	void FIlterGrowth();
+	void FilterGrowth();
 	UFUNCTION()
-	void FIlterGoods();
+	void FilterGoods();
 
 	// 현재 필터링된 인벤토리 업데이트 함수
 	UFUNCTION()
-	void UpdateInventory();
-
+	void OnUpdateInventory();
+	// 선택된 캐릭터가 장착한 장비칸 UI업데이트 함수
+	UFUNCTION()
+	void OnUpdateEquipmentForUID(uint64 InCharacterUID);
 	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);
@@ -65,9 +67,6 @@ private:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> InventoryTileView = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_Close = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterReset = nullptr;
@@ -83,7 +82,10 @@ protected:
 	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USellButtonWidget> SellButtonWidget = nullptr;
+	TObjectPtr<UActionButtonWidget> ActionButtonWidget = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UEquipmentSlotWidget> EquipmentSlotWidget = nullptr;
 
 private:
 	UInventorySystem* InventorySystem;
@@ -93,9 +95,12 @@ private:
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
 
-	EUIType SelectedInventoryMode = EUIType::None;
+	// 선택된 인벤토리 타입 저장
+	EUIType SelectedInventoryType = EUIType::None;
 
 	// 현재 필터가 적용된 인벤토리 확인용
 	EItemGroup CurrentItemGroup = EItemGroup::None;
 	EEquipGroup CurrentEquipGroup = EEquipGroup::None;
+
+	uint64 TempCharacterUID = 1001001;	// 테스트용 캐릭터UID(케릭터 선택창 구현시 삭제 예정)
 };
