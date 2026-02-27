@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
+﻿// BaseUnitSpawner.cpp
 #include "GameSystem/Base/BaseUnitSpawner.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "Object/Character/Unit/UnitCharacter.h"
@@ -79,12 +77,10 @@ void ABaseUnitSpawner::StopWaves()
 {
 	GetWorldTimerManager().ClearTimer(WaveStartHandle);
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
-	GetWorldTimerManager().ClearTimer(WaveEndHandle);
 
 	CurrentWaveIndex = INDEX_NONE;
-	SpawnedThisWave = 0;
 
-	// 살아있는 애들 정리(원하면 옵션으로)
+	// 살아있는 애들 정리
 	if (UObjectPoolSubsystem* Pool = GetPool())
 	{
 		for (TWeakObjectPtr<AUnitCharacter>& W : AliveUnits)
@@ -124,11 +120,10 @@ void ABaseUnitSpawner::StartWaveInternal(int32 WaveIndex)
 		return;
 	}
 
-	SpawnedThisWave = 0;
-
 	const FWaveConfig& Wave = Waves[WaveIndex];
-	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] StartWave %d StartDelay=%.2f Interval=%.2f Total=%d MaxAlive=%d"),
-		WaveIndex, Wave.StartDelay, Wave.SpawnInterval, Wave.TotalToSpawn, Wave.MaxAlive);
+
+	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] StartWave %d StartDelay=%.2f Interval=%.2f MaxAlive=%d Options=%d"),
+		WaveIndex, Wave.StartDelay, Wave.SpawnInterval, Wave.MaxAlive, Wave.Options.Num());
 
 	const float StartDelay = FMath::Max(0.f, Wave.StartDelay);
 
@@ -162,7 +157,8 @@ void ABaseUnitSpawner::HandleWaveStart()
 	const FWaveConfig& Wave = Waves[CurrentWaveIndex];
 	const float Interval = FMath::Max(0.05f, Wave.SpawnInterval);
 
-	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] Wave %d spawning started. Interval=%.2f"), CurrentWaveIndex, Interval);
+	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] Wave %d spawning started. Interval=%.2f (population 유지형)"),
+		CurrentWaveIndex, Interval);
 
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
 	GetWorldTimerManager().SetTimer(
@@ -186,27 +182,28 @@ void ABaseUnitSpawner::HandleSpawnTick()
 
 	const FWaveConfig& Wave = Waves[CurrentWaveIndex];
 
-	int32 Count = FMath::Min(MaxSpawnCount, Wave.SpawnCount);
-
-	for (int32 i = 0; i < Count; i++)
+	// 부족한 만큼만 채우는 "인구 유지형"
+	const int32 Capacity = Wave.MaxAlive - AliveUnits.Num();
+	if (Capacity <= 0)
 	{
-		// 종료 조건을 MaxAlive보다 먼저 검사
-		if (Wave.TotalToSpawn > 0 && SpawnedThisWave >= Wave.TotalToSpawn)
-		{
-			EndWaveInternal();
-			return;
-		}
+		return; // 꽉 찼으면 스폰 안 함
+	}
 
-		// 스포너 단위 MaxAlive
-		if (AliveUnits.Num() >= Wave.MaxAlive)
-		{
-			return;
-		}
+	// 이번 Tick에서 너무 많이 뽑지 않도록 예산 제한
+	int32 Budget = FMath::Min(MaxSpawnCount, Capacity);
 
-		const EPoolTypes PickType = PickWeightedPoolType(Wave);
-		if (PickType == EPoolTypes::None)
+	while (Budget > 0)
+	{
+		const FWaveOption* PickOpt = PickWeightedOption(Wave);
+		if (!PickOpt)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Options invalid for wave %d"), CurrentWaveIndex);
+			return;
+		}
+
+		const EPoolTypes PickType = PickOpt->PoolType;
+		if (PickType == EPoolTypes::None)
+		{
 			return;
 		}
 
@@ -224,92 +221,59 @@ void ABaseUnitSpawner::HandleSpawnTick()
 			return;
 		}
 
-		const FTransform SpawnTM = MakeSpawnTransform();
+		const int32 WantSpawn = FMath::Max(1, PickOpt->SpawnCount);
+		const int32 SpawnNow = FMath::Min(WantSpawn, Budget);
 
-		AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
-			PickType,
-			Entry->UnitClass,
-			SpawnTM.GetLocation(),
-			SpawnTM.Rotator()
-		);
-
-		if (!Unit) return;
-
-		// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
-		Unit->SetOwnerSpawner(this);
-		Unit->SetPoolType(PickType);
-
-		UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
-		if (DataManager && DataManager->GetUnitModule())
+		for (int32 i = 0; i < SpawnNow; ++i)
 		{
-			if (UUnitData* InData = DataManager->GetUnitModule()->GetUnitDataById(Entry->UnitDataId))
+			// 중간에 Alive가 늘어났을 수도 있으니 최종 안전 체크
+			if (AliveUnits.Num() >= Wave.MaxAlive)
 			{
-				Unit->SetData(InData);
+				return;
 			}
-			else
+
+			const FTransform SpawnTM = MakeSpawnTransform();
+
+			AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
+				PickType,
+				Entry->UnitClass,
+				SpawnTM.GetLocation(),
+				SpawnTM.Rotator()
+			);
+
+			if (!Unit) return;
+
+			// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
+			Unit->SetOwnerSpawner(this);
+			Unit->SetPoolType(PickType);
+
+			// DataManager 통해 병종 데이터 주입
+			if (UGameInstance* GI = GetGameInstance())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitData not found. PoolType=%d UnitDataId=%d"),
-					(int32)PickType, Entry->UnitDataId);
+				if (UDataManager* DataManager = GI->GetSubsystem<UDataManager>())
+				{
+					if (DataManager->GetUnitModule())
+					{
+						if (UUnitData* InData = DataManager->GetUnitModule()->GetUnitDataById(Entry->UnitDataId))
+						{
+							Unit->SetData(InData);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitData not found. PoolType=%d UnitDataId=%d"),
+								(int32)PickType, Entry->UnitDataId);
+						}
+					}
+				}
 			}
+
+			RegisterAlive(Unit);
+			BP_OnUnitSpawned(Unit, CurrentWaveIndex, PickType);
+
+			Budget--;
+			if (Budget <= 0) break;
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitModule is null (cannot SetData)."));
-		}
-
-		RegisterAlive(Unit);
-		SpawnedThisWave++;
-
-		BP_OnUnitSpawned(Unit, CurrentWaveIndex, PickType);
 	}
-}
-
-void ABaseUnitSpawner::EndWaveInternal()
-{
-	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
-
-	const int32 Finished = CurrentWaveIndex;
-	BP_OnWaveFinished(Finished);
-
-	const float EndDelay = FMath::Max(0.f, Waves[Finished].EndDelay);
-	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] Wave %d finished. EndDelay=%.2f"), Finished, EndDelay);
-
-	GetWorldTimerManager().ClearTimer(WaveEndHandle);
-	if (EndDelay <= 0.f)
-	{
-		HandleWaveEnd();
-	}
-	else
-	{
-		GetWorldTimerManager().SetTimer(
-			WaveEndHandle,
-			this,
-			&ABaseUnitSpawner::HandleWaveEnd,
-			EndDelay,
-			false
-		);
-	}
-}
-
-void ABaseUnitSpawner::HandleWaveEnd()
-{
-	CurrentWaveIndex++;
-
-	if (!Waves.IsValidIndex(CurrentWaveIndex))
-	{
-		if (bLoopWaves && Waves.Num() > 0)
-		{
-			CurrentWaveIndex = 0;
-			StartWaveInternal(CurrentWaveIndex);
-		}
-		else
-		{
-			StopWaves();
-		}
-		return;
-	}
-
-	StartWaveInternal(CurrentWaveIndex);
 }
 
 void ABaseUnitSpawner::HandleCleanupTick()
@@ -340,7 +304,7 @@ const FPoolEntry* ABaseUnitSpawner::FindPoolEntry(EPoolTypes PoolType) const
 	return nullptr;
 }
 
-EPoolTypes ABaseUnitSpawner::PickWeightedPoolType(const FWaveConfig& Wave) const
+const FWaveOption* ABaseUnitSpawner::PickWeightedOption(const FWaveConfig& Wave) const
 {
 	int32 Total = 0;
 	for (const FWaveOption& Opt : Wave.Options)
@@ -350,33 +314,44 @@ EPoolTypes ABaseUnitSpawner::PickWeightedPoolType(const FWaveConfig& Wave) const
 			Total += Opt.Weight;
 		}
 	}
-	if (Total <= 0) return EPoolTypes::None;
+	if (Total <= 0) return nullptr;
 
 	int32 Pick = FMath::RandRange(1, Total);
 	for (const FWaveOption& Opt : Wave.Options)
 	{
 		if (Opt.PoolType == EPoolTypes::None || Opt.Weight <= 0) continue;
 		Pick -= Opt.Weight;
-		if (Pick <= 0) return Opt.PoolType;
+		if (Pick <= 0) return &Opt;
 	}
 
 	// 안전 fallback
 	for (const FWaveOption& Opt : Wave.Options)
 	{
-		if (Opt.PoolType != EPoolTypes::None) return Opt.PoolType;
+		if (Opt.PoolType != EPoolTypes::None) return &Opt;
 	}
-	return EPoolTypes::None;
+	return nullptr;
 }
 
 FTransform ABaseUnitSpawner::MakeSpawnTransform() const
 {
 	const FTransform BaseTM = SpawnPointActor ? SpawnPointActor->GetActorTransform() : GetActorTransform();
-	if (SpawnRadius <= 0.f) return BaseTM;
+
+	// SpawnHalfExtent가 0이면 고정 스폰
+	if (SpawnHalfExtent.X <= 0.f && SpawnHalfExtent.Y <= 0.f)
+	{
+		return BaseTM;
+	}
+
+	const float DX = FMath::FRandRange(-SpawnHalfExtent.X, SpawnHalfExtent.X);
+	const float DY = FMath::FRandRange(-SpawnHalfExtent.Y, SpawnHalfExtent.Y);
+
+	// 스폰 포인트의 회전 기준(Forward/Right)으로 사각형 분포
+	const FVector Forward = BaseTM.GetRotation().GetForwardVector();
+	const FVector Right = BaseTM.GetRotation().GetRightVector();
 
 	FVector Loc = BaseTM.GetLocation();
-	const FVector2D Offset2D = FMath::RandPointInCircle(SpawnRadius);
-	Loc.X += Offset2D.X;
-	Loc.Y += Offset2D.Y;
+	Loc += Forward * DX;
+	Loc += Right * DY;
 
 	FTransform Out = BaseTM;
 	Out.SetLocation(Loc);
