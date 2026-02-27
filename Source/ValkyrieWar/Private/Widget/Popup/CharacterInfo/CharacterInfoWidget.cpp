@@ -12,6 +12,9 @@ void UCharacterInfoWidget::NativeConstruct()
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
 		EventSystem = World->GetSubsystem<UWorldEventSystem>();
+
+		EventSystem->Widget.OnUpdateEquipment.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentInventory);
+		EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentUi);
 	}
 
 	if (Btn_Close)
@@ -26,8 +29,6 @@ void UCharacterInfoWidget::NativeConstruct()
 	if (Btn_FilterHelmet)
 		Btn_FilterHelmet->OnClicked.AddDynamic(this, &UCharacterInfoWidget::FilterHelmet);
 
-	EventSystem->Widget.OnUpdateEquipment.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentInventory);
-	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UCharacterInfoWidget::UpdateEquipmentUi);
 
 	EquipmentTileView->OnItemClicked().AddUObject(this, &UCharacterInfoWidget::ItemClicked);
 }
