@@ -60,6 +60,15 @@ void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	UnregisterFromBattleDirector(true);
 
 	EngagementSlots.Empty();
+
+	if (UWorld* W = GetWorld())
+	{
+		if (UBattleDirectorSubsystem* BD = W->GetSubsystem<UBattleDirectorSubsystem>())
+		{
+			BD->UnregisterUnit(this);
+		}
+	}
+
 	Super::EndPlay(EndPlayReason);
 }
 

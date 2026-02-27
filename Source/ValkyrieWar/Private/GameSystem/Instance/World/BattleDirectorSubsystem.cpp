@@ -9,12 +9,35 @@ static FORCEINLINE int32 TeamIndex(ETeam T) { return (T == ETeam::TeamA) ? 0 : 1
 void UBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+
     bCleanupDirty = true;
+    bCleanupInProgress = false;
     LastCleanupTime = -FLT_MAX;
+
+    // 타이머는 Cleanup "실행"이 아니라 "요청 플래그"만 세팅
+    if (UWorld* W = GetWorld())
+    {
+        W->GetTimerManager().SetTimer(
+            CleanupRequestTimerHandle,
+            this,
+            &UBattleDirectorSubsystem::RequestCleanupFromTimer,
+            CleanupInterval,
+            true
+        );
+    }
 }
 
 void UBattleDirectorSubsystem::Deinitialize()
 {
+    // 좀비 타이머 방지
+    if (UWorld* W = GetWorld())
+    {
+        if (CleanupRequestTimerHandle.IsValid())
+        {
+            W->GetTimerManager().ClearTimer(CleanupRequestTimerHandle);
+        }
+    }
+
     TeamAUnits.Empty();
     TeamBUnits.Empty();
     TeamABase.Reset();
@@ -27,6 +50,20 @@ void UBattleDirectorSubsystem::Deinitialize()
     UnitToCell.Empty();
 
     Super::Deinitialize();
+}
+
+void UBattleDirectorSubsystem::TickCleanup()
+{
+    if (UWorld* W = GetWorld())
+    {
+        MaybeCleanup(W->GetTimeSeconds());
+    }
+}
+
+void UBattleDirectorSubsystem::RequestCleanupFromTimer()
+{
+    // 타이머 콜백에서는 절대 컨테이너 변형(RemoveAll 등)을 하지 않는다.
+    bCleanupDirty = true;
 }
 
 TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamArray(ETeam Team)
@@ -65,9 +102,13 @@ void UBattleDirectorSubsystem::MarkCleanupDirty()
 void UBattleDirectorSubsystem::MaybeCleanup(float Now)
 {
     if (!bCleanupDirty) return;
+    if (bCleanupInProgress) return;
     if ((Now - LastCleanupTime) < CleanupInterval) return;
 
+    bCleanupInProgress = true;
     CleanupInvalidReferences();
+    bCleanupInProgress = false;
+
     LastCleanupTime = Now;
     bCleanupDirty = false;
 }
@@ -76,7 +117,7 @@ void UBattleDirectorSubsystem::RegisterUnit(AUnitCharacter* Unit)
 {
     if (!Unit || !Unit->GetBrain()) return;
 
-    // AddUnique는 O(N)이라 우선 Add로 (중복등록이 없다는 전제)
+    // AddUnique는 O(N)이라 우선 Add (중복등록이 없다는 전제)
     GetTeamArray(Unit->GetBrain()->Team).Add(Unit);
 
     // 적 베이스 링크
@@ -86,68 +127,6 @@ void UBattleDirectorSubsystem::RegisterUnit(AUnitCharacter* Unit)
     UpdateUnitCell(Unit);
 
     MarkCleanupDirty();
-}
-
-void UBattleDirectorSubsystem::RemoveUnitFromGrid(AUnitCharacter* Unit)
-{
-    if (!Unit || !Unit->GetBrain()) return;
-
-    TWeakObjectPtr<AUnitCharacter> WUnit(Unit);
-
-    FIntPoint* OldCell = UnitToCell.Find(WUnit);
-    if (!OldCell)
-        return;
-
-    auto& Grid = GetGrid(Unit->GetBrain()->Team);
-    if (TArray<TWeakObjectPtr<AUnitCharacter>>* List = Grid.Find(*OldCell))
-    {
-        List->RemoveAll([&](const TWeakObjectPtr<AUnitCharacter>& W)
-            {
-                return !W.IsValid() || W.Get() == Unit;
-            });
-
-        if (List->Num() == 0)
-        {
-            Grid.Remove(*OldCell);
-        }
-    }
-
-    UnitToCell.Remove(WUnit);
-}
-
-void UBattleDirectorSubsystem::UpdateUnitCell(AUnitCharacter* Unit)
-{
-    if (!Unit || !Unit->GetBrain() || Unit->IsDead()) return;
-
-    TWeakObjectPtr<AUnitCharacter> WUnit(Unit);
-    const FIntPoint NewCell = WorldToCell2D(Unit->GetActorLocation());
-
-    FIntPoint* OldCell = UnitToCell.Find(WUnit);
-    if (OldCell && (*OldCell == NewCell))
-        return; // 셀 변화 없음
-
-    // 이전 셀에서 제거
-    if (OldCell)
-    {
-        auto& Grid = GetGrid(Unit->GetBrain()->Team);
-        if (TArray<TWeakObjectPtr<AUnitCharacter>>* List = Grid.Find(*OldCell))
-        {
-            List->RemoveAll([&](const TWeakObjectPtr<AUnitCharacter>& W)
-                {
-                    return !W.IsValid() || W.Get() == Unit;
-                });
-
-            if (List->Num() == 0)
-            {
-                Grid.Remove(*OldCell);
-            }
-        }
-    }
-
-    // 새 셀에 추가
-    auto& NewList = GetGrid(Unit->GetBrain()->Team).FindOrAdd(NewCell);
-    NewList.Add(WUnit);
-    UnitToCell.Add(WUnit, NewCell);
 }
 
 void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
@@ -163,6 +142,7 @@ void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
     // 그리드에서 제거
     RemoveUnitFromGrid(Unit);
 
+    // 팀 배열에서 제거
     GetTeamArray(Unit->GetBrain()->Team).Remove(Unit);
 
     MarkCleanupDirty();
@@ -171,6 +151,7 @@ void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
 void UBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
+
     if (Team == ETeam::TeamA) TeamAWallAnchors.AddUnique(AnchorActor);
     else TeamBWallAnchors.AddUnique(AnchorActor);
 
@@ -180,6 +161,7 @@ void UBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActo
 void UBattleDirectorSubsystem::UnregisterWallAnchor(ETeam Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
+
     if (Team == ETeam::TeamA) TeamAWallAnchors.Remove(AnchorActor);
     else TeamBWallAnchors.Remove(AnchorActor);
 
@@ -305,6 +287,8 @@ void UBattleDirectorSubsystem::CleanupInvalidReferences()
 
     // UnitToCell도 정리
     TArray<TWeakObjectPtr<AUnitCharacter>> DeadKeys;
+    DeadKeys.Reserve(UnitToCell.Num());
+
     for (auto& It : UnitToCell)
     {
         if (!It.Key.IsValid() || It.Key->IsDead())
@@ -328,6 +312,117 @@ void UBattleDirectorSubsystem::NotifyTargetAssigned(AUnitCharacter* Unit, AActor
     }
 }
 
+void UBattleDirectorSubsystem::DrawCellDebug(const FIntPoint& Cell, FColor Color, float Duration)
+{
+    if (!GetWorld()) return;
+
+    const float CellSize = FMath::Max(10.f, GridCellSize);
+
+    const FVector Min(Cell.X * CellSize, Cell.Y * CellSize, 0.f);
+    const FVector Max((Cell.X + 1) * CellSize, (Cell.Y + 1) * CellSize, 0.f);
+
+    const float Z = 50.f; // 바닥에서 약간 띄움
+
+    const FVector A(Min.X, Min.Y, Z);
+    const FVector B(Max.X, Min.Y, Z);
+    const FVector C(Max.X, Max.Y, Z);
+    const FVector D(Min.X, Max.Y, Z);
+
+    DrawDebugLine(GetWorld(), A, B, Color, false, Duration, 0, 2.f);
+    DrawDebugLine(GetWorld(), B, C, Color, false, Duration, 0, 2.f);
+    DrawDebugLine(GetWorld(), C, D, Color, false, Duration, 0, 2.f);
+    DrawDebugLine(GetWorld(), D, A, Color, false, Duration, 0, 2.f);
+}
+
+void UBattleDirectorSubsystem::DrawAllGridDebug()
+{
+    const float Duration = 0.f; // 0이면 한 프레임
+    for (auto& Pair : GridA)
+    {
+        DrawCellDebug(Pair.Key, FColor::Red, Duration);
+    }
+    for (auto& Pair : GridB)
+    {
+        DrawCellDebug(Pair.Key, FColor::Blue, Duration);
+    }
+}
+
+void UBattleDirectorSubsystem::RemoveUnitFromGrid(AUnitCharacter* Unit)
+{
+    if (!Unit || !Unit->GetBrain()) return;
+
+    TWeakObjectPtr<AUnitCharacter> WUnit(Unit);
+
+    FIntPoint* OldCell = UnitToCell.Find(WUnit);
+    if (!OldCell) return;
+
+    auto& Grid = GetGrid(Unit->GetBrain()->Team);
+
+    if (TArray<TWeakObjectPtr<AUnitCharacter>>* List = Grid.Find(*OldCell))
+    {
+        // 중복/무효까지 제거
+        List->RemoveAll([&](const TWeakObjectPtr<AUnitCharacter>& W)
+            {
+                return !W.IsValid() || W.Get() == Unit;
+            });
+
+        if (List->Num() == 0)
+        {
+            Grid.Remove(*OldCell);
+        }
+    }
+
+    UnitToCell.Remove(WUnit);
+}
+
+void UBattleDirectorSubsystem::UpdateUnitCell(AUnitCharacter* Unit)
+{
+    if (!Unit || !Unit->GetBrain()) return;
+
+    if (Unit->IsDead())
+    {
+        RemoveUnitFromGrid(Unit);
+        return;
+    }
+
+    TWeakObjectPtr<AUnitCharacter> WUnit(Unit);
+    const FIntPoint NewCell = WorldToCell2D(Unit->GetActorLocation());
+
+    FIntPoint* OldCell = UnitToCell.Find(WUnit);
+    if (OldCell && (*OldCell == NewCell))
+        return; // 셀 변화 없음
+
+    auto& Grid = GetGrid(Unit->GetBrain()->Team);
+
+    // 이전 셀에서 제거
+    if (OldCell)
+    {
+        if (TArray<TWeakObjectPtr<AUnitCharacter>>* List = Grid.Find(*OldCell))
+        {
+            List->RemoveAll([&](const TWeakObjectPtr<AUnitCharacter>& W)
+                {
+                    return !W.IsValid() || W.Get() == Unit;
+                });
+
+            if (List->Num() == 0)
+            {
+                Grid.Remove(*OldCell);
+            }
+        }
+    }
+
+    // 새 셀에 추가 (중복 방지)
+    TArray<TWeakObjectPtr<AUnitCharacter>>& NewList = Grid.FindOrAdd(NewCell);
+    NewList.AddUnique(WUnit);
+
+    UnitToCell.Add(WUnit, NewCell);
+}
+
+void UBattleDirectorSubsystem::NotifyUnitMoved(AUnitCharacter* Unit)
+{
+    UpdateUnitCell(Unit);
+}
+
 void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, TArray<AUnitCharacter*>& OutCandidates) const
 {
     OutCandidates.Reset();
@@ -337,7 +432,6 @@ void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, T
     const ETeam MyTeam = Attacker->GetBrain()->Team;
     const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
 
-    // Attacker 셀 (역인덱스 없으면 직접 계산)
     const FIntPoint Center = WorldToCell2D(Attacker->GetActorLocation());
 
     const float Cell = FMath::Max(10.f, GridCellSize);
@@ -346,7 +440,6 @@ void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, T
 
     const auto& EnemyGrid = GetGridConst(EnemyTeam);
 
-    // 후보
     const int32 Cap = FMath::Max(8, CandidateCap);
 
     for (int32 dy = -CellRadius; dy <= CellRadius; ++dy)
@@ -365,7 +458,7 @@ void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, T
 
                 OutCandidates.Add(E);
                 if (OutCandidates.Num() >= Cap)
-                    return; // cap 도달 시 조기 종료
+                    return;
             }
         }
     }
@@ -380,15 +473,18 @@ AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot_Grid(
     if (!Attacker || !Attacker->GetBrain()) return nullptr;
 
     const FVector MyLoc = Attacker->GetActorLocation();
-
-    const float SearchRadiusSq = SearchRadius * SearchRadius;
+    const float SearchRadiusSq = FMath::Max(1.f, SearchRadius * SearchRadius);
     const float AttackRangeSq = Attacker->GetAttackRange() * Attacker->GetAttackRange();
     const float NearWallDistSq = NearWallDistance * NearWallDistance;
 
     const ETeam MyTeam = Attacker->GetBrain()->Team;
     const ETargetingPolicy Policy = Attacker->GetBrain()->TargetingPolicy;
 
-    // 후보마다 앵커 전체를 돌지 않도록: Attacker 기준 가장 가까운 내 앵커 1개만
+    // 0~1 기반(스케일 독립) 가중치
+    constexpr float W_Distance = 1.0f;
+    constexpr float W_FreeSlots = 0.3f;
+    constexpr float W_NearWall = 1.5f;
+
     AActor* MyNearestWall = GetNearestWallAnchorTo(MyLoc, MyTeam);
 
     AUnitCharacter* Best = nullptr;
@@ -402,55 +498,61 @@ AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot_Grid(
         const float DistSq = FVector::DistSquared(MyLoc, E->GetActorLocation());
         if (DistSq > SearchRadiusSq) continue;
 
-        // 슬롯 보너스(상수)
-        const int32 FreeIdx = E->FindFirstFreeSlot();
-        const float FreeBonus = (FreeIdx != INDEX_NONE) ? 50.f : 0.f;
-
-        // 성벽 근처 판정(빠른 버전)
-        bool bNearMyWall = false;
-        float ToWallSq = FLT_MAX;
-        if (MyNearestWall)
-        {
-            ToWallSq = FVector::DistSquared(E->GetActorLocation(), MyNearestWall->GetActorLocation());
-            bNearMyWall = (ToWallSq <= NearWallDistSq);
-        }
-
-        // sqrt 제거: -DistSq 형태로 비교
-        float Score = -DistSq + FreeBonus;
-
-        switch (Policy)
-        {
-        case ETargetingPolicy::NearWallEnemyThenBase:
-        {
-            if (bNearMyWall)
-            {
-                Score += 100000.f;
-                Score += -ToWallSq * 0.01f; // sqrt 대신 ToWallSq 사용(가중치만 조절)
-            }
-            break;
-        }
-        case ETargetingPolicy::NearestEnemyThenBase:
-        {
-            // 기본 Score 사용
-            break;
-        }
-        case ETargetingPolicy::FarthestInAttackRangeThenBase:
+        // 정책별 제약
+        if (Policy == ETargetingPolicy::FarthestInAttackRangeThenBase)
         {
             if (DistSq > AttackRangeSq) continue;
-            Score = DistSq + FreeBonus; // 멀수록 우선 (sqrt 제거)
-            break;
         }
-        case ETargetingPolicy::Auto:
-        default:
+
+        // 가까울수록 1, 멀수록 0
+        const float DistanceScore = 1.0f - (DistSq / SearchRadiusSq);
+
+        // 빈 슬롯 비율(0~1)
+        float FreeSlotsScore = 0.f;
         {
-            // 안전 폴백: NearWall 우선
-            if (bNearMyWall)
+            int32 FreeCount = 0;
+            for (const FUnitEngagementSlotData& Slot : E->EngagementSlots)
             {
-                Score += 100000.f;
-                Score += -ToWallSq * 0.01f;
+                if (!Slot.Attacker.IsValid()) ++FreeCount;
             }
-            break;
+            FreeSlotsScore = (E->EngagementSlots.Num() > 0)
+                ? (float)FreeCount / (float)E->EngagementSlots.Num()
+                : 0.f;
         }
+
+        // 성벽 근처(0/1)
+        float NearWallScore = 0.f;
+        if (Policy == ETargetingPolicy::NearWallEnemyThenBase || Policy == ETargetingPolicy::Auto)
+        {
+            float ToWallSq = FLT_MAX;
+            if (MyNearestWall)
+            {
+                ToWallSq = FVector::DistSquared(E->GetActorLocation(), MyNearestWall->GetActorLocation());
+            }
+            else
+            {
+                ToWallSq = DistanceToNearestWallAnchorSq(E->GetActorLocation(), MyTeam);
+            }
+
+            if (ToWallSq <= NearWallDistSq)
+            {
+                NearWallScore = 1.f;
+            }
+        }
+
+        float Score = 0.f;
+
+        if (Policy == ETargetingPolicy::FarthestInAttackRangeThenBase)
+        {
+            // 멀수록 우선(0~1)
+            const float FarScore = FMath::Clamp(DistSq / FMath::Max(1.f, AttackRangeSq), 0.f, 1.f);
+            Score = FarScore * W_Distance + FreeSlotsScore * W_FreeSlots;
+        }
+        else
+        {
+            Score = DistanceScore * W_Distance
+                + FreeSlotsScore * W_FreeSlots
+                + NearWallScore * W_NearWall;
         }
 
         if (Score > BestScore)
@@ -468,8 +570,13 @@ bool UBattleDirectorSubsystem::TryReserve(AUnitCharacter* Attacker, AUnitCharact
     if (!Attacker || !Target || !Attacker->GetBrain()) return false;
     if (Attacker->IsDead() || Target->IsDead()) return false;
 
+    // 이미 같은 타겟이어도 슬롯에 진짜 들어있는지 확인
     if (Attacker->GetBrain()->ReservedTarget.Get() == Target)
-        return true;
+    {
+        if (Target->FindSlotOfAttacker(Attacker) != INDEX_NONE)
+            return true;
+        // 슬롯이 없으면 아래 로직으로 재등록 시도
+    }
 
     if (!Attacker->GetBrain()->CanChangeReservation(Now))
         return false;
@@ -509,51 +616,6 @@ void UBattleDirectorSubsystem::ReleaseReservation(AUnitCharacter* Attacker, AUni
     }
 }
 
-void UBattleDirectorSubsystem::NotifyUnitMoved(AUnitCharacter* Unit)
-{
-    if (!Unit || !Unit->GetBrain()) return;
-
-    // 죽었으면 그리드에서 제거
-    if (Unit->IsDead())
-    {
-        RemoveUnitFromGrid(Unit);
-        return;
-    }
-
-    const ETeam Team = Unit->GetBrain()->Team;
-    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& Grid = GetGrid(Team);
-
-    const FIntPoint NewCell = WorldToCell2D(Unit->GetActorLocation());
-    TWeakObjectPtr<AUnitCharacter> WUnit(Unit);
-
-    FIntPoint* OldCell = UnitToCell.Find(WUnit);
-
-    // 셀 변동 없음 → 아무 것도 할 일 없음
-    if (OldCell && (*OldCell == NewCell))
-        return;
-
-    // 이전 셀에서 제거
-    if (OldCell)
-    {
-        if (TArray<TWeakObjectPtr<AUnitCharacter>>* OldList = Grid.Find(*OldCell))
-        {
-            OldList->RemoveAll([&](const TWeakObjectPtr<AUnitCharacter>& W)
-                {
-                    return !W.IsValid() || W.Get() == Unit;
-                });
-
-            if (OldList->Num() == 0)
-                Grid.Remove(*OldCell);
-        }
-    }
-
-    // 새 셀에 추가
-    TArray<TWeakObjectPtr<AUnitCharacter>>& NewList = Grid.FindOrAdd(NewCell);
-    NewList.Add(WUnit);
-
-    UnitToCell.Add(WUnit, NewCell);
-}
-
 void UBattleDirectorSubsystem::ReleaseAllAttackersOfTarget(AUnitCharacter* Target)
 {
     if (!Target) return;
@@ -583,10 +645,10 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
 
     const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 
-    // 유닛별 전체 정리 제거 → 주기 정리
-    MaybeCleanup(Now);
+    // 여기서 MaybeCleanup() 호출하지 않음
+    // 중앙 루프에서 BD->TickCleanup() 1회 호출로만 실행
 
-    // 호출될 때마다 “이 유닛만” 그리드 셀 업데이트
+    // 이 유닛만 그리드 셀 업데이트
     UpdateUnitCell(Unit);
 
     // 현재 예약 타깃이 유효하면 유지
@@ -607,7 +669,7 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
         }
     }
 
-    // ★ 후보를 “그리드 인접 셀”에서만 수집
+    // 후보를 그리드 인접 셀에서만 수집
     TArray<AUnitCharacter*> Candidates;
     GatherEnemyCandidates(Unit, Candidates);
 
