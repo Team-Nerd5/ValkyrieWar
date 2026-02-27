@@ -7,7 +7,7 @@
 #include "Components/TileView.h"
 #include "Components/Button.h"
 #include "Widget/Popup/CharacterInfo/EquipButtonWidget.h"
-#include "Widget/Popup/CharacterInfo/EquipmentSlotWidget.h"
+#include "Widget/Popup/Inventory/EquipmentSlotWidget.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -49,7 +49,7 @@ protected:
 	void UpdateFilteredInventory();
 	// 선택된 캐릭터가 장착한 장비칸 UI업데이트 함수
 	UFUNCTION()
-	void UpdateEquipmentForUID(uint64 InCharacterUID);
+	void OnUpdateEquipmentForUID(uint64 InCharacterUID);
 
 	// 장비 인벤토리 타일뷰 클릭했을 때 실행될 함수
 	UFUNCTION()

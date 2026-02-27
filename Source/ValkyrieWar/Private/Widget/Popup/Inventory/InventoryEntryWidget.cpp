@@ -18,12 +18,20 @@ void UInventoryEntryWidget::Init(UObject* InData)
 		return;
 
 	if (ItemData->GetItemGroup() == EItemGroup::Goods || ItemData->GetItemGroup() == EItemGroup::GrowthItem)
+	{
 		Amount->SetText(FText::AsNumber(ItemData->GetAmount()));
+		Amount->SetVisibility(ESlateVisibility::Visible);
+	}
 	else
+	{
 		Amount->SetText(FText::AsNumber(0));
+		Amount->SetVisibility(ESlateVisibility::Hidden);
+	}
 
-	UTexture2D* IconTexture = ItemData->GetTableData()->Icon.LoadSynchronous();
-	if(IconTexture)
-		Icon->SetBrushFromTexture(IconTexture);
-
+	if (ItemData->GetTableData())
+	{
+		UTexture2D* IconTexture = ItemData->GetTableData()->Icon.LoadSynchronous();
+		if(IconTexture)
+			Icon->SetBrushFromTexture(IconTexture);
+	}
 }
