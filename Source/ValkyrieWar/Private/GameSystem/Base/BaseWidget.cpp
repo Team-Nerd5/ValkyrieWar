@@ -2,6 +2,14 @@
 
 
 #include "GameSystem/Base/BaseWidget.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
+
+void UBaseWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
+}
 
 void UBaseWidget::OpenUI()
 {

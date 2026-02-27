@@ -13,6 +13,8 @@
 
 void UCreateAccountWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	if (ConfirmButton)
 	{
 		ConfirmButton->SetIsEnabled(false);
@@ -37,11 +39,10 @@ void UCreateAccountWidget::OnClickConfirm()
 		SaveManager->GetUserId();
 		SaveManager->CreateAccount(Nickname);
 
-		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		if (EventSystem)
 		{
 			EventSystem->Login.OnLoginStateChanged.Broadcast(ELoginState::CreateAccount);
 		}
-
 	}
 }
 

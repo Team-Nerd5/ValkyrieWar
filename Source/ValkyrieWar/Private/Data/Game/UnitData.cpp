@@ -8,6 +8,7 @@
 void UUnitData::MakeData(const FUnitDataRow* InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
+	Stat.Empty();
 
 	if (InGameManager && InTableData)
 	{
@@ -24,9 +25,12 @@ void UUnitData::MakeData(const FUnitDataRow* InTableData, UGameManager* InGameMa
 			}
 
 			FStatGroupDataRow* StatData = DataManager->GetStatGroupModule()->GetData(TableData->StatId);
-			Stat.Add(EStatusType::Attack, StatData->Attack);
-			Stat.Add(EStatusType::Defence, StatData->Defence);
-			Stat.Add(EStatusType::Health, StatData->Health);
+			if (StatData)
+			{
+				Stat.Add(EStatusType::Attack, StatData->Attack);
+				Stat.Add(EStatusType::Defence, StatData->Defence);
+				Stat.Add(EStatusType::Health, StatData->Health);
+			}
 		}
 	}
 }

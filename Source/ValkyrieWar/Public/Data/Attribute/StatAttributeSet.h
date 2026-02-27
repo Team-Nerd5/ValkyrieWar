@@ -31,6 +31,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attribute|Stat")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORIS(UStatAttributeSet, Health)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute|Stat")
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORIS(UStatAttributeSet, MaxHealth)
 
