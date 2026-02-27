@@ -3,18 +3,22 @@
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
 #include "Object/Unit/AI/Controller/UnitAIController.h"
+
 #include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "GameSystem/Base/BaseUnitSpawner.h"
-#include "Data/Struct/UnitEngagementSlotData.h"
 
-#include "AbilitySystemComponent.h"
+#include "Data/Struct/UnitEngagementSlotData.h"
+#include "Data/Attribute/StatAttributeSet.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "AbilitySystemComponent.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
 AUnitCharacter::AUnitCharacter()
@@ -36,11 +40,6 @@ AUnitCharacter::AUnitCharacter()
 void AUnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (AbilitySystemComponent)
-	{
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
 
 	CurrentHP = MaxHP;
 	bDead = false;
@@ -76,18 +75,17 @@ void AUnitCharacter::SetData(UUnitData* InData)
 {
 	Data = InData;
 
+	StatAttribute->SetAttack(Data->GetStat(EStatusType::Attack));
+	StatAttribute->SetDefense(Data->GetStat(EStatusType::Defence));
+	StatAttribute->SetHealth(Data->GetStat(EStatusType::Health));
+	StatAttribute->SetMaxHealth(Data->GetStat(EStatusType::Health));
+
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
-	SkillDataList = InData->GetSkillData();
+	CreateAttackAbility();
 
-	if (AttackData)
-	{
-		const TArray<USkillEffectData*> Effects = AttackData->GetEffectList();
-		for (USkillEffectData* SingleEffect : Effects)
-		{
-			BuildGameplayEffect(SingleEffect);
-		}
-	}
+	SkillDataList = InData->GetSkillData();
+	CreateSkillAbility();
 }
 
 void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
@@ -138,6 +136,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 	const float Now = World->GetTimeSeconds();
 	if (!CanAttackNow(Now)) return false; // 쿨타임 체크 활성화
 
+	//이게 몽타주 등 AnimNotify에서 공격 시점에 수행해야 데미지 적용
 	ApplyAttack(Target);
 
 	// 2. 애니메이션 재생
@@ -165,55 +164,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 	return true;
 }
 
-void AUnitCharacter::ApplyAttack(AActor* InTargetActor)
-{
-	//ApplyAttackDamage(InTargetActor);
-	ApplyAttackEffects(InTargetActor);
-
-	Super::ApplyAttack(InTargetActor);
-}
-
-void AUnitCharacter::ApplyAttackDamage(AActor* Target)
-{
-	if (!Target || IsDead()) return;
-
-	//AController* InstigatorCtrl = GetController();
-	//UGameplayStatics::ApplyDamage(Target, AttackDamage, InstigatorCtrl, this, UDamageType::StaticClass());
-
-	if (bDrawDebug)
-	{
-		DrawDebugLine(GetWorld(), GetActorLocation(), Target->GetActorLocation(), FColor::Red, false, 0.5f, 0, 1.5f);
-	}
-}
-
-float AUnitCharacter::TakeDamage(
-	float DamageAmount,
-	const FDamageEvent& DamageEvent,
-	AController* EventInstigator,
-	AActor* DamageCauser
-)
-{
-	if (IsDead()) return 0.f;
-
-	const float Applied = FMath::Max(0.f, DamageAmount);
-	if (Applied <= 0.f) return 0.f;
-
-	CurrentHP = FMath::Clamp(CurrentHP - Applied, 0.f, MaxHP);
-
-	if (bDrawDebug)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[%s] TakeDamage: %.1f  (HP: %.1f / %.1f)"),
-			*GetName(), Applied, CurrentHP, MaxHP);
-	}
-
-	if (CurrentHP <= 0.f && !bDead)
-	{
-		HandleDeath(EventInstigator, DamageCauser);
-	}
-
-	return Applied;
-}
-
+//TODO : Attributte에서 사망 시 호출로 변경
 void AUnitCharacter::HandleDeath(AController* Killer, AActor* DamageCauser)
 {
 	if (bDead) return;
@@ -659,104 +610,6 @@ void AUnitCharacter::SetNeedToEscapeBB(bool bValue)
 	BB->SetValueAsBool(BB_NeedToEscapeKey, bValue);
 }
 
-void AUnitCharacter::ApplyAttackEffects(AActor* TargetActor)
-{
-	if (!TargetActor || IsDead()) return;
-	if (!AbilitySystemComponent) return;
-
-	UAbilitySystemComponent* TargetASC =
-		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-	if (!TargetASC) return;
-
-	if (!AttackData) return;
-
-	const TArray<USkillEffectData*>& Effects = AttackData->GetEffectList();
-	if (Effects.Num() == 0) return;
-
-	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
-	Context.AddSourceObject(this);
-
-	for (USkillEffectData* EffectData : Effects)
-	{
-		if (!EffectData) continue;
-
-		UGameplayEffect* GEDef = BuildGameplayEffect(EffectData);
-		if (!GEDef) continue;
-
-		FGameplayEffectSpec Spec(GEDef, Context, 1.0f);
-
-		AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(Spec, TargetASC);
-
-		UE_LOG(LogTemp, Log, TEXT("ApplyGameplayEffectSpecToTarget : %s"), *GEDef->GetFName().ToString());
-	}
-}
-
-UGameplayEffect* AUnitCharacter::BuildGameplayEffect(USkillEffectData* EffectData) const
-{
-	if (!EffectData) return nullptr;
-
-	if (TObjectPtr<UGameplayEffect>* Found = CachedRuntimeGEs.Find(EffectData))
-	{
-		if (IsValid(Found->Get()))
-		{
-			return Found->Get();
-		}
-		CachedRuntimeGEs.Remove(EffectData);
-	}
-
-	UObject* Outer = const_cast<AUnitCharacter*>(this);
-
-	UGameplayEffect* GE = NewObject<UGameplayEffect>(
-		Outer,
-		UGameplayEffect::StaticClass(),
-		NAME_None,
-		RF_Transient
-	);
-	if (!GE) return nullptr;
-
-	GE->DurationPolicy = EffectData->GetDurationPolicy();
-
-	if (GE->DurationPolicy == EGameplayEffectDurationType::HasDuration)
-	{
-		GE->DurationMagnitude =
-			FGameplayEffectModifierMagnitude(FScalableFloat(EffectData->GetDuration()));
-	}
-
-	const float Period = EffectData->GetPeriod();
-	if (Period > 0.f)
-	{
-		GE->Period = FScalableFloat(Period);
-	}
-
-	// Granted Tags
-	GE->InheritableOwnedTagsContainer.Added = EffectData->GetGrantedTags();
-
-	// GameplayCue
-	if (EffectData->GetCueTag().IsValid())
-	{
-		FGameplayEffectCue Cue;
-		Cue.GameplayCueTags.AddTag(EffectData->GetCueTag());
-		GE->GameplayCues.Add(Cue);
-	}
-
-	// Modifier
-	const FGameplayAttribute TargetAttr = EffectData->GetTargetAttribute();
-	if (TargetAttr.IsValid())
-	{
-		FGameplayModifierInfo Mod;
-		Mod.Attribute = TargetAttr;
-		Mod.ModifierOp = EffectData->GetOp();
-
-		const float Value = EffectData->GetApplyValue();
-		Mod.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(Value));
-
-		GE->Modifiers.Add(Mod);
-	}
-
-	CachedRuntimeGEs.Add(EffectData, GE);
-	return GE;
-}
-
 void AUnitCharacter::CellSyncTick()
 {
 	if (IsDead()) return;
@@ -777,4 +630,56 @@ void AUnitCharacter::StopCellUpdate()
 	{
 		World->GetTimerManager().ClearTimer(CellSyncTimerHandle);
 	}
+}
+
+void AUnitCharacter::ExecuteAttack()
+{
+	if (IsDead()) return;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	const float Now = World->GetTimeSeconds();
+	if (!CanAttackNow(Now)) return; // 쿨타임 체크 활성화
+
+	// 2. 애니메이션 재생
+	if (AttackMontage)
+	{
+		// PlayAnimMontage는 내부적으로 AnimInstance를 찾아 실행해줍니다.
+		float Duration = PlayAnimMontage(AttackMontage);
+		if (Duration > 0.f)
+		{
+			LastAttackTime = Now;
+
+			// 공격 성공 => 정체 카운트다운 리셋(오탐 방지)
+			ResetStuckCountdown(true);
+
+			return;
+		}
+	}
+
+	// 몽타주가 없을 경우를 대비한 Fallback (즉시 공격)
+	LastAttackTime = Now;
+
+	// 몽타주 없어도 공격 성공으로 간주하니 리셋
+	ResetStuckCountdown(true);
+}
+
+void AUnitCharacter::OnAttackNotify()
+{
+	if (CurrentTarget)
+	{
+		ApplyAttack(CurrentTarget);
+	}
+}
+
+void AUnitCharacter::ExecuteSkill()
+{
+	//스킬 몽타주 실행
+}
+
+void AUnitCharacter::OnSkillNotify()
+{
+	//타겟이 있으면 타겟으로
+	//ApplySkill()
 }

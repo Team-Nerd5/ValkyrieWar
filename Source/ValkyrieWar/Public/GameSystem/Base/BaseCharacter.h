@@ -13,6 +13,7 @@
 #include "BaseCharacter.generated.h"
 
 class UAbilitySystemComponent;
+class UBaseGameplayAbility;
 
 UCLASS()
 class VALKYRIEWAR_API ABaseCharacter : public ACharacter, public IAbilitySystemInterface, public IObjectPoolInterface
@@ -31,22 +32,31 @@ public:
 	virtual void OnRelease_Implementation() override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-
-	/// <summary>
-	/// 무기 장착 시 공격 관련 세팅(무기에 공격테이블 id)
-	/// TODO : 인벤토리 연결 후 DataId -> UID로 변경필요
-	/// </summary>
-	/// <param name="InDataId"></param>
-	virtual void EquipWeapon(uint64 InEquipUID) {}
+	/*공격 자체를 시작*/
+	virtual void ExecuteAttack() {}
+	/*스킬 자체를 시작*/
+	virtual void ExecuteSkill() {}
 
 	//공격효과 적용
 	virtual void ApplyAttack(AActor* InTargetActor);
 	//스킬효과 적용
 	virtual void ApplySkill(int32 InSkillIndex, AActor* InTargetActor);
 
+	//AI나 타겟 계산 후 타겟 세팅
+	void UpdateTarget(AActor* InTarget);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void CreateAttackAbility();
+
+	void CreateSkillAbility();
+	/*공격 애니메이션에서 데미지 시점 Notify 호출부*/
+	virtual void OnAttackNotify() {}
+
+	/*스킬 애니메이션에서 데미지 시점 Notify 호출부*/
+	virtual void OnSkillNotify() {}
 
 public:		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
@@ -70,4 +80,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> StaticWeapon = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentTarget = nullptr;
 };

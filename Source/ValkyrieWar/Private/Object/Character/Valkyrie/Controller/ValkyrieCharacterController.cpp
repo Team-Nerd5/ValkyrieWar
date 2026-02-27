@@ -256,7 +256,7 @@ void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
 {
 	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
 	{
-		ControlledChar->Attack();
+		ControlledChar->ExecuteAttack();
 	}
 }
 

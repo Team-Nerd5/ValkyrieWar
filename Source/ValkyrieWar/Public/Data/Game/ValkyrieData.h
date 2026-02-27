@@ -4,10 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+
+#include "Data/Enum/CharacterEnums.h"
+
 #include "Data/Table/GameData/ValkyrieDataRow.h"
+
 #include "Data/Game/AttackData.h"
 #include "Data/Game/SkillData.h"
 #include "Data/Game/ItemData.h"
+
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "ValkyrieData.generated.h"
 
@@ -33,6 +38,9 @@ private:
 	//기본 데이터 세팅
 	void MakeData(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
 
+	UPROPERTY()
+	TMap<EStatusType, float> Stat;
+
 public:
 	//장착된 무기 세팅
 	void UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager);
@@ -48,4 +56,5 @@ public:
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE TSubclassOf<class AValkyrieCharacter> GetSpawnClass() { return TableData ? TableData->SpawnClass : nullptr; }
+	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 };

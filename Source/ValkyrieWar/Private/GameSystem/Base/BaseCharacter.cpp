@@ -73,14 +73,7 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
     Payload.Instigator = this;
     Payload.Target = InTargetActor;
 
-    if (GEngine)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("🚨 C++ : 어택 함수 뚫고 지나감! 이벤트 발사!!"));
-    }
-   // UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
-
-    FGameplayTag MyTestTag = FGameplayTag::RequestGameplayTag(FName("Ability.Attack"));
-    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, MyTestTag, Payload);
+    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
 }
 
 void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
@@ -96,8 +89,45 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
     UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, SkillDataList[InSkillIndex]->GetAbilityTag(), Payload);
 }
 
+void ABaseCharacter::UpdateTarget(AActor* InTarget)
+{
+    CurrentTarget = InTarget;
+}
+
 // Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+    if (AbilitySystemComponent)
+    {
+        AbilitySystemComponent->InitAbilityActorInfo(this, this);
+    }
+}
+
+void ABaseCharacter::CreateAttackAbility()
+{
+    if (AttackData)
+    {
+        UBaseGameplayAbility* AttackAbility = NewObject<UBaseGameplayAbility>(this);
+        AttackAbility->UpdateData(AttackData->GetAbilityTag(), AttackData->GetEffectList());
+        FGameplayAbilitySpec Spec(AttackAbility, 1);
+        AbilitySystemComponent->GiveAbility(Spec);
+    }
+}
+
+void ABaseCharacter::CreateSkillAbility()
+{
+    if (SkillDataList.Num() > 0)
+    {
+        for (USkillData* SkillData : SkillDataList)
+        {
+            UBaseGameplayAbility* SkillAbility = NewObject<UBaseGameplayAbility>(this);
+            SkillAbility->UpdateData(SkillData->GetAbilityTag(), SkillData->GetEffectList());
+
+            //레벨은 나중에 생각하자...
+            FGameplayAbilitySpec Spec(SkillAbility, 1);
+            AbilitySystemComponent->GiveAbility(Spec);
+        }
+    }
 }

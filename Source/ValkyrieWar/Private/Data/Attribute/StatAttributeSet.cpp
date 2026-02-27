@@ -8,6 +8,7 @@ UStatAttributeSet::UStatAttributeSet()
 	InitAttack(100.0f);
 	InitDefense(10.0f);
 	InitHealth(1000.0f);
+	InitMaxHealth(1000.0f);
 	InitMoveSpeed(500.0f);
 }
 
@@ -23,6 +24,12 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 	if (Attribute == GetMoveSpeedAttribute())
 	{
 		//값 변경 될 때
+	}
+	if (Attribute == GetHealthAttribute())
+	{
+		AActor* TargetActor = GetOwningActor();
+		//데미지 표기 / UI 표기 등...
+		
 	}
 }
 

@@ -25,6 +25,7 @@
 #include "Data/Module/ItemModule.h"
 #include "Data/Module/AttackModule.h"
 #include "Data/Game/AttackData.h"
+#include "Data/Attribute/StatAttributeSet.h"
 
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
 
@@ -73,68 +74,69 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AValkyrieCharacter::EquipWeapon(uint64 InEquipUID)
+//이거는 캐릭터 정보창에서 장비를 장착해서 변경되었을때, 해당 캐릭터가 로비 캐릭터일 때만 사용
+//데이터 업데이트 및 로비에배치된 캐릭터 무기 변경
+void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 {
+	if (InValkyrieUID != Data->GetUID())
+	{
+		//장착한 캐릭터가 배치된 캐릭터가 아님
+		return;
+	}
 	//TODO : Inventory에서 Get 해야함. 수정필요
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
 		if (UItemModule* ItemModule = DataManager->GetItemModule())
 		{
-			UItemData* EquipItem = ItemModule->GetItem(InEquipUID);
+			//장착한 장비
+			EquippedWeapon = ItemModule->GetItem(InEquipUID);
 
-			if (!EquipItem || EquipItem->GetItemGroup() != EItemGroup::Equip)
+			if (EquippedWeapon && EquippedWeapon->GetItemGroup() != EItemGroup::Equip)
 			{
-				//장비가 아님
-				return;
-			}
-
-			if (EquipItem->IsSkeletalWeapon() && EquipItem->GetSkeletalMesh().IsValid())
-			{
-				if (SkeletalWeapon)
-				{
-					SkeletalWeapon->SetSkeletalMesh(EquipItem->GetSkeletalMesh().LoadSynchronous());
-				}
-			}
-
-			if (!EquipItem->IsSkeletalWeapon() && EquipItem->GetStaticMesh().IsValid())
-			{
-				if (StaticWeapon)
-				{
-					StaticWeapon->SetStaticMesh(EquipItem->GetStaticMesh().LoadSynchronous());
-				}
+				//장비 아니면 없애버림
+				EquippedWeapon = nullptr;
 			}
 		}
 	}
 
-	AttackData = Data->GetAttackData();
-	SkillDataList = Data->GetSkillData();
-
-	ComboMontage = AttackData->GetAnimMontage();
-	//TODO : AnimInstance 바꾸는거 확인 필요
+	if (EquippedWeapon)
+	{
+		UpdateWeaponMesh();
+	}
+	
 }
 
-void AValkyrieCharacter::SetData(UValkyrieData* InData)
+void AValkyrieCharacter::UpdateWeaponMesh()
 {
-	Data = InData;
+	if (EquippedWeapon->IsSkeletalWeapon() && EquippedWeapon->GetSkeletalMesh().IsValid())
+	{
+		if (SkeletalWeapon)
+		{
+			SkeletalWeapon->SetSkeletalMesh(EquippedWeapon->GetSkeletalMesh().LoadSynchronous());
+			SkeletalWeapon->SetRelativeLocationAndRotation(AttackData->GetLocationOffset(), AttackData->GetRotatinOffset());
+		}
+	}
 
-	//기본 무기에 따른 공격/스킬 적용
-	AttackData = InData->GetAttackData();
-
-	SkillDataList = InData->GetSkillData();
+	if (!EquippedWeapon->IsSkeletalWeapon() && EquippedWeapon->GetStaticMesh().IsValid())
+	{
+		if (StaticWeapon)
+		{
+			StaticWeapon->SetStaticMesh(EquippedWeapon->GetStaticMesh().LoadSynchronous());
+			StaticWeapon->SetRelativeLocationAndRotation(AttackData->GetLocationOffset(), AttackData->GetRotatinOffset());
+		}
+	}
 }
 
-// 기본공격 콤보 노티파이 스테이트
-void AValkyrieCharacter::Attack()
+void AValkyrieCharacter::ExecuteAttack()
 {
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (!AnimInst || !ComboMontage) return;
 
-	
 	if (!AnimInst->Montage_IsPlaying(ComboMontage))
 	{
-		
+
 		CurrentComboCount = 1;
-		bIsComboActive = true; 
+		bIsComboActive = true;
 
 		bCanNextCombo = false;
 		bIsComboInputOn = false;
@@ -148,6 +150,50 @@ void AValkyrieCharacter::Attack()
 	}
 }
 
+void AValkyrieCharacter::OnAttackNotify()
+{
+	if (ValkyrieMode == EValkyrieModeType::Manual)
+	{
+		//타겟 찾아서...
+		//Projectile이면 생성
+		//아니면 타겟에 전달
+		ApplyAttack(FindTarget());
+	}
+	else if (ValkyrieMode == EValkyrieModeType::Auto)
+	{
+		//AI가 Updatae해준 타겟
+		ApplyAttack(CurrentTarget);
+	}
+}
+
+void AValkyrieCharacter::ExecuteSkill()
+{
+}
+
+void AValkyrieCharacter::OnSkillNotify()
+{
+}
+
+void AValkyrieCharacter::SetData(UValkyrieData* InData)
+{
+	Data = InData;
+
+	StatAttribute->SetAttack(Data->GetStat(EStatusType::Attack));
+	StatAttribute->SetDefense(Data->GetStat(EStatusType::Defence));
+	StatAttribute->SetHealth(Data->GetStat(EStatusType::Health));
+	StatAttribute->SetMaxHealth(Data->GetStat(EStatusType::Health));
+
+	//기본 무기에 따른 공격/스킬 적용
+	AttackData = InData->GetAttackData();
+	CreateAttackAbility();
+
+	SkillDataList = InData->GetSkillData();
+	CreateSkillAbility();
+
+	//캐릭터 블루프린트 생성 후 무기 세팅
+	UpdateWeaponMesh();
+
+}
 void AValkyrieCharacter::BeginComboWindow()
 {
 	bIsInComboWindow = true;
@@ -180,6 +226,12 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 		CurrentComboCount = 0;
 		bIsComboActive = false; 
 	}
+}
+
+AActor* AValkyrieCharacter::FindTarget()
+{
+
+	return nullptr;
 }
 
 
