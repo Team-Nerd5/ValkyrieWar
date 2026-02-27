@@ -57,18 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool PerformAttack(AActor* Target);
 
-	virtual void ApplyAttack(AActor* InTargetActor) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ApplyAttackDamage(AActor* Target);
-
-	virtual float TakeDamage(
-		float DamageAmount,
-		struct FDamageEvent const& DamageEvent,
-		class AController* EventInstigator,
-		AActor* DamageCauser
-	) override;
-
 	void HandleDeath(AController* Killer, AActor* DamageCauser);
 
 	// ===== Pool Hooks =====
@@ -104,11 +92,17 @@ private:
 
 	void SetNeedToEscapeBB(bool bValue);
 
-	void ApplyAttackEffects(AActor* TargetActor);
-	UGameplayEffect* BuildGameplayEffect(USkillEffectData* EffectData) const;
-
 	void CellSyncTick();
 	void StopCellUpdate();
+
+protected:
+	// 공격/스킬 관련 가상함수
+
+	virtual void ExecuteAttack() override;
+	virtual void OnAttackNotify() override;
+
+	virtual void ExecuteSkill() override;
+	virtual void OnSkillNotify() override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
@@ -141,7 +135,7 @@ protected:
 	float MaxHP = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	float CurrentHP;
+	float CurrentHP = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	float DestroyDelay = 1.0f;
@@ -193,6 +187,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UBlendSpace> LocomotionBS = nullptr;
 
+	//TODO : Base로 합쳐도 될 것 같음
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation|Combat")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
@@ -211,7 +206,7 @@ private:
 	FTimerHandle DestroyTimerHandle;
 
 	bool bRegisteredToBattleDirector = false;
-	bool bInPool;
+	bool bInPool = false;
 
 	UPROPERTY()
 	TWeakObjectPtr<AActor> LastAssignedTarget;

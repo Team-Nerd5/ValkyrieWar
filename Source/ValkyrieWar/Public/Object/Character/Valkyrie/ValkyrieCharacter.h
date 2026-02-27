@@ -37,11 +37,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
 
-	virtual void EquipWeapon(uint64 InEquipUID) override;
+	virtual void ExecuteAttack() override;
+	virtual void ExecuteSkill() override;
 
+	/*
+	* 캐릭터 Spawn 후 데이터 세팅에 사용
+	*/
 	void SetData(UValkyrieData* InData);
 protected:
 	virtual void BeginPlay() override;
+
+	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
+
+	void UpdateWeaponMesh();
+
+	
+	virtual void OnAttackNotify() override;
+
+	virtual void OnSkillNotify() override;
 
 protected:
 	/** Top down camera */
@@ -55,17 +68,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* CameraBoom;
 
+	UPROPERTY()
 	TObjectPtr<UValkyrieData> Data = nullptr;
 
-public: // 일반 공격
-	UFUNCTION(BlueprintCallable, Category = "Attack Test")
-	void Attack();
+	EValkyrieModeType ValkyrieMode = EValkyrieModeType::None;
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
 	void BeginComboWindow();
 
 	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
 	void EndComboWindow(FName NextSectionName);
+
+	AActor* FindTarget();
 private:
 	int32 CurrentComboCount = 0; // 현 콤보수
 	bool bCanNextCombo = false; // 콤보 이어지나

@@ -23,6 +23,8 @@ public:
 	FORCEINLINE UAnimMontage* GetAnimMontage() { return TableData->AnimMontage.LoadSynchronous(); }
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
+	FORCEINLINE FVector GetLocationOffset() { return TableData->PositionOffset; }
+	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData->RotateOffset); }
 private:
 	const FAttackDataRow* TableData;
 

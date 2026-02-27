@@ -30,6 +30,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector RotatationOffset = FVector::ZeroVector;		//벡터 말고 다른걸로 해야할 지 확인 필요
 	UPROPERTY(EditAnywhere)
+	FRotator RotateOffset = FRotator::ZeroRotator;
+	UPROPERTY(EditAnywhere)
 	ETargetType TargetType = ETargetType::None;
 	UPROPERTY(EditAnywhere)
 	int32 TargetAmount = 1;

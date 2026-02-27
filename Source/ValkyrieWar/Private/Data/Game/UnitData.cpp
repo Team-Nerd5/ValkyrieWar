@@ -22,6 +22,11 @@ void UUnitData::MakeData(const FUnitDataRow* InTableData, UGameManager* InGameMa
 				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon->AttackId);
 				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon->SkillId);
 			}
+
+			FStatGroupDataRow* StatData = DataManager->GetStatGroupModule()->GetData(TableData->StatId);
+			Stat.Add(EStatusType::Attack, StatData->Attack);
+			Stat.Add(EStatusType::Defence, StatData->Defence);
+			Stat.Add(EStatusType::Health, StatData->Health);
 		}
 	}
 }

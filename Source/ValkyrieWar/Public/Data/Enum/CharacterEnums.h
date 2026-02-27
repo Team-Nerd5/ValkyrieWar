@@ -23,3 +23,29 @@ enum class EAttackType : uint8
 	Projectile,
 	TargetRange,
 };
+
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	Bow,
+	Staff,
+	SwordAndShield,
+	Spear,
+
+};
+
+UENUM(BlueprintType)
+enum class EStatusType : uint8
+{
+	Attack,
+	Health,
+	Defence,
+};
+
+UENUM(BlueprintType)
+enum class EValkyrieModeType : uint8
+{
+	None,
+	Auto,
+	Manual,
+};

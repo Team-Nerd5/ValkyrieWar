@@ -56,6 +56,6 @@ EBTNodeResult::Type UBTTask_AttackReservedTarget::ExecuteTask(UBehaviorTreeCompo
     // ============================
     BB->SetValueAsInt(AttackTryCountKey.SelectedKeyName, 0);
 
-    Unit->PerformAttack(Target);
+    Unit->UpdateTarget(Target);
     return EBTNodeResult::Succeeded;
 }
