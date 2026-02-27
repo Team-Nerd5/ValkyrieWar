@@ -15,7 +15,7 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 	DataManager = Cast<UDataManager>(GetGameInstance()->GetSubsystem<UDataManager>());
 
 	// 인벤토리 데이터 테스트용
-	DataManager->CreateData();
+	//DataManager->CreateData();
 
 	GetFilteredInventoryList(EItemGroup::None);
 }
