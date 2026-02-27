@@ -27,7 +27,7 @@ protected:
 
 	virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InTouchEvent) override;
 
-	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
 
 	//시작 터치가 되면 실행
 	void OnStartGame();

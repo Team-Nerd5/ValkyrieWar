@@ -33,11 +33,11 @@ FReply ULoginWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPo
     return Super::NativeOnTouchStarted(InGeometry, InTouchEvent);
 }
 
-void ULoginWidget::NativeOnInitialized()
+void ULoginWidget::NativeConstruct()
 {
-    Super::NativeOnInitialized();
+    Super::NativeConstruct();
 
-    if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+    if (EventSystem)
     {
         EventSystem->Login.OnReadyToStart.AddDynamic(this, &ULoginWidget::OnReadyToStart);
     }
@@ -45,11 +45,10 @@ void ULoginWidget::NativeOnInitialized()
 
 void ULoginWidget::OnStartGame()
 {
-    //GameState 변경
-    if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+    if (EventSystem)
     {
         EventSystem->Login.OnLoginStateChanged.Broadcast(ELoginState::CheckNickname);
-    }   
+    }
 }
 
 void ULoginWidget::OnReadyToStart()

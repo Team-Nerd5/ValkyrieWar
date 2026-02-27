@@ -16,6 +16,7 @@ enum class EUILayer : uint8
 };
 
 class UTopMenuWidget;
+class UWorldEventSystem;
 /**
  * 
  */
@@ -23,6 +24,8 @@ UCLASS()
 class VALKYRIEWAR_API UBaseWidget : public UUserWidget
 {
 	GENERATED_BODY()
+protected:
+	virtual void NativeConstruct() override;
 public:
 	/** UI를 활성화하고 화면에 표시 */
 	virtual void OpenUI();
@@ -56,6 +59,9 @@ public:
 protected:
 	/** UI 열림/닫힘 상태 */
 	bool bIsOpen = false;
+
+	UPROPERTY()
+	TObjectPtr<UWorldEventSystem> EventSystem = nullptr;
 
 public:
 	/** UI 레이어 타입 (Persistent: 지속형, Popup: 팝업형) */

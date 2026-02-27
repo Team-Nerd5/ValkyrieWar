@@ -92,6 +92,7 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
 void ABaseCharacter::UpdateTarget(AActor* InTarget)
 {
     CurrentTarget = InTarget;
+    ExecuteAttack();
 }
 
 // Called when the game starts or when spawned

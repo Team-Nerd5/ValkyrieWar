@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Widget/Popup/Inventory/InventoryWidget.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 void UInventoryWidget::NativeConstruct()
 {
@@ -11,13 +11,7 @@ void UInventoryWidget::NativeConstruct()
 	if (World)
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-		EventSystem = World->GetSubsystem<UWorldEventSystem>();
-
-		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::UpdateInventory);
 	}
-
-	if (Btn_Close)
-		Btn_Close->OnClicked.AddDynamic(this, &UInventoryWidget::CloseUI);
 
 	if (Btn_FilterReset)
 		Btn_FilterReset->OnClicked.AddDynamic(this, &UInventoryWidget::FilterReset);
@@ -32,14 +26,22 @@ void UInventoryWidget::NativeConstruct()
 	if (Btn_FilterGoods)
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGoods);
 
-	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::ItemClicked);
+	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
+
+	if (EventSystem)
+	{
+		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
+	}
 }
 
 void UInventoryWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::FilterReset);
+	if (EventSystem)
+	{
+		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
+	}
 }
 
 void UInventoryWidget::OpenUI()
@@ -50,6 +52,10 @@ void UInventoryWidget::OpenUI()
 void UInventoryWidget::CloseUI()
 {
 	Super::CloseUI();
+}
+
+void UInventoryWidget::UpdateInventoryType(EUIType InUIType)
+{
 }
 
 void UInventoryWidget::FilterReset()
@@ -91,7 +97,7 @@ void UInventoryWidget::FilterHelmet()
 	InventoryTileView->RegenerateAllEntries();
 }
 
-void UInventoryWidget::FIlterGrowth()
+void UInventoryWidget::FilterGrowth()
 {
 	CurrentItemGroup = EItemGroup::GrowthItem;
 
@@ -100,7 +106,7 @@ void UInventoryWidget::FIlterGrowth()
 	InventoryTileView->RegenerateAllEntries();
 }
 
-void UInventoryWidget::FIlterGoods()
+void UInventoryWidget::FilterGoods()
 {
 	CurrentItemGroup = EItemGroup::Goods;
 
@@ -109,7 +115,7 @@ void UInventoryWidget::FIlterGoods()
 	InventoryTileView->RegenerateAllEntries();
 }
 
-void UInventoryWidget::UpdateInventory()
+void UInventoryWidget::OnUpdateInventory()
 {
 	switch (CurrentItemGroup)
 	{
@@ -142,7 +148,11 @@ void UInventoryWidget::UpdateInventory()
 	}
 }
 
-void UInventoryWidget::ItemClicked(UObject* InItemData)
+void UInventoryWidget::OnUpdateEquipmentForUID(uint64 InCharacterUID)
+{
+}
+
+void UInventoryWidget::OnItemClicked(UObject* InItemData)
 {
 	UItemData* ItemData = Cast<UItemData>(InItemData);
 
@@ -154,25 +164,9 @@ void UInventoryWidget::ItemClicked(UObject* InItemData)
 	}
 #pragma endregion
 
-	SellButtonWidget->SetupSellItem(ItemData);
+	//SellButtonWidget->SetupSellItem(ItemData);
 }
 
-void UInventoryWidget::ItemClicked(UObject* InItemData)
+void UInventoryWidget::RefreshUIByMode()
 {
-
-}
-
-void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
-{
-
-}
-
-void UInventoryWidget::ItemClicked(UObject* InItemData)
-{
-
-}
-
-void UInventoryWidget::UpdateEquipmentUi(uint64 InCharacterUID, EEquipGroup InEquipGroup)
-{
-
 }
