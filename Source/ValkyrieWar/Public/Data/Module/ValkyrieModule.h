@@ -26,6 +26,16 @@ public:
 			return nullptr;
 	}
 
+	FORCEINLINE UValkyrieData* GetFirstValkyrie()
+	{
+		if (OwnValkyries.Num() > 0)
+		{
+			return OwnValkyries.begin().Value();
+		}
+		else
+			return nullptr;
+	}
+
 	bool HasValkyrie(int32 InDataId);
 
 	uint64 CreateValkyrie(int32 InDataId);
@@ -37,7 +47,9 @@ private:
 	FValkyrieDataRow* GetTableDataById(int32 InDataId);
 
 private:
+	UPROPERTY()
 	TMap<uint64, UValkyrieData*> OwnValkyries;
 
-	TMap<int32, FValkyrieDataRow*> TableDataByDataId;
+	UPROPERTY()
+	TMap<int32, FValkyrieDataRow> TableDataByDataId;
 };

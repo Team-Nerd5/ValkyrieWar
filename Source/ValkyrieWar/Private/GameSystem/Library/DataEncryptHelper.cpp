@@ -10,30 +10,33 @@
 bool UDataEncryptHelper::SaveGameEncrypted(USaveGame* SaveGameObject, ESaveType InSaveType)
 {
 	if (!SaveGameObject) return false;
-	if (!IsKeyValid(GetEncryptKey()))
+
+	FString KeyStr = GetEncryptKey();
+	if (!IsKeyValid(KeyStr))
 	{
 		UE_LOG(LogTemp, Error, TEXT("[SaveGameHelper] Encryption Key must be exactly 32 characters long."));
 		return false;
 	}
 
-	// 1. SaveGame 객체를 바이트 배열로 직렬화 (메모리에 저장)
+	// 1. SaveGame 객체를 바이트 배열로 직렬화
 	TArray<uint8> ObjectBytes;
 	if (!UGameplayStatics::SaveGameToMemory(SaveGameObject, ObjectBytes))
 	{
 		return false;
 	}
 
-	// [핵심 수정] 2. AES 블록 크기(16바이트)에 맞게 패딩 추가
-	// 부족한 바이트 수만큼 배열 끝에 0(Zero)을 채워 16의 배수로 만듭니다.
+	// [수정됨] 2. PKCS#7 패딩 적용 (Zero 패딩 대신)
 	int32 BytesToPad = FAES::AESBlockSize - (ObjectBytes.Num() % FAES::AESBlockSize);
-	ObjectBytes.AddZeroed(BytesToPad);
+	for (int32 i = 0; i < BytesToPad; ++i)
+	{
+		ObjectBytes.Add(static_cast<uint8>(BytesToPad));
+	}
 
 	// 3. AES 암호화 수행
-	FTCHARToUTF8 KeyUtf8(*GetEncryptKey());
+	FTCHARToUTF8 KeyUtf8(*KeyStr);
 	FAES::FAESKey AESKey;
-	FMemory::Memcpy(AESKey.Key, KeyUtf8.Get(), 32); // 32바이트 복사
+	FMemory::Memcpy(AESKey.Key, KeyUtf8.Get(), 32);
 
-	// 이제 ObjectBytes의 크기가 16의 배수이므로 안전하게 암호화됩니다.
 	FAES::EncryptData(ObjectBytes.GetData(), ObjectBytes.Num(), AESKey);
 
 	// 4. 파일로 저장
@@ -79,15 +82,16 @@ void UDataEncryptHelper::LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESav
 {
 	FString SlotName = StaticEnum<ESaveType>()->GetNameStringByValue(static_cast<int64>(InSaveType));
 
-	Async(EAsyncExecution::Thread, [SlotName, OnLoaded, InSaveType]()
-		{
-			// 이 안쪽은 게임(메인) 스레드가 아님! UObject 접근 주의!
+	// [수정됨] 게임 스레드에서 미리 키를 가져옴
+	FString KeyStr = GetEncryptKey();
 
-			FString SaveFile = GetSaveFilePath(SlotName); // 경로는 문자열 처리라 괜찮음
+	// 람다 캡처에 KeyStr을 값 복사로 전달
+	Async(EAsyncExecution::Thread, [SlotName, OnLoaded, InSaveType, KeyStr]()
+		{
+			FString SaveFile = GetSaveFilePath(SlotName);
 			TArray<uint8> LoadedBytes;
 			bool bReadSuccess = false;
 
-			// 파일 존재 확인 및 읽기
 			if (FPlatformFileManager::Get().GetPlatformFile().FileExists(*SaveFile))
 			{
 				if (FFileHelper::LoadFileToArray(LoadedBytes, *SaveFile))
@@ -96,7 +100,6 @@ void UDataEncryptHelper::LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESav
 				}
 			}
 
-			// 읽기 실패 시 메인 스레드로 보고
 			if (!bReadSuccess)
 			{
 				AsyncTask(ENamedThreads::GameThread, [OnLoaded, InSaveType]()
@@ -106,32 +109,39 @@ void UDataEncryptHelper::LoadGameEncryptedAsync(FOnSaveGameLoaded OnLoaded, ESav
 				return;
 			}
 
-			// 암호화 키 가져오기 (이전에 만든 함수)
-			FString KeyStr = GetEncryptKey();
 			if (KeyStr.Len() == 32)
 			{
 				FTCHARToUTF8 KeyUtf8(*KeyStr);
 				FAES::FAESKey AESKey;
 				FMemory::Memcpy(AESKey.Key, KeyUtf8.Get(), 32);
 
-				// 무거운 작업: 복호화 (여기서 시간 소요)
+				// 복호화 수행
 				FAES::DecryptData(LoadedBytes.GetData(), LoadedBytes.Num(), AESKey);
+
+				// [수정됨] 복호화 직후 PKCS#7 패딩 제거
+				if (LoadedBytes.Num() > 0)
+				{
+					uint8 PadValue = LoadedBytes.Last();
+					// 추가된 패딩 값이 AES 블록 사이즈(16) 이내의 유효한 값인지 확인
+					if (PadValue > 0 && PadValue <= FAES::AESBlockSize)
+					{
+						// 원본 크기로 배열 축소
+						LoadedBytes.RemoveAt(LoadedBytes.Num() - PadValue, PadValue);
+					}
+				}
 			}
 
-			// 2. 직렬화(UObject 생성)는 반드시 메인 스레드(GameThread)에서 해야 함!
-			// 데이터를 메인 스레드로 넘김
+			// 메인 스레드로 넘겨서 직렬화(LoadGameFromMemory) 처리
 			AsyncTask(ENamedThreads::GameThread, [LoadedBytes, OnLoaded, InSaveType]()
 				{
-					// 여기는 다시 메인 스레드
 					USaveGame* LoadedGame = nullptr;
 
 					if (LoadedBytes.Num() > 0)
 					{
-						// 메모리에서 USaveGame 객체 생성
+						// 이제 원본 크기와 정확히 일치하므로 안전하게 로드됨
 						LoadedGame = UGameplayStatics::LoadGameFromMemory(LoadedBytes);
 					}
 
-					// 블루프린트(또는 호출자)에게 결과 전달
 					OnLoaded.ExecuteIfBound(LoadedGame, (LoadedGame != nullptr), InSaveType);
 				});
 		});

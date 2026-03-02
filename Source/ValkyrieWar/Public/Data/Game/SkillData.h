@@ -23,6 +23,6 @@ public:
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
 private:
 	const FSkillDataRow* TableData;
-
+	UPROPERTY()
 	TArray<USkillEffectData*> EffectList;
 };

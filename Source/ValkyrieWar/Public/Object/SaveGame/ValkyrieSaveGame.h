@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Data/Save/ValkyrieSaveData.h"
 #include "Data/Game/ValkyrieData.h"
 #include "ValkyrieSaveGame.generated.h"
 
@@ -18,5 +19,5 @@ class VALKYRIEWAR_API UValkyrieSaveGame : public USaveGame
 	//uid 키로 성장요소랑 음...
 public:
 	UPROPERTY()
-	TMap<int64, UValkyrieData*> ValkyrieData;
+	TMap<int64, FValkyrieSaveData> ValkyrieData;
 };

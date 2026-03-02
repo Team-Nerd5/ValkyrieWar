@@ -10,6 +10,8 @@
 #include "Data/Event/UnitEventData.h"
 #include "Data/Event/LoginEventData.h"
 #include "Data/Event/LobbyEventData.h"
+#include "Data/Event/BattleEventData.h"
+#include "Data/Event/ModuleEventData.h"
 
 #include "WorldEventSystem.generated.h"
 
@@ -26,4 +28,6 @@ public:
 	FUnitEventData Unit;
 	FLoginEventData Login;
 	FLobbyEventData Lobby;
+	FBattleEventData Battle;
+	FModuleEventData Module;
 };

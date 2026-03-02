@@ -45,7 +45,7 @@ AValkyrieCharacter::AValkyrieCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
-	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->TargetArmLength = 1200.f;
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
@@ -99,15 +99,14 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 		}
 	}
 
-	if (EquippedWeapon)
-	{
-		UpdateWeaponMesh();
-	}
-	
+	UpdateWeaponMesh();	
 }
 
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
+	if (!EquippedWeapon)
+		return;
+
 	if (EquippedWeapon->IsSkeletalWeapon() && EquippedWeapon->GetSkeletalMesh().IsValid())
 	{
 		if (SkeletalWeapon)
@@ -191,6 +190,7 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	CreateSkillAbility();
 
 	//캐릭터 블루프린트 생성 후 무기 세팅
+	//장비 음..
 	UpdateWeaponMesh();
 
 }

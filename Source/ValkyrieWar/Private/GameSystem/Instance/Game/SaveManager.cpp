@@ -24,6 +24,8 @@ void USaveManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	InitInitDataAction();
+
 	InitSetDataAction();
 
 	InitSaveDataAction();
@@ -34,6 +36,53 @@ void USaveManager::Deinitialize()
 	Super::Deinitialize();
 }
 
+void USaveManager::OnValkyrieGenerated(int64 InUID, UValkyrieData* InData)
+{
+	if (Valkyrie)
+	{
+		FValkyrieSaveData ValkyrieSave;
+		ValkyrieSave.DataId = InData->GetDataID();
+
+		Valkyrie->ValkyrieData.Add(InUID, ValkyrieSave);
+
+		if (bIsNewAccount)
+		{
+			//캐릭터가 새로 생성되었는데, 신규계정 상태이면 계정 생성임
+			if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+			{
+				GameManager->SelectVakyrie(InUID);
+			}
+
+			Account->SelectedValkyrie = InUID;
+			SaveInternal(ESaveType::Account);
+		}
+
+		SaveInternal(ESaveType::Valkyrie);
+	}
+}
+
+void USaveManager::InitAllData()
+{
+	const UEnum* EnumPtr = StaticEnum<ESaveType>();
+
+	int32 AmountToLoad = EnumPtr->NumEnums() - 1;
+
+	if (EnumPtr)
+	{
+		for (int32 i = 1; i < EnumPtr->NumEnums(); ++i)
+		{
+			ESaveType Type = static_cast<ESaveType>(EnumPtr->GetValueByIndex(i));
+
+			USaveGame* Data = UGameSaveHelper::MakeSaveGame(Type);
+			InitDataInternal(Type, Data);
+		}
+	}
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Module.OnValkyrieGenerated.AddDynamic(this, &USaveManager::OnValkyrieGenerated);
+	}
+}
 
 int32 USaveManager::LoadAllData()
 {
@@ -115,6 +164,18 @@ void USaveManager::InitSetDataAction()
 		});
 }
 
+void USaveManager::InitInitDataAction()
+{
+	//ActionInitData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::Account, [this](USaveGame* InData) { Account = Cast<UAccountSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::Item, [this](USaveGame* InData)  { Item = Cast<UItemSaveGame>(InData);  });
+	ActionInitData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::Valkyrie, [this](USaveGame* InData) { Valkyrie = Cast<UValkyrieSaveGame>(InData);	});
+}
+
 void USaveManager::InitSaveDataAction()
 {
 	
@@ -152,7 +213,15 @@ void USaveManager::InitSaveDataAction()
 		});
 }
 
-void USaveManager::LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedData)
+void USaveManager::InitDataInternal(ESaveType InSaveType, USaveGame* InLoadedData)
+{
+	if (ActionInitData.Contains(InSaveType))
+	{
+		ActionInitData[InSaveType](InLoadedData);
+	}
+}
+
+void USaveManager::SetDataInternal(ESaveType InSaveType, USaveGame* InLoadedData)
 {
 	if (ActionSetData.Contains(InSaveType))
 	{
@@ -173,17 +242,18 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 	//데이터 캐싱
 	if (bIsSuccess)
 	{
-		LoadDataInternal(InSaveType, LoadedSaveGame);
+		SetDataInternal(InSaveType, LoadedSaveGame);
 	}
-	else
-	{
-		//저장된 데이터가 없으면 새로 만들어준다.
-		USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
-		if (Data)
-		{
-			LoadDataInternal(InSaveType, Data);
-		}		
-	}
+
+	//else
+	//{
+	//	//저장된 데이터가 없으면 새로 만들어준다.
+	//	USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
+	//	if (Data)
+	//	{
+	//		SetDataInternal(InSaveType, Data);
+	//	}		
+	//}
 
 	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 	if (EventSystem)
@@ -255,7 +325,7 @@ void USaveManager::SetValkyrieData()
 		{
 			for (auto Data : Valkyrie->ValkyrieData)
 			{
-				DataManager->GetValkyrieModule()->LoadData(Data.Value->GetUID(), Data.Value->GetDataID());
+				DataManager->GetValkyrieModule()->LoadData(Data.Key, Data.Value.DataId);
 			}
 		}
 
@@ -277,16 +347,20 @@ void USaveManager::CreateAccount(FString& InNickname)
 	{
 		Account->Nickname = InNickname;
 
+		//여기서 넣어주면... 발키리 저장이 안됨..
+		//만약에 Load 완료 후 bIsNewAccount이면 그때 새로 생성해서..?
+
 		//계정생성
 		//초기 캐릭터를 넣어줌
-		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
-		{
-			uint64 UID = DataManager->GetValkyrieModule()->CreateValkyrie(110001);
-			
-			Account->SelectedValkyrie = UID;
+		//if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		//{
+		//	uint64 UID = DataManager->GetValkyrieModule()->CreateValkyrie(110001);
+		//				
+		//	Account->SelectedValkyrie = UID;						
 
-			bIsNewAccount = true;
-		}
+		//}
+
+		bIsNewAccount = true;
 
 		SaveInternal(ESaveType::Account);
 	}
@@ -297,7 +371,7 @@ void USaveManager::LoadData(ESaveType InSaveType)
 	USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
 	if (Data)
 	{
-		LoadDataInternal(InSaveType, Data);
+		SetDataInternal(InSaveType, Data);
 	}
 }
 
