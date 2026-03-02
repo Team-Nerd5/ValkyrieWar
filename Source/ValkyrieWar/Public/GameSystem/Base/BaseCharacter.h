@@ -45,6 +45,11 @@ public:
 	//AI나 타겟 계산 후 타겟 세팅
 	void UpdateTarget(AActor* InTarget);
 
+	/*공격 애니메이션에서 데미지 시점 Notify 호출부*/
+	virtual void OnAttackNotify() {}
+
+	/*스킬 애니메이션에서 데미지 시점 Notify 호출부*/
+	virtual void OnSkillNotify() {}
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,11 +57,6 @@ protected:
 	void CreateAttackAbility();
 
 	void CreateSkillAbility();
-	/*공격 애니메이션에서 데미지 시점 Notify 호출부*/
-	virtual void OnAttackNotify() {}
-
-	/*스킬 애니메이션에서 데미지 시점 Notify 호출부*/
-	virtual void OnSkillNotify() {}
 
 public:		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")

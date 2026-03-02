@@ -26,8 +26,9 @@ public:
 protected:
 	virtual void MakeData() override;
 private:
-	TMap<int32, FUnitDataRow*> TableDataByDataId;
+	TMap<int32, FUnitDataRow> TableDataByDataId;
 
 	//TODO: 임시 보유 유닛 데이터(전체 보유로 판단)
+	UPROPERTY()
 	TMap<int32, UUnitData*> OwnUnits;
 };

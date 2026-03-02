@@ -40,6 +40,10 @@ public:
 	virtual void ExecuteAttack() override;
 	virtual void ExecuteSkill() override;
 
+	virtual void OnAttackNotify() override;
+
+	virtual void OnSkillNotify() override;
+
 	/*
 	* 캐릭터 Spawn 후 데이터 세팅에 사용
 	*/
@@ -50,11 +54,6 @@ protected:
 	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
 	void UpdateWeaponMesh();
-
-	
-	virtual void OnAttackNotify() override;
-
-	virtual void OnSkillNotify() override;
 
 protected:
 	/** Top down camera */

@@ -2,6 +2,7 @@
 
 
 #include "Data/Attribute/StatAttributeSet.h"
+#include "GameSystem/Base/BaseCharacter.h"
 
 UStatAttributeSet::UStatAttributeSet()
 {
@@ -29,7 +30,13 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 	{
 		AActor* TargetActor = GetOwningActor();
 		//데미지 표기 / UI 표기 등...
-		
+		if (GetHealth() <= 0.0f)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s is dead"), *TargetActor->GetName());
+			ABaseCharacter* Character = Cast<ABaseCharacter>(TargetActor);
+			//테스트 제거
+			Character->Destroy();
+		}
 	}
 }
 

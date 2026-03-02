@@ -20,12 +20,6 @@ void UBaseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 {
     if (!CommitAbility(Handle, ActorInfo, ActivationInfo)) return;
 
-    UAttackData* PassedAttackData = Cast<UAttackData>(GetCurrentSourceObject());
-    if (PassedAttackData)
-    {
-        UpdateData(PassedAttackData->GetEffectList());
-    }
-
     if (TriggerEventData && TriggerEventData->Target)
     {
         // 이벤트로 전달받은 타겟 사용
@@ -34,6 +28,17 @@ void UBaseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
     }
 
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+}
+
+void UBaseGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+    Super::OnAvatarSet(ActorInfo, Spec);
+
+    UAttackData* InAttackData = Cast<UAttackData>(GetCurrentSourceObject());
+    if (InAttackData)
+    {
+        UpdateData(InAttackData->GetAbilityTag(), InAttackData->GetEffectList());
+    }
 }
 
 void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
@@ -59,9 +64,17 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
     }
 }
 
-void UBaseGameplayAbility::UpdateData(TArray<USkillEffectData*> InEffectDataList)
+void UBaseGameplayAbility::UpdateData(FGameplayTag InAbilityTag, TArray<USkillEffectData*> InEffectDataList)
 {
     CachedEffects.Empty();
+
+    if (InAbilityTag.IsValid())
+    {
+        FAbilityTriggerData TriggerData;
+        TriggerData.TriggerTag = InAbilityTag;
+
+        AbilityTriggers.Add(TriggerData);
+    }
 
     //CachedEffect 세팅
     for (USkillEffectData* EffectData : InEffectDataList)

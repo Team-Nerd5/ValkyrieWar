@@ -70,6 +70,9 @@ public:
 
 	inline UBlendSpace* GetLocomotionBS() const { return LocomotionBS; }
 
+	virtual void OnAttackNotify() override;
+	virtual void OnSkillNotify() override;
+
 private:
 	// ---- BattleDirector 연동 ----
 	UBattleDirectorSubsystem* GetBattleDirector() const;
@@ -99,10 +102,8 @@ protected:
 	// 공격/스킬 관련 가상함수
 
 	virtual void ExecuteAttack() override;
-	virtual void OnAttackNotify() override;
 
 	virtual void ExecuteSkill() override;
-	virtual void OnSkillNotify() override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
