@@ -25,7 +25,7 @@ void UUnitModule::MakeData()
 
 		for (FUnitDataRow* Item : AllRows)
 		{
-			TableDataByDataId.Add(Item->DataId, Item);
+			TableDataByDataId.Add(Item->DataId, *Item);
 
 			UUnitData* UnitData = NewObject<UUnitData>(this);
 			UnitData->MakeData(Item, GameManager.Get());
