@@ -8,6 +8,8 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
+#include "GameSystem/Library/Data/GameDataFactory.h"
+
 #include "Object/SaveGame/AccountSaveGame.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
@@ -85,6 +87,8 @@ void ULevelManager::StartDataLoading()
 	USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>();
 	if (SaveManager)
 	{
+		SaveManager->InitAllData();
+
 		DataLoadTask += SaveManager->LoadAllData();
 	}
 
@@ -93,6 +97,15 @@ void ULevelManager::StartDataLoading()
 
 void ULevelManager::OnDataLoadCompleted()
 {
+	//신규 계정일 때만..
+	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+	{
+		if (SaveManager->IsNewAccount())
+		{
+			UGameDataFactory::GenerateValkyrie(110001, GetGameInstance());
+		}
+	}
+
 	StartMapLoading();
 }
 

@@ -50,6 +50,26 @@ UDataTable* UGameManager::GetGameData(ETableDataType InType)
     return *GameDataTables.Find(InType);
 }
 
+UValkyrieData* const UGameManager::GetSelectedValkyrie()
+{
+    if (UDataManager* DataManager = GetSubsystem<UDataManager>())
+    {
+        if (SelectedValkyrieUID > 0)
+        {
+            UValkyrieData* Data = DataManager->GetValkyrieModule()->GetExistValkyrie(SelectedValkyrieUID);
+            if (Data)
+            {
+                return Data;
+            }
+        }
+
+        //데이터가 없거나 UID가 0이면 문제가 있는거인데 0번 데이터를 반환
+        return DataManager->GetValkyrieModule()->GetFirstValkyrie();
+    }
+    
+    return nullptr;
+}
+
 void UGameManager::UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID)
 {
     ItemUID = InItemUID;
@@ -71,6 +91,10 @@ void UGameManager::SelectVakyrie(int64 InValkyrieUID)
 {
     if (UDataManager* DataManager = GetSubsystem<UDataManager>())
     {
-        SelectedValkyrie = DataManager->GetValkyrieModule()->GetExistValkyrie(InValkyrieUID);
+        SelectedValkyrieUID = InValkyrieUID;
+        //SelectedValkyrie = DataManager->GetValkyrieModule()->GetExistValkyrie(InValkyrieUID);
+
+        //만약에 존재하지 않으면
+        //보유한것중에 앞에꺼 하나를 그냥 세팅해야할듯 하긴한데...
     }
 }

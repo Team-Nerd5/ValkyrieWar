@@ -72,8 +72,10 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
     FGameplayEventData Payload;
     Payload.Instigator = this;
     Payload.Target = InTargetActor;
+    Payload.EventTag = AttackData->GetAbilityTag();
+    
+    AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
 
-    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, AttackData->GetAbilityTag(), Payload);
 }
 
 void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
@@ -85,8 +87,9 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
     FGameplayEventData Payload;
     Payload.Instigator = this;
     Payload.Target = InTargetActor;
+    Payload.EventTag = SkillDataList[InSkillIndex]->GetAbilityTag();
 
-    UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, SkillDataList[InSkillIndex]->GetAbilityTag(), Payload);
+    AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
 }
 
 void ABaseCharacter::UpdateTarget(AActor* InTarget)
@@ -110,9 +113,11 @@ void ABaseCharacter::CreateAttackAbility()
 {
     if (AttackData)
     {
-        UBaseGameplayAbility* AttackAbility = NewObject<UBaseGameplayAbility>(this);
+/*        UBaseGameplayAbility* AttackAbility = NewObject<UBaseGameplayAbility>(this);
         AttackAbility->UpdateData(AttackData->GetAbilityTag(), AttackData->GetEffectList());
-        FGameplayAbilitySpec Spec(AttackAbility, 1);
+        FGameplayAbilitySpec Spec(AttackAbility, 1)*/;
+        FGameplayAbilitySpec Spec(UBaseGameplayAbility::StaticClass(), 1, -1, AttackData);
+        Spec.DynamicAbilityTags.AddTag(AttackData->GetAbilityTag());
         AbilitySystemComponent->GiveAbility(Spec);
     }
 }
@@ -123,12 +128,12 @@ void ABaseCharacter::CreateSkillAbility()
     {
         for (USkillData* SkillData : SkillDataList)
         {
-            UBaseGameplayAbility* SkillAbility = NewObject<UBaseGameplayAbility>(this);
-            SkillAbility->UpdateData(SkillData->GetAbilityTag(), SkillData->GetEffectList());
+            //UBaseGameplayAbility* SkillAbility = NewObject<UBaseGameplayAbility>(this);
+            //SkillAbility->UpdateData(SkillData->GetAbilityTag(), SkillData->GetEffectList());
 
             //레벨은 나중에 생각하자...
-            FGameplayAbilitySpec Spec(SkillAbility, 1);
-            AbilitySystemComponent->GiveAbility(Spec);
+           // FGameplayAbilitySpec Spec(SkillAbility, 1);
+            //AbilitySystemComponent->GiveAbility(Spec);
         }
     }
 }

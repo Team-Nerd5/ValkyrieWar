@@ -11,9 +11,14 @@
 #include "Engine/LocalPlayer.h"
 
 #include "GameSystem/GameMode/ValkyrieWarGameMode.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/State/Game/BattleGameState.h"
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "Object/Character/Valkyrie/Controller/CameraBoundsVolume.h"
+
+#include "Widget/HUD/BattleWidget.h"
 
 
 AValkyrieCharacterController::AValkyrieCharacterController()
@@ -31,6 +36,60 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 	AutoCenterWaitTime = 2.0f;
 	AutoCenterInterpSpeed = 2.0f;
 	MovingCenterInterpSpeed = 5.0f;
+
+	DragOffset = FVector::ZeroVector;
+	bIsDragging = false;
+	bIsInputActive = false;
+}
+
+void AValkyrieCharacterController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Battle.OnBattleStateChanged.AddDynamic(this, &AValkyrieCharacterController::ChageGameState);
+	}
+	ChageGameState(EBattleState::Init);
+
+	// 입력 모드 설정
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
+
+	SpawnValkyrie();
+
+	ControlledPawn = GetPawn();
+	if (ControlledPawn)
+	{
+		PawnCamera = ControlledPawn->GetComponentByClass<UCameraComponent>();
+	}
+
+	//음...UI에서 해놓은거랑 충돌할 것 같은데
+	//FInputModeGameAndUI InputMode;
+	//InputMode.SetHideCursorDuringCapture(false);
+	//SetInputMode(InputMode);
+
+	// 시작 모드는 수동모드로
+	CurrentControlMode = EInputControlMode::Manual;
+
+	// 현재 수동모드를 좌표로 설정하고있음
+	CurrentTargetViewOffset = ManualViewOffset;
+
+	if (PawnCamera)  
+	{
+		PawnCamera->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		PawnCamera->bUsePawnControlRotation = false;
+	}
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraBoundsVolume::StaticClass(), FoundActors);
+	if (FoundActors.Num() > 0)
+	{
+		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
+	}
+
 }
 
 void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
@@ -53,7 +112,8 @@ void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 		//자동모드에선 가상조이스틱 샷따 내리기 
 		ActivateTouchInterface(nullptr);
 	}
-	OnControlModeChanged(CurrentControlMode);
+
+	//OnControlModeChanged(CurrentControlMode);
 
 	StopMovement();
 	bIsDragging = false;
@@ -72,54 +132,7 @@ void AValkyrieCharacterController::ToggleControlMode()
 	}
 }
 
-void AValkyrieCharacterController::BeginPlay()
-{
-	Super::BeginPlay();
 
-	// 입력 모드 설정
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-	}
-
-	FInputModeGameAndUI InputMode;
-	InputMode.SetHideCursorDuringCapture(false);
-	SetInputMode(InputMode);
-
-	// 변수 초기화
-	DragOffset = FVector::ZeroVector;
-	bIsDragging = false;
-	bIsInputActive = false;
-	//수동모드일때 카메라
-	ManualViewOffset = FVector(-600.0f, 0.0f, 700.0f);
-	//자동모드일떄 카메라
-	AutoViewOffset = FVector(-1500.0f, 0.0f, 2000.0f);
-
-	// 시작 모드는 수동모드로
-	CurrentControlMode = EInputControlMode::Manual;
-
-	// 현재 수동모드를 좌표로 설정하고있음
-	CurrentTargetViewOffset = ManualViewOffset;
-
-	if (APawn* ControlledPawn = GetPawn())
-    {
-        if (UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>())
-        {
-            CamComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-            CamComp->bUsePawnControlRotation = false;
-        }
-    }
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraBoundsVolume::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0)
-	{
-		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
-	}
-
-
-	SpawnValkyrie();
-}
 
 void AValkyrieCharacterController::SetupInputComponent()
 {
@@ -155,15 +168,21 @@ void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 
 	UpdateCameraPosition(DeltaTime);
+
+	//위젯 조이패드 이동
+	if (BattleUI)
+	{
+		Move(BattleUI->GetJoyPadAxis());
+	}
 }
 
 void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 {
-	APawn* ControlledPawn = GetPawn();
-	if (!ControlledPawn) return;
-
-	UCameraComponent* CamComp = ControlledPawn->GetComponentByClass<UCameraComponent>();
-	if (!CamComp) return;
+	if (!PawnCamera)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Valkyrie Camera connection lost"));
+		return;
+	}
 	float CurrentLagSpeed;
 	float CurrentTime = GetWorld()->GetTimeSeconds();
 	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
@@ -189,16 +208,10 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		LookAheadInterSpeed
 	);
 
-	if (CurrentControlMode == EInputControlMode::Manual)
-	{
-		CurrentLagSpeed = ManualLagSpeed;
-	}
-	else
-	{
-		CurrentLagSpeed = AutoLagSpeed;
-	}
-	FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset + DragOffset + CurrentLookAheadOffset;
-	FVector CurrentCamLoc = CamComp->GetComponentLocation();
+	CurrentLagSpeed = CurrentControlMode == EInputControlMode::Manual ? ManualLagSpeed : AutoLagSpeed;
+
+	FVector FinalTargetLoc = CharLoc + ManualViewOffset + DragOffset + CurrentLookAheadOffset;
+	FVector CurrentCamLoc = PawnCamera->GetComponentLocation();
 	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, FinalTargetLoc, InDeltaTime, CurrentLagSpeed);
 
 	
@@ -215,14 +228,27 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		NewCamLoc.X = FMath::Clamp(NewCamLoc.X, MinX, MaxX);
 		NewCamLoc.Y = FMath::Clamp(NewCamLoc.Y, MinY, MaxY);
 	}
-	FRotator LookDownRot = FRotator(-55.0f, 0.0f, 0.0f);
-	CamComp->SetWorldRotation(LookDownRot);
-	CamComp->SetWorldLocation(NewCamLoc);
+	PawnCamera->SetWorldRotation(CameraRotate);
+	PawnCamera->SetWorldLocation(NewCamLoc);
 }
+#if WITH_EDITOR
+void AValkyrieCharacterController::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (!PawnCamera)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Valkyrie Camera connection lost"));
+		return;
+	}
+
+	FVector CharLoc = ControlledPawn->GetActorLocation();
+	FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset + DragOffset + CurrentLookAheadOffset;
+	PawnCamera->SetWorldRotation(CameraRotate);
+}
+#endif
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
-{
-	
+{	
 	if (CurrentControlMode == EInputControlMode::Auto) return;
 	
 	FVector2D MovementVector = InValue.Get<FVector2D>();
@@ -233,18 +259,7 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 		RefreshInteractionTime();
 	}
 
-	if (APawn* ControlledPawn = GetPawn())
-	{
-		// 카메라가 아니라 컨트롤러 회전 기준으로 이동 (일반적인 방식)
-		const FRotator Rotation = GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
-		ControlledPawn->AddMovementInput(RightDirection, MovementVector.X);
-	}
+	Move(MovementVector);
 }
 
 void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InValue)
@@ -368,5 +383,30 @@ void AValkyrieCharacterController::SpawnValkyrie()
 				}				
 			}
 		}
+	}
+}
+
+void AValkyrieCharacterController::Move(FVector2D InMoveDir)
+{
+	if (ControlledPawn)
+	{
+		// 카메라가 아니라 컨트롤러 회전 기준으로 이동 (일반적인 방식)
+		const FRotator Rotation = GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		ControlledPawn->AddMovementInput(ForwardDirection, InMoveDir.Y);
+		ControlledPawn->AddMovementInput(RightDirection, InMoveDir.X);
+	}
+}
+
+void AValkyrieCharacterController::ChageGameState(EBattleState InState)
+{
+	ABattleGameState* State = GetWorld()->GetGameState<ABattleGameState>();
+	if (State)
+	{
+		State->ChangeState(InState);
 	}
 }

@@ -8,12 +8,14 @@
 #include "InputActionValue.h"
 
 #include "Data/Enum/CommonEnums.h"
+#include "Data/Enum/StateEnums.h"
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 
 #include "CameraBoundsVolume.h"
 #include "ValkyrieCharacterController.generated.h"
 
+class UCameraComponent;
 
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
@@ -57,9 +59,9 @@ public:
 
 	// 수동, 자동 모드 변환
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	FVector ManualViewOffset = FVector::ZeroVector;
+	FVector ManualViewOffset = FVector(-0, 700.0f, 1000.0f);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	FVector AutoViewOffset = FVector::ZeroVector;
+	FVector AutoViewOffset = FVector(-0, 700.0f, 1000.0f);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	float ManualLagSpeed = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
@@ -84,14 +86,21 @@ public:
 
 	//카메라 리드
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float LookAheaDistance = 400.0f;
+	float LookAheaDistance = 800.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float VelocityLeadScale = 0.78f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float LookAheadInterSpeed = 5.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float MaxLeadDistance = 400.0f;
+	float MaxLeadDistance = 2000.0f;
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere)
+	FRotator CameraRotate = FRotator(-55, -90, 0);
+
+	FORCEINLINE void SetBattleUI(class UBattleWidget* InWidget) { BattleUI = InWidget; }
+protected:
+	UPROPERTY()
+	TObjectPtr<class UBattleWidget> BattleUI = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -102,17 +111,20 @@ protected:
 	void OnMove(const FInputActionValue& InValue);
 	void OnMoveCompleted(const FInputActionValue& InValue);
 	void OnAttackTap(const FInputActionValue& InValue);
-	void OnAttackHold(const FInputActionValue& InValue);
+	//void OnAttackHold(const FInputActionValue& InValue);
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
-	// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
-	UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
-	void OnControlModeChanged(EInputControlMode InNewMode);
+	//// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
+	//UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
+	//void OnControlModeChanged(EInputControlMode InNewMode);
 
 	//우선은 BeginPlay에서 생성되도록
 	void SpawnValkyrie();
+	void Move(FVector2D InMoveDir);
 
+	UFUNCTION()
+	void ChageGameState(EBattleState InState);
 private:
 	
 	FVector DragOffset = FVector::ZeroVector;
@@ -129,4 +141,15 @@ private:
 	
 	void RefreshInteractionTime();
 	void UpdateCameraPosition(float InDeltaTime);
+
+	UPROPERTY()
+	TObjectPtr<APawn> ControlledPawn = nullptr;
+	UPROPERTY()
+	TObjectPtr<UCameraComponent> PawnCamera = nullptr;
+
+	public:
+#if WITH_EDITOR
+		/*에디터에서 값 변경 시 반영용*/
+		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };

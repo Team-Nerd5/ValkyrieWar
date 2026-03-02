@@ -32,9 +32,10 @@ public:
 	}
 	FORCEINLINE int64 GetCharacterUID()
 	{
-		return CharacterUID++;
+		CharacterUID++;
+		return CharacterUID;
 	}
-	FORCEINLINE UValkyrieData* const GetSelectedValkyrie() { return SelectedValkyrie; }
+	UValkyrieData* const GetSelectedValkyrie();
 
 	//저장데이터 로드되면 세팅용
 	void UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID);
@@ -56,6 +57,9 @@ protected:
 private:
 	uint64 ItemUID = 100000000;
 	uint64 CharacterUID = 0;
+
+	UPROPERTY()
+	uint64 SelectedValkyrieUID = 0;
 
 	UPROPERTY()
 	TObjectPtr<UValkyrieData> SelectedValkyrie = nullptr;

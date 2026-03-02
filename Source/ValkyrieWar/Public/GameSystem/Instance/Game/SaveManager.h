@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Data/Save/PlayerAccountData.h"
+#include "Data/Save/ValkyrieSaveData.h"
 #include "Data/Enum/DataEnums.h"
 #include "SaveManager.generated.h"
 
 class USaveGame;
+class UValkyrieData;
 /**
  * 
  */
@@ -31,9 +33,12 @@ public:
 	FORCEINLINE class UStageSaveGame* GetStage() { return Stage; }
 	FORCEINLINE class UUnitUpgradeSaveGame* GetUnitUpgrade() { return UnitUpgrade; }
 	FORCEINLINE class UValkyrieSaveGame* GetValkyrie () { return Valkyrie; }
+
+	FORCEINLINE bool IsNewAccount() { return bIsNewAccount; }
 	
 private:
 	TMap <ESaveType, TFunction<void(USaveGame*)>> ActionSetData;
+	TMap <ESaveType, TFunction<void(USaveGame*)>> ActionInitData;
 	TMap <ESaveType, TFunction<void()>> ActionSaveData;
 
 	UPROPERTY()
@@ -56,11 +61,13 @@ private:
 	int32 LoadTask = 0;
 	bool bIsNewAccount = false;
 protected:
-
+	void InitInitDataAction();
 	void InitSetDataAction();
 	void InitSaveDataAction();
 
-	void LoadDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
+	void InitDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
+
+	void SetDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
 	/// <summary>
 	/// 실제 Save파일로 암호화 저장
 	/// </summary>
@@ -73,7 +80,13 @@ protected:
 	void SetAccountData();
 	void SetValkyrieData();
 	void SetItemData();
+
+protected:
+	//데이터 생성 후 저장용 Delgate 처리부분
+	UFUNCTION()
+	void OnValkyrieGenerated(int64 InUID, UValkyrieData* InData);
 public:
+	void InitAllData();
 	int32 LoadAllData();
 
 	//게임 로드 1순위 계정 체크

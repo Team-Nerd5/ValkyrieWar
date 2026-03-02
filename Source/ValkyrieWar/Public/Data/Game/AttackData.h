@@ -28,5 +28,6 @@ public:
 private:
 	const FAttackDataRow* TableData;
 
+	UPROPERTY()
 	TArray<USkillEffectData*> EffectList;
 };
