@@ -59,6 +59,9 @@ protected:
 	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);
+	// 보유중인 캐릭터 타일뷰 클릭 했을 때 실행될 함수
+	//UFUNCTION()
+	//void OnCharacterClicked(UObject* InCharacterData);
 
 private:
 	// UIType에 따라 인벤토리 세팅하기 위한 함수
@@ -67,6 +70,10 @@ private:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> InventoryTileView = nullptr;
+
+	// 보유중인 캐릭터 목록
+	//UPROPERTY(meta = (BindWidget))
+	//TObjectPtr<UTileView> OwnedCharacterTileView = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterReset = nullptr;

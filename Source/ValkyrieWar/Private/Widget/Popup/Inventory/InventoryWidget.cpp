@@ -1,5 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
+
 #include "Widget/Popup/Inventory/InventoryWidget.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 
@@ -12,6 +13,7 @@ void UInventoryWidget::NativeConstruct()
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
 	}
+	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 
 	if (Btn_FilterReset)
 		Btn_FilterReset->OnClicked.AddDynamic(this, &UInventoryWidget::FilterReset);
@@ -26,27 +28,34 @@ void UInventoryWidget::NativeConstruct()
 	if (Btn_FilterGoods)
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGoods);
 
-	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
-
-	if (EventSystem)
+	if (WorldEventSystem)
 	{
-		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		WorldEventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		WorldEventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
 	}
+
+	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
+	//OwnedCharacterTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnCharacterClicked);
+
+	// 처음 생성될 인벤토리 세팅
+	UpdateInventoryType(EUIType::PopupInventory);
+
 }
 
 void UInventoryWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	if (EventSystem)
-	{
-		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
-	}
+	WorldEventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
+	WorldEventSystem->Widget.OnChangeEquipCharacter.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
 }
 
 void UInventoryWidget::OpenUI()
 {
 	Super::OpenUI();
+
+	FilterReset();
+	RefreshUIByMode();
 }
 
 void UInventoryWidget::CloseUI()
@@ -56,15 +65,40 @@ void UInventoryWidget::CloseUI()
 
 void UInventoryWidget::UpdateInventoryType(EUIType InUIType)
 {
+#pragma region 유효성 검사
+	if (InUIType != EUIType::PopupInventory &&
+		InUIType != EUIType::PopupCharacterInfo)
+	{
+		UE_LOG(LogTemp, Error, TEXT("잘못된 인벤토리 타입입니다"));
+		return;
+	}
+#pragma endregion
+
+	SelectedInventoryType = InUIType;
+
+	RefreshUIByMode();
 }
 
 void UInventoryWidget::FilterReset()
 {
-	CurrentItemGroup = EItemGroup::None;
+	if (SelectedInventoryType == EUIType::PopupInventory)
+	{
+		CurrentItemGroup = EItemGroup::None;
+		CurrentEquipGroup = EEquipGroup::None;
 
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
-	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
+		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
+		InventoryTileView->SetListItems(CachedItemList);
+	}
+	else if (SelectedInventoryType == EUIType::PopupCharacterInfo)
+	{
+		CurrentItemGroup = EItemGroup::Equip;
+		CurrentEquipGroup = EEquipGroup::None;
+
+		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip);
+		InventoryTileView->SetListItems(CachedItemList);
+	}
+	else
+		return;
 }
 
 void UInventoryWidget::FilterWeapon()
@@ -74,7 +108,6 @@ void UInventoryWidget::FilterWeapon()
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
 	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterArmor()
@@ -84,7 +117,6 @@ void UInventoryWidget::FilterArmor()
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
 	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterHelmet()
@@ -94,25 +126,24 @@ void UInventoryWidget::FilterHelmet()
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
 	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterGrowth()
 {
 	CurrentItemGroup = EItemGroup::GrowthItem;
+	CurrentEquipGroup = EEquipGroup::None;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
 	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::FilterGoods()
 {
 	CurrentItemGroup = EItemGroup::Goods;
+	CurrentEquipGroup = EEquipGroup::None;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
 	InventoryTileView->SetListItems(CachedItemList);
-	InventoryTileView->RegenerateAllEntries();
 }
 
 void UInventoryWidget::OnUpdateInventory()
@@ -150,6 +181,10 @@ void UInventoryWidget::OnUpdateInventory()
 
 void UInventoryWidget::OnUpdateEquipmentForUID(uint64 InCharacterUID)
 {
+	if (EquipmentSlotWidget)
+	{
+		EquipmentSlotWidget->RefreshEquipment(InCharacterUID);
+	}
 }
 
 void UInventoryWidget::OnItemClicked(UObject* InItemData)
@@ -159,14 +194,69 @@ void UInventoryWidget::OnItemClicked(UObject* InItemData)
 #pragma region 유효성 검사
 	if (!ItemData)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(ItemClicked)] ItemData가 없습니다"));
+		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(EquipmentTileItemClicked)] ItemData가 없습니다"));
 		return;
 	}
 #pragma endregion
 
-	//SellButtonWidget->SetupSellItem(ItemData);
+	ActionButtonWidget->SetupItem(ItemData);
+	ActionButtonWidget->SetupCharacterUID(TempCharacterUID);		// 현재 캐릭터 목록 미구현으로 인해 임시 사용
+	ActionButtonWidget->SetVisibleButton(SelectedInventoryType);
 }
+
+//void UInventoryWidget::OnCharacterClicked(UObject* InCharacterData)
+//{
+//	// 캐릭터 데이터 캐스트
+//
+//	// 캐릭터 선택 시
+//	// 메인 캐릭터 선택 버튼 표시 -> 버튼 눌렀을 때 매인 케릭터 저장
+//	// 캐릭터가 장착중인 장비 -> 장비 슬롯에 표시
+//
+//	// 캐릭터 선택 시 장비 버튼 표시 이후 버튼 눌렀을 때 장비 인벤토리 표시하도록 해야하나?
+//	
+//}
 
 void UInventoryWidget::RefreshUIByMode()
 {
+	CurrentEquipGroup = EEquipGroup::None;
+
+	if (SelectedInventoryType == EUIType::PopupInventory)
+	{
+		CurrentItemGroup = EItemGroup::None;
+		
+		Btn_FilterReset->SetVisibility(ESlateVisibility::Visible);
+
+		Btn_FilterWeapon->SetVisibility(ESlateVisibility::Visible);
+		Btn_FilterArmor->SetVisibility(ESlateVisibility::Visible);
+		Btn_FilterHelmet->SetVisibility(ESlateVisibility::Visible);
+
+		Btn_FilterGrowth->SetVisibility(ESlateVisibility::Visible);
+		Btn_FilterGoods->SetVisibility(ESlateVisibility::Visible);
+
+		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Hidden);
+
+		ActionButtonWidget->CloseUI();
+
+		FilterReset();
+	}
+	else if(SelectedInventoryType == EUIType::PopupCharacterInfo)
+	{
+		CurrentItemGroup = EItemGroup::Equip;
+
+		Btn_FilterReset->SetVisibility(ESlateVisibility::Visible);
+
+		Btn_FilterWeapon->SetVisibility(ESlateVisibility::Visible);
+		Btn_FilterArmor->SetVisibility(ESlateVisibility::Visible);
+		Btn_FilterHelmet->SetVisibility(ESlateVisibility::Visible);
+
+		Btn_FilterGrowth->SetVisibility(ESlateVisibility::Hidden);
+		Btn_FilterGoods->SetVisibility(ESlateVisibility::Hidden);
+
+		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Visible);
+		EquipmentSlotWidget->RefreshEquipment(0);
+
+		ActionButtonWidget->CloseUI();
+
+		FilterReset();
+	}
 }
