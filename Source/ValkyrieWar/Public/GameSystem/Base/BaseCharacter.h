@@ -50,6 +50,9 @@ public:
 
 	/*스킬 애니메이션에서 데미지 시점 Notify 호출부*/
 	virtual void OnSkillNotify() {}
+
+	// 사망 시 StatAttributeSet에서 호출
+	virtual void OnDeath() {}
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

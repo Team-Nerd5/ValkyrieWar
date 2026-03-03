@@ -57,7 +57,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	bool PerformAttack(AActor* Target);
 
-	void HandleDeath(AController* Killer, AActor* DamageCauser);
+	void HandleDeath();
 
 	// ===== Pool Hooks =====
 	virtual void OnGet_Implementation() override;
@@ -72,6 +72,8 @@ public:
 
 	virtual void OnAttackNotify() override;
 	virtual void OnSkillNotify() override;
+
+	virtual void OnDeath() override;
 
 private:
 	// ---- BattleDirector 연동 ----

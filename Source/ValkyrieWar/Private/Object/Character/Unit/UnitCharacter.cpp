@@ -165,7 +165,7 @@ bool AUnitCharacter::PerformAttack(AActor* Target)
 }
 
 //TODO : Attributte에서 사망 시 호출로 변경
-void AUnitCharacter::HandleDeath(AController* Killer, AActor* DamageCauser)
+void AUnitCharacter::HandleDeath()
 {
 	if (bDead) return;
 	bDead = true;
@@ -682,4 +682,9 @@ void AUnitCharacter::OnSkillNotify()
 {
 	//타겟이 있으면 타겟으로
 	//ApplySkill()
+}
+
+void AUnitCharacter::OnDeath()
+{
+	HandleDeath();
 }

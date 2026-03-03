@@ -43,7 +43,7 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 			}
 			else if (ABaseCharacter* Character = Cast<ABaseCharacter>(TargetActor)) // 유닛 사망 시
 			{
-				Character->Destroy();
+				Character->OnDeath();
 			}			
 		}
 	}
