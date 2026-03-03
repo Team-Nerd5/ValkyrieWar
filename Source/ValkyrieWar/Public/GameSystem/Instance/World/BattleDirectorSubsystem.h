@@ -7,6 +7,7 @@
 
 class AUnitCharacter;
 class AValkyrieCharacter;
+class ACoreWallActor;
 
 /**
  * BattleDirectorSubsystem
@@ -40,6 +41,10 @@ public:
 
     void RegisterWallAnchor(ETeam Team, AActor* AnchorActor);
     void UnregisterWallAnchor(ETeam Team, AActor* AnchorActor);
+
+    void RegisterWallCore(ETeam Team, ACoreWallActor* Core);
+    void UnregisterWallCore(ETeam Team, ACoreWallActor* Core);
+    ACoreWallActor* GetWallCore(ETeam Team) const;
 
     void UpdateReservationFor(AUnitCharacter* Unit);
 
@@ -177,6 +182,9 @@ private:
 
     UPROPERTY()
     TArray<TWeakObjectPtr<AActor>> TeamBWallAnchors;
+
+    UPROPERTY()
+    TMap<ETeam, TWeakObjectPtr<ACoreWallActor>> TeamWallCores;
 
     // ===============================
     // Grid 데이터

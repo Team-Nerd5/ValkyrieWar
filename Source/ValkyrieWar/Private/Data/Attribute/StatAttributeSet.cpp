@@ -3,6 +3,7 @@
 
 #include "Data/Attribute/StatAttributeSet.h"
 #include "GameSystem/Base/BaseCharacter.h"
+#include "Object/Actor/Wall/CoreWallActor.h"
 
 UStatAttributeSet::UStatAttributeSet()
 {
@@ -32,10 +33,18 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 		//데미지 표기 / UI 표기 등...
 		if (GetHealth() <= 0.0f)
 		{
-			UE_LOG(LogTemp, Log, TEXT("%s is dead"), *TargetActor->GetName());
-			ABaseCharacter* Character = Cast<ABaseCharacter>(TargetActor);
 			//테스트 제거
-			Character->Destroy();
+			UE_LOG(LogTemp, Log, TEXT("%s is dead"), *TargetActor->GetName());
+
+			// 성벽과 유닛에 동일한 어트리뷰트를 사용.
+			if (ACoreWallActor* Wall = Cast<ACoreWallActor>(TargetActor)) // 성벽 파괴 시
+			{
+				Wall->Destroy();
+			}
+			else if (ABaseCharacter* Character = Cast<ABaseCharacter>(TargetActor)) // 유닛 사망 시
+			{
+				Character->Destroy();
+			}			
 		}
 	}
 }

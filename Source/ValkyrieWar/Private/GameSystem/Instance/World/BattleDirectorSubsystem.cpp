@@ -1,10 +1,11 @@
 ﻿#include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+#include "Object/Actor/Wall/CoreWallActor.h"
 #include "Data/Struct/UnitEngagementSlotData.h"
 #include "Interface/Unit/TargetReservationInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 
 static FORCEINLINE int32 TeamIndex(ETeam T) { return (T == ETeam::TeamA) ? 0 : 1; }
 
@@ -181,6 +182,32 @@ void UBattleDirectorSubsystem::UnregisterWallAnchor(ETeam Team, AActor* AnchorAc
     else TeamBWallAnchors.Remove(AnchorActor);
 
     MarkCleanupDirty();
+}
+
+void UBattleDirectorSubsystem::RegisterWallCore(ETeam Team, ACoreWallActor* Core)
+{
+    if (!Core) return;
+    TeamWallCores.Add(Team, Core);
+}
+
+void UBattleDirectorSubsystem::UnregisterWallCore(ETeam Team, ACoreWallActor* Core)
+{
+    if (TWeakObjectPtr<ACoreWallActor>* Found = TeamWallCores.Find(Team))
+    {
+        if (Found->Get() == Core)
+        {
+            TeamWallCores.Remove(Team);
+        }
+    }
+}
+
+ACoreWallActor* UBattleDirectorSubsystem::GetWallCore(ETeam Team) const
+{
+    if (const TWeakObjectPtr<ACoreWallActor>* Found = TeamWallCores.Find(Team))
+    {
+        return Found->Get();
+    }
+    return nullptr;
 }
 
 const TArray<TWeakObjectPtr<AActor>>& UBattleDirectorSubsystem::GetTeamWallAnchorsConst(ETeam Team) const
