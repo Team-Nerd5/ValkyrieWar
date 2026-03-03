@@ -63,9 +63,14 @@ protected:
 	//UFUNCTION()
 	//void OnCharacterClicked(UObject* InCharacterData);
 
+	UFUNCTION()
+	void OnClickClose();
+
 private:
 	// UIType에 따라 인벤토리 세팅하기 위한 함수
 	void RefreshUIByMode();
+
+	virtual void CreateTopMenu() override;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -87,6 +92,8 @@ protected:
 	TObjectPtr<UButton> Btn_FilterGrowth = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> BackButton = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UActionButtonWidget> ActionButtonWidget = nullptr;

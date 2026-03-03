@@ -2,7 +2,13 @@
 
 
 #include "Widget/Popup/Inventory/InventoryWidget.h"
+
+#include "GameSystem/Library/GameDataHelper.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/Game/UIManager.h"
+
+#include "Widget/HUD/TopMenuWidget.h"
+
 
 void UInventoryWidget::NativeConstruct()
 {
@@ -27,6 +33,8 @@ void UInventoryWidget::NativeConstruct()
 		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGrowth);
 	if (Btn_FilterGoods)
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGoods);
+	if (BackButton)
+		BackButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnClickClose);
 
 	if (WorldEventSystem)
 	{
@@ -216,6 +224,14 @@ void UInventoryWidget::OnItemClicked(UObject* InItemData)
 //	
 //}
 
+void UInventoryWidget::OnClickClose()
+{
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->CloseTopPopupUI();
+	}
+}
+
 void UInventoryWidget::RefreshUIByMode()
 {
 	CurrentEquipGroup = EEquipGroup::None;
@@ -258,5 +274,24 @@ void UInventoryWidget::RefreshUIByMode()
 		ActionButtonWidget->CloseUI();
 
 		FilterReset();
+	}
+}
+
+void UInventoryWidget::CreateTopMenu()
+{
+	if (TopMenuClass)
+	{
+		FGoodsDataRow Data;
+
+		if (UGameDataHelper::GetGoodsData(EUIType::PopupInventory, GetGameInstance(), Data))
+		{
+			UTopMenuWidget* TopMenu = CreateWidget<UTopMenuWidget>(this, TopMenuClass);
+
+			if (TopMenu)
+			{
+				
+				TopMenu->SetData(&Data);
+			}
+		}
 	}
 }
