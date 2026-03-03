@@ -16,8 +16,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 
-//TODO: 테스트 인벤토리.. 수정필요
-#include "Test/OKM/TestInventoryWidget.h"
+#include "Widget/Popup/Inventory/InventoryWidget.h"
 
 void ULobbyWidget::NativeConstruct()
 {
@@ -108,7 +107,7 @@ void ULobbyWidget::ShowInventory()
     if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
     {
         //이거 음..클래스 가져오는걸 음...
-        UTestInventoryWidget* Widget = UIManager->OpenUI<UTestInventoryWidget>(EUIType::PopupInventory);
+        UInventoryWidget* Widget = UIManager->OpenUI<UInventoryWidget>(EUIType::PopupInventory);
 
         //위젯 초기화
     }
