@@ -155,11 +155,11 @@ public:
 
     /** TeamB 유닛이 발키리를 타겟팅 시도하는 최대 거리 */
     UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
-    float ValkyrieMaxTargetDistance = 2000.f;
+    float ValkyrieMaxTargetDistance = 1400.f;
 
     /** 발키리 타겟 유지/해제 거리(이 값 초과 시 해제). Max보다 약간 크게 추천 */
     UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
-    float ValkyrieReleaseDistance = 2100.f;
+    float ValkyrieReleaseDistance = 1450.f;
 
 private:
     // ===============================

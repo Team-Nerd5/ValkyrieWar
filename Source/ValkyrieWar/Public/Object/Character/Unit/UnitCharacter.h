@@ -154,7 +154,7 @@ protected:
 	float WalkSpeed = 150.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
-	float RunSpeed = 600.f;
+	float RunSpeed = 500.f;
 
 	// 예약 타깃이 있을 때는 달리고, 없으면 걷기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
