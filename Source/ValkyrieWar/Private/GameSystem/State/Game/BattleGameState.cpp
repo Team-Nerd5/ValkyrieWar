@@ -46,9 +46,11 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		break;
 
 	case EBattleState::Win:
+		UE_LOG(LogTemp, Warning, TEXT("Win!"));
 		//결과 UI를 Win으로 열어줌
 		break;
 	case EBattleState::Defeat:
+		UE_LOG(LogTemp, Warning, TEXT("Lose.."));
 		//결과 UI를 Defeat으로 열여줌
 		break;
 	case EBattleState::TimeOver:

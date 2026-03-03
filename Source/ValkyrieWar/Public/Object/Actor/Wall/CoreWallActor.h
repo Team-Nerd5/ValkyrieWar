@@ -21,6 +21,7 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	inline ETeam GetTeam() const { return Team; }
 protected:
 	virtual void BeginPlay() override;
 

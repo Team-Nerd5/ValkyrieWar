@@ -3,7 +3,9 @@
 
 #include "Data/Attribute/StatAttributeSet.h"
 #include "GameSystem/Base/BaseCharacter.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Object/Actor/Wall/CoreWallActor.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 UStatAttributeSet::UStatAttributeSet()
 {
@@ -40,6 +42,17 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 			if (ACoreWallActor* Wall = Cast<ACoreWallActor>(TargetActor)) // 성벽 파괴 시
 			{
 				Wall->Destroy();
+				if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+				{
+					if (Wall->GetTeam() == ETeam::TeamA)
+					{
+						EventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::Defeat);
+					}
+					else
+					{
+						EventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::Win);
+					}
+				}
 			}
 			else if (ABaseCharacter* Character = Cast<ABaseCharacter>(TargetActor)) // 유닛 사망 시
 			{
