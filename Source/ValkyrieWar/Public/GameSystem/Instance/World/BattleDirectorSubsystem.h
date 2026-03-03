@@ -156,10 +156,6 @@ public:
     UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
     float ValkyrieReleaseDistance = 2000.f;
 
-    /** 발키리를 동시에 1명만 점유하게 할지 */
-    UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
-    bool bValkyrieSingleReservor = true;
-
 private:
     // ===============================
     // 팀 데이터
@@ -196,10 +192,6 @@ private:
     // ===============================
     UPROPERTY()
     TWeakObjectPtr<AValkyrieCharacter> Valkyrie;
-
-    /** 발키리를 점유(타겟)한 유닛(동시 1명 제한 옵션용) */
-    UPROPERTY()
-    TWeakObjectPtr<AUnitCharacter> ValkyrieReservedBy;
 
     // ===============================
     // Cleanup 상태

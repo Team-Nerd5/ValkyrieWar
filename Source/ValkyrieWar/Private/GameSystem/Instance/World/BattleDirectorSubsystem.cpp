@@ -55,7 +55,6 @@ void UBattleDirectorSubsystem::Deinitialize()
     UnitToCell.Empty();
 
     Valkyrie.Reset();
-    ValkyrieReservedBy.Reset();
 
     Super::Deinitialize();
 }
@@ -141,11 +140,6 @@ void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
 {
     if (!Unit || !Unit->GetBrain()) return;
 
-    // 발키리 점유자였다면 해제
-    if (ValkyrieReservedBy.Get() == Unit)
-    {
-        ValkyrieReservedBy.Reset();
-    }
 
     // 내가 어떤 타깃에 예약돼 있었다면 해제 시도 (유닛 슬롯 타겟만)
     if (AUnitCharacter* Target = Cast<AUnitCharacter>(Unit->GetBrain()->ReservedTarget.Get()))
@@ -320,15 +314,6 @@ void UBattleDirectorSubsystem::CleanupInvalidReferences()
     for (auto& K : DeadKeys)
     {
         UnitToCell.Remove(K);
-    }
-
-    // ValkyrieReservedBy도 무효면 정리
-    if (ValkyrieReservedBy.IsValid())
-    {
-        if (!ValkyrieReservedBy.IsValid() || ValkyrieReservedBy->IsDead())
-        {
-            ValkyrieReservedBy.Reset();
-        }
     }
 
     // 발키리 캐시가 깨졌으면 다음에 재탐색하도록
@@ -736,19 +721,8 @@ bool UBattleDirectorSubsystem::TryReserveValkyrieFirst(AUnitCharacter* Attacker,
     if (!Attacker->GetBrain()->CanChangeReservation(Now))
         return false;
 
-    if (bValkyrieSingleReservor)
-    {
-        if (ValkyrieReservedBy.IsValid() && ValkyrieReservedBy.Get() != Attacker)
-            return false;
-    }
-
     Attacker->GetBrain()->SetReservedTarget(V, Now);
     NotifyTargetAssigned(Attacker, V);
-
-    if (bValkyrieSingleReservor)
-    {
-        ValkyrieReservedBy = Attacker;
-    }
 
     return true;
 }
@@ -768,11 +742,6 @@ void UBattleDirectorSubsystem::ReleaseValkyrieReservationIfTooFar(AUnitCharacter
     {
         Attacker->GetBrain()->ClearReservedTarget(Now);
         NotifyTargetAssigned(Attacker, nullptr);
-
-        if (ValkyrieReservedBy.Get() == Attacker)
-        {
-            ValkyrieReservedBy.Reset();
-        }
     }
 }
 
