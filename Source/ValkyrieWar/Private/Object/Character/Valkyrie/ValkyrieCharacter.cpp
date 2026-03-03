@@ -17,6 +17,7 @@
 #include "GameFramework/SpringArmComponent.h"
 
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Base/BaseGameplayAbility.h"
 
 #include "Materials/Material.h"
@@ -62,6 +63,15 @@ AValkyrieCharacter::AValkyrieCharacter()
 void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
 {
 	CurrentWeaponType = InNewType;
+}
+
+void AValkyrieCharacter::ResetCombo()
+{
+	CurrentComboCount = 0;
+	bIsComboActive = false;
+	bIsComboInputOn = false;
+	bCanNextCombo = false;
+	bIsInComboWindow = false;
 }
 
 void AValkyrieCharacter::BeginPlay()

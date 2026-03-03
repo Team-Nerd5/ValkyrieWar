@@ -37,6 +37,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ResetCombo();
+
 	virtual void ExecuteAttack() override;
 	virtual void ExecuteSkill() override;
 

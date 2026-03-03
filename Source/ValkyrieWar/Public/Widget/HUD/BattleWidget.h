@@ -21,6 +21,8 @@ public:
 
 public:
 	FORCEINLINE FVector2D const GetJoyPadAxis() { return JoyPadAxis; }
+
+	void SetJoyPadVisibility(bool bIsVisible);
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> JoyPadImage;
@@ -28,6 +30,12 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> JoyPadBGImage;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> Frame;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> Arrows;
+	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UWallHealthBarWidget> AllyWallHealthBar;
 

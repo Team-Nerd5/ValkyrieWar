@@ -16,17 +16,24 @@ class VALKYRIEWAR_API UGA_BowAttack : public UBaseGameplayAbility
 public:
 	UGA_BowAttack();
 
-	// 화살칸
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
-	TSubclassOf<AArrowProjectile> ProjectileClass;
+	//화살 발썃
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	void FireArrow();
 
-	// 오토에임
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting")
-	float AutoAimRadius = 1500.0f;
-protected:
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
+
+protected:
+	// 화살칸
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
+	TSubclassOf<AArrowProjectile> ProjectileClass;
+
+
+	// 오토에임
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting")
+	float AutoAimRadius = 1500.0f;
+	
 };

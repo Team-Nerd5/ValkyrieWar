@@ -16,6 +16,7 @@
 #include "ValkyrieCharacterController.generated.h"
 
 class UCameraComponent;
+class USpringArmComponent;
 
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
@@ -41,6 +42,9 @@ public:
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	TObjectPtr<USpringArmComponent> SpringArm = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
@@ -115,6 +119,8 @@ protected:
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
+	//다중 터치꼬임 방지용
+	ETouchIndex::Type CurrentDragTouchIndex = ETouchIndex::Touch1;
 	//// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
 	//UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
 	//void OnControlModeChanged(EInputControlMode InNewMode);
@@ -137,6 +143,8 @@ private:
 	bool bIsInputActive = false;
 	bool bIsDragging = false;
 	bool bIsTouch = false;
+
+	bool bIsReturningToCenter = false;
 
 	
 	void RefreshInteractionTime();

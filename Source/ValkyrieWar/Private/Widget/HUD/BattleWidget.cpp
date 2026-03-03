@@ -16,8 +16,22 @@ void UBattleWidget::NativeConstruct()
 
 FReply UBattleWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
 {
-	bIsTouching = true;
-	return FReply::Handled().CaptureMouse(TakeWidget());
+	// 자동모드라서 조이스틱 숨긴상황에선 조이스틱에 토치 안먹임
+	if (JoyPadBGImage->GetVisibility() == ESlateVisibility::Hidden || JoyPadBGImage->GetVisibility() == ESlateVisibility::Collapsed)
+	{
+		return FReply::Unhandled();
+	}
+
+	// 조이스틱 안을 터치했나
+	FVector2D LocalTouchPos = JoyPadBGImage->GetCachedGeometry().AbsoluteToLocal(InGestureEvent.GetScreenSpacePosition());
+	FVector2D BGSize = JoyPadBGImage->GetCachedGeometry().GetLocalSize();
+
+	if (LocalTouchPos.X >= 0.0f && LocalTouchPos.X <= BGSize.X && LocalTouchPos.Y >= 0.0f && LocalTouchPos.Y <= BGSize.Y)
+	{
+		bIsTouching = true;
+		return FReply::Handled().CaptureMouse(TakeWidget());
+	}
+	return FReply::Unhandled();
 }
 
 FReply UBattleWidget::NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
@@ -60,4 +74,21 @@ FReply UBattleWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPoi
 	JoyPadAxis = FVector2D::ZeroVector;
 
 	return FReply::Handled().ReleaseMouseCapture();
+}
+
+void UBattleWidget::SetJoyPadVisibility(bool bIsVisible)
+{
+	ESlateVisibility NewVisibility = bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+
+	if (JoyPadImage) JoyPadImage->SetVisibility(NewVisibility);
+	if (JoyPadBGImage) JoyPadBGImage->SetVisibility(NewVisibility);
+	if (Frame) Frame->SetVisibility(NewVisibility);
+	if (Arrows) Arrows->SetVisibility(NewVisibility);
+
+	if (!bIsVisible)
+	{
+		JoyPadAxis = FVector2D::ZeroVector;
+		if (JoyPadImage) JoyPadImage->SetRenderTranslation(FVector2D::ZeroVector);
+		bIsTouching = false;
+	}
 }
