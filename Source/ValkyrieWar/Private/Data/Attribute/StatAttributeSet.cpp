@@ -41,7 +41,6 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 			// 성벽과 유닛에 동일한 어트리뷰트를 사용.
 			if (ACoreWallActor* Wall = Cast<ACoreWallActor>(TargetActor)) // 성벽 파괴 시
 			{
-				Wall->Destroy();
 				if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 				{
 					if (Wall->GetTeam() == ETeam::TeamA)
