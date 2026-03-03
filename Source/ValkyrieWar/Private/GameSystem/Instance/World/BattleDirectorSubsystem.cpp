@@ -3,6 +3,8 @@
 #include "Object/Unit/Component/UnitBrainComponent.h"
 #include "Data/Struct/UnitEngagementSlotData.h"
 #include "Interface/Unit/TargetReservationInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 
 static FORCEINLINE int32 TeamIndex(ETeam T) { return (T == ETeam::TeamA) ? 0 : 1; }
 
@@ -25,6 +27,9 @@ void UBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
             true
         );
     }
+
+    // 발키리 캐시는 늦게 해도 되지만, 시작 때 한번 시도
+    CacheValkyrieIfNeeded();
 }
 
 void UBattleDirectorSubsystem::Deinitialize()
@@ -48,6 +53,9 @@ void UBattleDirectorSubsystem::Deinitialize()
     GridA.Empty();
     GridB.Empty();
     UnitToCell.Empty();
+
+    Valkyrie.Reset();
+    ValkyrieReservedBy.Reset();
 
     Super::Deinitialize();
 }
@@ -133,10 +141,23 @@ void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
 {
     if (!Unit || !Unit->GetBrain()) return;
 
-    // 내가 어떤 타깃에 예약돼 있었다면 해제 시도
+    // 발키리 점유자였다면 해제
+    if (ValkyrieReservedBy.Get() == Unit)
+    {
+        ValkyrieReservedBy.Reset();
+    }
+
+    // 내가 어떤 타깃에 예약돼 있었다면 해제 시도 (유닛 슬롯 타겟만)
     if (AUnitCharacter* Target = Cast<AUnitCharacter>(Unit->GetBrain()->ReservedTarget.Get()))
     {
         ReleaseReservation(Unit, Target);
+    }
+    else
+    {
+        // ReservedTarget이 발키리면, 그냥 클리어
+        const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
+        Unit->GetBrain()->ClearReservedTarget(Now);
+        NotifyTargetAssigned(Unit, nullptr);
     }
 
     // 그리드에서 제거
@@ -299,6 +320,21 @@ void UBattleDirectorSubsystem::CleanupInvalidReferences()
     for (auto& K : DeadKeys)
     {
         UnitToCell.Remove(K);
+    }
+
+    // ValkyrieReservedBy도 무효면 정리
+    if (ValkyrieReservedBy.IsValid())
+    {
+        if (!ValkyrieReservedBy.IsValid() || ValkyrieReservedBy->IsDead())
+        {
+            ValkyrieReservedBy.Reset();
+        }
+    }
+
+    // 발키리 캐시가 깨졌으면 다음에 재탐색하도록
+    if (Valkyrie.IsValid() == false)
+    {
+        Valkyrie.Reset();
     }
 }
 
@@ -639,26 +675,142 @@ void UBattleDirectorSubsystem::ReleaseAllAttackersOfTarget(AUnitCharacter* Targe
     }
 }
 
+// ===============================
+// Valkyrie (플레이어) 우선 타겟팅
+// ===============================
+void UBattleDirectorSubsystem::CacheValkyrieIfNeeded()
+{
+    if (Valkyrie.IsValid()) return;
+
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    TArray<AActor*> Found;
+    UGameplayStatics::GetAllActorsOfClass(W, AValkyrieCharacter::StaticClass(), Found);
+
+    if (Found.Num() > 0)
+    {
+        Valkyrie = Cast<AValkyrieCharacter>(Found[0]);
+    }
+}
+
+bool UBattleDirectorSubsystem::IsValkyrieTargetableBy(const AUnitCharacter* Attacker) const
+{
+    if (!bEnableValkyriePriority) return false;
+    if (!Attacker || !Attacker->GetBrain()) return false;
+    if (Attacker->IsDead()) return false;
+
+    // 발키리는 TeamA(플레이어)이고, TeamB 유닛만 발키리를 타겟팅 가능
+    if (Attacker->GetBrain()->Team != ETeam::TeamB) return false;
+
+    if (!Valkyrie.IsValid()) return false;
+
+    return true;
+}
+
+bool UBattleDirectorSubsystem::IsCurrentTargetValkyrie(const AUnitCharacter* Attacker) const
+{
+    if (!Attacker || !Attacker->GetBrain()) return false;
+    if (!Valkyrie.IsValid()) return false;
+    return Attacker->GetBrain()->ReservedTarget.Get() == Valkyrie.Get();
+}
+
+bool UBattleDirectorSubsystem::TryReserveValkyrieFirst(AUnitCharacter* Attacker, float Now)
+{
+    CacheValkyrieIfNeeded();
+    if (!IsValkyrieTargetableBy(Attacker)) return false;
+
+    // "타깃이 없는 상황에서만" 발키리 고려
+    if (Attacker->GetBrain()->ReservedTarget.IsValid())
+    {
+        return false;
+    }
+
+    AValkyrieCharacter* V = Valkyrie.Get();
+    if (!V) return false;
+
+    const float MaxSq = ValkyrieMaxTargetDistance * ValkyrieMaxTargetDistance;
+    const float DistSq = FVector::DistSquared(Attacker->GetActorLocation(), V->GetActorLocation());
+    if (DistSq > MaxSq) return false;
+
+    if (!Attacker->GetBrain()->CanChangeReservation(Now))
+        return false;
+
+    if (bValkyrieSingleReservor)
+    {
+        if (ValkyrieReservedBy.IsValid() && ValkyrieReservedBy.Get() != Attacker)
+            return false;
+    }
+
+    Attacker->GetBrain()->SetReservedTarget(V, Now);
+    NotifyTargetAssigned(Attacker, V);
+
+    if (bValkyrieSingleReservor)
+    {
+        ValkyrieReservedBy = Attacker;
+    }
+
+    return true;
+}
+
+void UBattleDirectorSubsystem::ReleaseValkyrieReservationIfTooFar(AUnitCharacter* Attacker, float Now)
+{
+    if (!Attacker || !Attacker->GetBrain()) return;
+    if (!Valkyrie.IsValid()) return;
+
+    if (!IsCurrentTargetValkyrie(Attacker))
+        return;
+
+    const float ReleaseSq = ValkyrieReleaseDistance * ValkyrieReleaseDistance;
+    const float DistSq = FVector::DistSquared(Attacker->GetActorLocation(), Valkyrie->GetActorLocation());
+
+    if (DistSq > ReleaseSq)
+    {
+        Attacker->GetBrain()->ClearReservedTarget(Now);
+        NotifyTargetAssigned(Attacker, nullptr);
+
+        if (ValkyrieReservedBy.Get() == Attacker)
+        {
+            ValkyrieReservedBy.Reset();
+        }
+    }
+}
+
 void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
 {
     if (!Unit || !Unit->GetBrain()) return;
 
     const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 
-    // 여기서 MaybeCleanup() 호출하지 않음
-    // 중앙 루프에서 BD->TickCleanup() 1회 호출로만 실행
-
-    // 이 유닛만 그리드 셀 업데이트
     UpdateUnitCell(Unit);
 
-    // 현재 예약 타깃이 유효하면 유지
+    CacheValkyrieIfNeeded();
+
+    // =====================================================
+    // 현재 타겟이 발키리면: 거리 초과 시 해제, 아니면 유지
+    // =====================================================
+    ReleaseValkyrieReservationIfTooFar(Unit, Now);
+    if (IsCurrentTargetValkyrie(Unit))
+    {
+        // 발키리를 이미 잡고 있으면 유지 (단, 위에서 멀면 해제됨)
+        return;
+    }
+
+    // =====================================================
+    // 현재 타겟(유닛)이 유효하면 그대로 유지하고 종료
+    //    -> 이 경우 발키리 고려하면 안 됨 (요구사항)
+    // =====================================================
     if (AUnitCharacter* CurrentTarget = Cast<AUnitCharacter>(Unit->GetBrain()->ReservedTarget.Get()))
     {
         if (!CurrentTarget->IsDead())
         {
+            // 슬롯에 실제로 들어있으면 유지
             if (CurrentTarget->FindSlotOfAttacker(Unit) != INDEX_NONE)
+            {
                 return;
+            }
 
+            // 슬롯이 깨졌으면 타겟 해제(= "타겟 없는 상태"로 만든 뒤 아래로 진행)
             Unit->GetBrain()->ClearReservedTarget(Now);
             NotifyTargetAssigned(Unit, nullptr);
         }
@@ -668,8 +820,28 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
             NotifyTargetAssigned(Unit, nullptr);
         }
     }
+    else
+    {
+        // ReservedTarget이 다른 Actor였다면(발키리 제외) 정리
+        if (Unit->GetBrain()->ReservedTarget.IsValid())
+        {
+            Unit->GetBrain()->ClearReservedTarget(Now);
+            NotifyTargetAssigned(Unit, nullptr);
+        }
+    }
 
-    // 후보를 그리드 인접 셀에서만 수집
+    // =====================================================
+    // 여기까지 왔다는 건 "현재 타겟이 없다"는 뜻
+    //    -> 이때만 발키리를 타겟팅 후보로 고려
+    // =====================================================
+    if (TryReserveValkyrieFirst(Unit, Now))
+    {
+        return;
+    }
+
+    // =====================================================
+    // 발키리도 못 잡았으면 기존 그리드 후보 탐색
+    // =====================================================
     TArray<AUnitCharacter*> Candidates;
     GatherEnemyCandidates(Unit, Candidates);
 
@@ -682,7 +854,9 @@ void UBattleDirectorSubsystem::UpdateReservationFor(AUnitCharacter* Unit)
         }
     }
 
+    // =====================================================
     // 후보가 없거나 모두 슬롯 없음 → 베이스 전진
+    // =====================================================
     Unit->GetBrain()->ReservationState = EReservationState::None;
     Unit->GetBrain()->EnemyBase = GetEnemyBaseFor(Unit);
 }

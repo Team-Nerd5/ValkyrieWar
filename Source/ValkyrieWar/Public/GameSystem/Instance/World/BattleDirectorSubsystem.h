@@ -6,6 +6,7 @@
 #include "BattleDirectorSubsystem.generated.h"
 
 class AUnitCharacter;
+class AValkyrieCharacter;
 
 /**
  * BattleDirectorSubsystem
@@ -14,10 +15,10 @@ class AUnitCharacter;
  * 팀별 유닛을 관리하고, 그리드 기반 후보 탐색을 통해
  * 타겟 예약(Engagement Slot)과 전투 매칭을 조율한다.
  *
- * - 팀/유닛 등록 및 해제 관리
- * - 공간 분할(Grid) 기반 적 후보 수집
- * - 타겟 선택 및 Engagement Slot 예약 처리
- * - 주기적 Cleanup을 통한 데이터 무결성 유지
+ * 추가:
+ * - 발키리(플레이어, TeamA) 1개를 월드에서 자동 캐시
+ * - TeamB 유닛은 발키리를 최우선 타겟으로 시도
+ * - 일정 거리 이상 멀어지면 발키리 타겟 해제
  *
  * Cleanup은 타이머가 "요청"만 수행하며,
  * 실제 실행은 안전한 지점에서 MaybeCleanup()을 통해 처리된다.
@@ -86,6 +87,16 @@ private:
     bool TryReserve(AUnitCharacter* Attacker, AUnitCharacter* Target, float Now);
 
     // ===============================
+    // Valkyrie (플레이어) 우선 타겟팅
+    // ===============================
+    void CacheValkyrieIfNeeded();
+    bool IsValkyrieTargetableBy(const AUnitCharacter* Attacker) const;
+
+    bool IsCurrentTargetValkyrie(const AUnitCharacter* Attacker) const;
+    bool TryReserveValkyrieFirst(AUnitCharacter* Attacker, float Now);
+    void ReleaseValkyrieReservationIfTooFar(AUnitCharacter* Attacker, float Now);
+
+    // ===============================
     // Cleanup
     // ===============================
     void CleanupInvalidReferences();
@@ -133,6 +144,22 @@ public:
     UPROPERTY(EditAnywhere, Category = "BD|Perf")
     float CleanupInterval = 1.0f;
 
+    // Valkyrie
+    UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
+    bool bEnableValkyriePriority = true;
+
+    /** TeamB 유닛이 발키리를 타겟팅 시도하는 최대 거리 */
+    UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
+    float ValkyrieMaxTargetDistance = 2500.f;
+
+    /** 발키리 타겟 유지/해제 거리(이 값 초과 시 해제). Max보다 약간 크게 추천 */
+    UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
+    float ValkyrieReleaseDistance = 2000.f;
+
+    /** 발키리를 동시에 1명만 점유하게 할지 */
+    UPROPERTY(EditAnywhere, Category = "Tuning|Valkyrie")
+    bool bValkyrieSingleReservor = true;
+
 private:
     // ===============================
     // 팀 데이터
@@ -163,6 +190,16 @@ private:
 
     UPROPERTY()
     TMap<TWeakObjectPtr<AUnitCharacter>, FIntPoint> UnitToCell;
+
+    // ===============================
+    // Valkyrie 캐시 / 상태
+    // ===============================
+    UPROPERTY()
+    TWeakObjectPtr<AValkyrieCharacter> Valkyrie;
+
+    /** 발키리를 점유(타겟)한 유닛(동시 1명 제한 옵션용) */
+    UPROPERTY()
+    TWeakObjectPtr<AUnitCharacter> ValkyrieReservedBy;
 
     // ===============================
     // Cleanup 상태
