@@ -59,11 +59,13 @@ protected:
 	TObjectPtr<UButton> Btn_Cancel = nullptr;
 
 private:
-	UInventorySystem* InventorySystem;
+	UPROPERTY()
+	TObjectPtr<UInventorySystem> InventorySystem;
+	UPROPERTY()
+	TObjectPtr<UWorldEventSystem> WorldEventSystem;
 
-	UWorldEventSystem* WorldEventSystem;
-
-	UItemData* CachedItemData = nullptr;
+	UPROPERTY()
+	TObjectPtr<UItemData> CachedItemData = nullptr;
 	uint64 CachedCharacterUID = 0;
 
 };

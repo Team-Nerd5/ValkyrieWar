@@ -40,6 +40,7 @@ public:
 	void UnEquipItem(UItemData* InItem);
 
 private:
+	UPROPERTY()
 	TObjectPtr<class UDataManager> DataManager;
 
 // 테스트용(삭제 가능)

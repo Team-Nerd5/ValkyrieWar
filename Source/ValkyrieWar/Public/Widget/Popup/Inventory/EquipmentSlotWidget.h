@@ -36,5 +36,6 @@ protected:
 	TObjectPtr<UImage> ArmorIcon = nullptr;
 
 private:
-	UInventorySystem* InventorySystem;
+	UPROPERTY()
+	TObjectPtr<UInventorySystem> InventorySystem;
 };

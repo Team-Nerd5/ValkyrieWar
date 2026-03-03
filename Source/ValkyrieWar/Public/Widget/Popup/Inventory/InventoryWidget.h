@@ -95,9 +95,11 @@ protected:
 	TObjectPtr<UEquipmentSlotWidget> EquipmentSlotWidget = nullptr;
 
 private:
-	UInventorySystem* InventorySystem;
+	UPROPERTY()
+	TObjectPtr<UInventorySystem> InventorySystem;
 
-	UWorldEventSystem* WorldEventSystem;
+	UPROPERTY()
+	TObjectPtr<UWorldEventSystem> WorldEventSystem;
 
 	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
