@@ -121,6 +121,13 @@ void UActionButtonWidget::Sell()
 	// 개수 입력 필요시 추가
 	InventorySystem->SellItem(CachedItemData, 1);
 
+	// 양의 변화가 필요한 아이템인 경우 개수 갱신
+	if (CachedItemData->GetItemGroup() == EItemGroup::Goods ||
+		CachedItemData->GetItemGroup() == EItemGroup::GrowthItem)
+	{
+		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.Broadcast();
+	}
+
 	// 판매 아이템이 장착아이템이라면 장착해제
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 

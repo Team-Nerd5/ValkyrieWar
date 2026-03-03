@@ -72,6 +72,8 @@ private:
 
 	virtual void CreateTopMenu() override;
 
+	void SortInventory();
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTileView> InventoryTileView = nullptr;

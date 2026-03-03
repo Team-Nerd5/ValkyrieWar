@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "Data/Game/ItemData.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "InventoryEntryWidget.generated.h"
 
 /**
@@ -18,11 +20,17 @@ class VALKYRIEWAR_API UInventoryEntryWidget : public UBaseWidget, public IUserOb
 	GENERATED_BODY()
 
 protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 
 	// 인벤토리 타일뷰에서 들어온 아이템을 UI에 표시하기 위한 함수
 	UFUNCTION()
-	void Init(UObject* InData);
+	void Init(UItemData* InData);
+
+	UFUNCTION()
+	void HandleAmountChanged();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -34,4 +42,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> BackGround = nullptr;
 
+private:
+	UWorldEventSystem* WorldEventSystem;
+
+	UItemData* CachedItemData;
 };

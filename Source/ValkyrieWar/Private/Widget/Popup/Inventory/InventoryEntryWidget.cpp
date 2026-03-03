@@ -2,24 +2,45 @@
 
 
 #include "Widget/Popup/Inventory/InventoryEntryWidget.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 #include "Data/Game/ItemData.h"
+
+void UInventoryEntryWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
+
+	WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+}
+
+void UInventoryEntryWidget::NativeDestruct()
+{
+	WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+
+	Super::NativeDestruct();
+}
 
 void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
 
-	Init(ListItemObject);
-}
-
-void UInventoryEntryWidget::Init(UObject* InData)
-{
-	UItemData* ItemData = Cast<UItemData>(InData);
+	UItemData* ItemData = Cast<UItemData>(ListItemObject);
 	if (!ItemData)
 		return;
 
-	if (ItemData->GetItemGroup() == EItemGroup::Goods || ItemData->GetItemGroup() == EItemGroup::GrowthItem)
+	if (ItemData)
 	{
-		Amount->SetText(FText::AsNumber(ItemData->GetAmount()));
+		CachedItemData = ItemData;
+		Init(ItemData);
+	}
+}
+
+void UInventoryEntryWidget::Init(UItemData* InData)
+{
+	if (InData->GetItemGroup() == EItemGroup::Goods || InData->GetItemGroup() == EItemGroup::GrowthItem)
+	{
+		Amount->SetText(FText::AsNumber(InData->GetAmount()));
 		Amount->SetVisibility(ESlateVisibility::Visible);
 	}
 	else
@@ -28,10 +49,16 @@ void UInventoryEntryWidget::Init(UObject* InData)
 		Amount->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	if (ItemData->GetTableData())
+	if (InData->GetTableData())
 	{
-		UTexture2D* IconTexture = ItemData->GetTableData()->Icon.LoadSynchronous();
+		UTexture2D* IconTexture = InData->GetTableData()->Icon.LoadSynchronous();
 		if(IconTexture)
 			Icon->SetBrushFromTexture(IconTexture);
 	}
+}
+
+void UInventoryEntryWidget::HandleAmountChanged()
+{
+	Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
+	CachedItemData = nullptr;
 }

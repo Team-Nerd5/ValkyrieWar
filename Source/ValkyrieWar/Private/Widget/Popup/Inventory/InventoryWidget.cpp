@@ -8,6 +8,7 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 
 #include "Widget/HUD/TopMenuWidget.h"
+#include "Algo/Sort.h"
 
 
 void UInventoryWidget::NativeConstruct()
@@ -52,10 +53,10 @@ void UInventoryWidget::NativeConstruct()
 
 void UInventoryWidget::NativeDestruct()
 {
-	Super::NativeDestruct();
-
 	WorldEventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
 	WorldEventSystem->Widget.OnChangeEquipCharacter.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+
+	Super::NativeDestruct();
 }
 
 void UInventoryWidget::OpenUI()
@@ -95,7 +96,7 @@ void UInventoryWidget::FilterReset()
 		CurrentEquipGroup = EEquipGroup::None;
 
 		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
-		InventoryTileView->SetListItems(CachedItemList);
+		SortInventory();
 	}
 	else if (SelectedInventoryType == EUIType::PopupCharacterInfo)
 	{
@@ -103,7 +104,7 @@ void UInventoryWidget::FilterReset()
 		CurrentEquipGroup = EEquipGroup::None;
 
 		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip);
-		InventoryTileView->SetListItems(CachedItemList);
+		SortInventory();
 	}
 	else
 		return;
@@ -115,7 +116,7 @@ void UInventoryWidget::FilterWeapon()
 	CurrentEquipGroup = EEquipGroup::Weapon;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	InventoryTileView->SetListItems(CachedItemList);
+	SortInventory();
 }
 
 void UInventoryWidget::FilterArmor()
@@ -124,7 +125,7 @@ void UInventoryWidget::FilterArmor()
 	CurrentEquipGroup = EEquipGroup::Armor;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	InventoryTileView->SetListItems(CachedItemList);
+	SortInventory();
 }
 
 void UInventoryWidget::FilterHelmet()
@@ -133,7 +134,7 @@ void UInventoryWidget::FilterHelmet()
 	CurrentEquipGroup = EEquipGroup::Helmet;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	InventoryTileView->SetListItems(CachedItemList);
+	SortInventory();
 }
 
 void UInventoryWidget::FilterGrowth()
@@ -142,7 +143,7 @@ void UInventoryWidget::FilterGrowth()
 	CurrentEquipGroup = EEquipGroup::None;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
-	InventoryTileView->SetListItems(CachedItemList);
+	SortInventory();
 }
 
 void UInventoryWidget::FilterGoods()
@@ -151,7 +152,7 @@ void UInventoryWidget::FilterGoods()
 	CurrentEquipGroup = EEquipGroup::None;
 
 	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
-	InventoryTileView->SetListItems(CachedItemList);
+	SortInventory();
 }
 
 void UInventoryWidget::OnUpdateInventory()
@@ -289,9 +290,44 @@ void UInventoryWidget::CreateTopMenu()
 
 			if (TopMenu)
 			{
-				
 				TopMenu->SetData(&Data);
 			}
 		}
 	}
+}
+
+void UInventoryWidget::SortInventory()
+{
+	Algo::Sort(CachedItemList, [](UItemData* ItemA, UItemData* ItemB) {
+			if (!ItemA && !ItemB) return false;
+			if (!ItemA) return false;
+			if (!ItemB) return true;
+
+			if (ItemA->GetItemGroup() != ItemB->GetItemGroup())
+			{
+				if (ItemA->GetItemGroup() == EItemGroup::None) return false;		// A의 ItemGroup이 None이면 뒤로
+				if (ItemB->GetItemGroup() == EItemGroup::None) return true;			// B의 ItemGroup이 None이면 A를 앞으로
+
+				return ItemA->GetItemGroup() < ItemB->GetItemGroup();				// ItemGroup Enum 순서대로 정렬
+			}
+
+			if (ItemA->GetEquipGroup() != ItemB->GetEquipGroup())
+			{
+				if (ItemA->GetEquipGroup() == EEquipGroup::None) return false;		// A의 EquipGroup이 None이면 뒤로
+				if (ItemB->GetEquipGroup() == EEquipGroup::None) return true;		// B의 EquipGroup이 None이면 A를 앞으로
+
+				return ItemA->GetEquipGroup() < ItemB->GetEquipGroup();				// EquipGroup Enum 순서대로 정렬
+			}
+
+			const auto* TableDataA = ItemA->GetTableData();
+			const auto* TableDataB = ItemB->GetTableData();
+
+			if (!TableDataA && !TableDataB) return false;
+			if (!TableDataA) return false;
+			if (!TableDataB) return true;
+
+			return TableDataA->DataId < TableDataB->DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
+		});
+
+	InventoryTileView->SetListItems(CachedItemList);
 }
