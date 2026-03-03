@@ -17,15 +17,22 @@ FReply UBattleWidget::NativeOnTouchMoved(const FGeometry& InGeometry, const FPoi
 		if (JoyPadBGImage)
 		{
 			 FVector2D BGLocation = JoyPadBGImage->GetCachedGeometry().AbsoluteToLocal(InGestureEvent.GetScreenSpacePosition());
-			 FVector JoyPadSize = FVector(BGLocation, 0.0f);
 
-			 JoyPadSize = JoyPadSize.GetClampedToMaxSize2D(JoyPadArea);
+			 //배경 이미지 정중앙 좌표 구하기
+			 FVector2D BGCenter = JoyPadBGImage->GetCachedGeometry().GetLocalSize() / 2.0f;
+			 // 터치 위치에서 중앙 값을 배제해서 정중앙 을 정돈함
+			 FVector2D TouchFromCenter = BGLocation - BGCenter;
+
+			 if (TouchFromCenter.Size() > JoyPadArea)
+			 {
+				 TouchFromCenter = TouchFromCenter.GetSafeNormal() * JoyPadArea;
+			 }
 			 
-			 JoyPadImage->SetRenderTranslation(FVector2D(JoyPadSize));
+			 JoyPadImage->SetRenderTranslation(TouchFromCenter);
 
-			 JoyPadAxis = FVector2D(JoyPadSize / JoyPadArea);
+			 JoyPadAxis = TouchFromCenter / JoyPadArea;
 
-			FReply::Handled();
+			 return FReply::Handled();
 		}
 	}
 	return FReply::Unhandled();

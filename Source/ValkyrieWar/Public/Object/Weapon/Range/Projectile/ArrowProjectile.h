@@ -30,7 +30,4 @@ public:
 		UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse,
 		const FHitResult& Hit);
-
-
-
 };
