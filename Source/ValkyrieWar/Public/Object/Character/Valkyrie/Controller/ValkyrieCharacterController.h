@@ -90,13 +90,13 @@ public:
 
 	//카메라 리드
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float LookAheaDistance = 800.0f;
+	float LookAheaDistance = 700.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float VelocityLeadScale = 0.78f;
+	float VelocityLeadScale = 0.48f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float LookAheadInterSpeed = 5.0f;
+	float LookAheadInterSpeed = 3.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
-	float MaxLeadDistance = 2000.0f;
+	float MaxLeadDistance = 1200.0f;
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere)
 	FRotator CameraRotate = FRotator(-55, -90, 0);

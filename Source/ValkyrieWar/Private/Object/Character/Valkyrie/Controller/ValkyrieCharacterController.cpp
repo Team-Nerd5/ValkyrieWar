@@ -187,11 +187,9 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	float CurrentTime = GetWorld()->GetTimeSeconds();
 
-	// 1. 카메라 스으윽 복귀 관련 시간 & 조건 계산
 	bool bTimeExpired = (CurrentTime - LastInteractionTime) > AutoCenterWaitTime;
 	bool bShouldRecenter = (!bIsDragging && (bIsInputActive || bTimeExpired || bIsReturningToCenter));
 
-	// 2. 드래그 오프셋(DragOffset) 스으윽 깎아내기 (보간)
 	if (bShouldRecenter)
 	{
 		float Speed = (bIsInputActive || bIsReturningToCenter) ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
@@ -204,9 +202,8 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		}
 	}
 
-	// 3. 카메라 리드(LookAhead) 로직 (중복 선언 에러 해결!)
 	FVector CharLoc = ControlledPawn->GetActorLocation();
-	FVector CharVelocity = ControlledPawn->GetVelocity(); // 변수 딱 한 번만 선언!
+	FVector CharVelocity = ControlledPawn->GetVelocity(); 
 	CharVelocity.Z = 0.0f;
 
 	FVector TargetLookAhead = CharVelocity * VelocityLeadScale;
@@ -214,24 +211,20 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	CurrentLookAheadOffset = FMath::VInterpTo(CurrentLookAheadOffset, TargetLookAhead, InDeltaTime, LookAheadInterSpeed);
 
-	// ★ 4. 수동(Manual) 모드 카메라 처리 ★
 	if (CurrentControlMode == EInputControlMode::Manual)
 	{
 		if (SpringArm && PawnCamera)
 		{
 			SpringArm->TargetOffset = FVector::ZeroVector;
-			// 드래그(DragOffset) + 달릴 때 생기는 카메라 리드(LookAhead) 합체!
 			FVector TotalOffset = DragOffset + CurrentLookAheadOffset;
-
-			// 합쳐진 오프셋을 스프링암 로컬 좌표로 변환해서 목 늘리기!
 			FVector LocalOffset = CameraRotate.UnrotateVector(TotalOffset);
 			PawnCamera->SetRelativeLocation(LocalOffset);
 		}
-		return; // 수동 모드는 여기서 완벽하게 끝!
+		return; 
 	}
 
-	// ★ 5. 자동(Auto) 모드(김수한무) 전용 로직 ★
-	float CurrentLagSpeed = AutoLagSpeed; // 이것도 여기서 딱 한 번만 선언!
+	
+	float CurrentLagSpeed = AutoLagSpeed; 
 
 	FVector FinalTargetLoc = CharLoc + AutoViewOffset + DragOffset + CurrentLookAheadOffset;
 	FVector CurrentCamLoc = PawnCamera->GetComponentLocation();
