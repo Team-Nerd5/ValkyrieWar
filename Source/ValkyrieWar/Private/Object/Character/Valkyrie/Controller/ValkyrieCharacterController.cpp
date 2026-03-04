@@ -90,6 +90,7 @@ void AValkyrieCharacterController::BeginPlay()
 		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
 	}
 
+	ChageGameState(EBattleState::Play);
 }
 
 void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)

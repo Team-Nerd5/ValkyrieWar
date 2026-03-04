@@ -21,6 +21,34 @@ public:
 	FORCEINLINE EBattleState GetState() const { return State; }
 	FORCEINLINE bool IsPlaying() const { return State == EBattleState::Play; }
 
+	// ===== Stage Timer API =====
+	UFUNCTION(BlueprintCallable, Category = "Battle|Timer")
+	void StartStageTimer(float InLimitSeconds);
+
+	UFUNCTION(BlueprintCallable, Category = "Battle|Timer")
+	void StopStageTimer();
+
+	UFUNCTION(BlueprintCallable, Category = "Battle|Timer")
+	float GetRemainingSeconds() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Battle|Timer")
+	float GetLimitSeconds() const { return TimeLimitSeconds; }
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 private:
 	EBattleState State = EBattleState::Init;
+
+	// ===== Timer Data =====
+	UPROPERTY(EditAnywhere, Category = "Battle|Timer")
+	float TimeLimitSeconds = 180.f; // 기본 3분
+
+	bool bTimerRunning = false;
+	double EndTimeSeconds = 0.0;
+
+	FTimerHandle TimerCheckHandle;
+
+	void CheckTimeOver();
 };

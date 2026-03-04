@@ -7,8 +7,9 @@
 #include "BattleEventData.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBattleStateChanged, EBattleState, InState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAllyWallHealthChanged, float, CurrentHealth, float, MaxHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyWallHealthChanged, float, CurrentHealth, float, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAllyWallHealthChanged, float, InCurrentHealth, float, InMaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyWallHealthChanged, float, InCurrentHealth, float, InMaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInGameTimeChanged, float, InCurrentTime);
 
 /**
  * 
@@ -22,4 +23,5 @@ public:
 	FOnBattleStateChanged OnBattleStateChanged;
 	FOnAllyWallHealthChanged OnAllyWallHealthChanged;
 	FOnEnemyWallHealthChanged OnEnemyWallHealthChanged;
+	FOnInGameTimeChanged OnInGameTimeChanged;
 };
