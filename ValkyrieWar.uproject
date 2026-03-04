@@ -15,16 +15,6 @@
 				"AIModule",
 				"GameplayAbilities"
 			]
-		},
-		{
-			"Name": "LoadingScreenModule",
-			"Type": "Runtime",
-			"LoadingPhase": "PreLoadingScreen",
-			"AdditionalDependencies": [
-				"Slate",
-				"SlateCore",
-				"DeveloperSettings"
-			]
 		}
 	],
 	"Plugins": [
