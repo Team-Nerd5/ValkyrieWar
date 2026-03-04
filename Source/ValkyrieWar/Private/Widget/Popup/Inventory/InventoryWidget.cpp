@@ -61,6 +61,8 @@ void UInventoryWidget::NativeDestruct()
 
 void UInventoryWidget::OpenUI()
 {
+	UIType = EUIType::PopupInventory;
+
 	Super::OpenUI();
 
 	FilterReset();
@@ -252,8 +254,6 @@ void UInventoryWidget::RefreshUIByMode()
 
 		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Hidden);
 
-		ActionButtonWidget->CloseUI();
-
 		FilterReset();
 	}
 	else if(SelectedInventoryType == EUIType::PopupCharacterInfo)
@@ -272,27 +272,7 @@ void UInventoryWidget::RefreshUIByMode()
 		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Visible);
 		EquipmentSlotWidget->RefreshEquipment(0);
 
-		ActionButtonWidget->CloseUI();
-
 		FilterReset();
-	}
-}
-
-void UInventoryWidget::CreateTopMenu()
-{
-	if (TopMenuClass)
-	{
-		FGoodsDataRow Data;
-
-		if (UGameDataHelper::GetGoodsData(EUIType::PopupInventory, GetGameInstance(), Data))
-		{
-			UTopMenuWidget* TopMenu = CreateWidget<UTopMenuWidget>(this, TopMenuClass);
-
-			if (TopMenu)
-			{
-				TopMenu->SetData(&Data);
-			}
-		}
 	}
 }
 

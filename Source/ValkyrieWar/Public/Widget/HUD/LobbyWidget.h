@@ -20,8 +20,6 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void OpenUI() override;
 
-	virtual void CreateTopMenu() override;
-
 	void ShowStage(int32 InChapter, int32 InStageNum);
 
 protected:
@@ -33,10 +31,10 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> StageButton = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UCanvasPanel> LobbyCanvas = nullptr;
+
 private:
 	void ShowInventory();
+	void ShowCharacterInfo();
 
 	UFUNCTION()
 	void ShowStageInternal();

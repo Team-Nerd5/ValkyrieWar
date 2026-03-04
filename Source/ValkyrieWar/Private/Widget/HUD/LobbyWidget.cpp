@@ -10,11 +10,8 @@
 
 #include "GameSystem/Library/GameDataHelper.h"
 
-#include "Widget/HUD/TopMenuWidget.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
-#include "Components/CanvasPanel.h"
-#include "Components/CanvasPanelSlot.h"
 
 #include "Widget/Popup/Inventory/InventoryWidget.h"
 
@@ -30,12 +27,10 @@ void ULobbyWidget::NativeConstruct()
 
 void ULobbyWidget::OpenUI()
 {
+    UIType = EUIType::Lobby;
+
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
-		//1. 탑메뉴 생성해서 세팅?
-        CreateTopMenu();
-		//
-		//2. 컨텐츠 데이터 사용해서 버튼 세팅
 		if (UContentsModule* Contents = DataManager->GetContentsModule())
 		{
 			TArray<FContentsDataRow*> ContentsList = Contents->GetAllDataSorted();
@@ -73,31 +68,6 @@ void ULobbyWidget::OpenUI()
 	Super::OpenUI();
 }
 
-void ULobbyWidget::CreateTopMenu()
-{
-    if (TopMenuClass)
-    {
-        FGoodsDataRow Data;
-
-        if (UGameDataHelper::GetGoodsData(EUIType::Lobby, GetGameInstance(), Data))
-        {
-            UTopMenuWidget* TopMenu = CreateWidget<UTopMenuWidget>(this, TopMenuClass);
-
-            if (TopMenu)
-            {
-                if (LobbyCanvas)
-                {
-                    UCanvasPanelSlot* CanvasSlot = LobbyCanvas->AddChildToCanvas(TopMenu);
-
-                    CanvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 0.0f));
-                    CanvasSlot->SetOffsets(FMargin(0.0f, 0.0f, 0.0f, 80.0f));
-                }
-                TopMenu->SetData(&Data);                    
-            }
-        }
-    }
-}
-
 void ULobbyWidget::ShowStage(int32 InChapter, int32 InStageNum)
 {
 }
@@ -110,6 +80,18 @@ void ULobbyWidget::ShowInventory()
         UInventoryWidget* Widget = UIManager->OpenUI<UInventoryWidget>(EUIType::PopupInventory);
 
         //위젯 초기화
+    }
+}
+
+void ULobbyWidget::ShowCharacterInfo()
+{
+    if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+    {
+        //캐릭터창 켜주고
+        
+        //캐릭터창은 로비 UI를 꺼준다
+        UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
+
     }
 }
 
@@ -137,5 +119,8 @@ void ULobbyWidget::OnClickInventory(EUIType InMenuType)
     case EUIType::PopupInventory:
             ShowInventory();
             break;
+    case EUIType::PopupCharacterInfo:
+
+        break;
     }
 }

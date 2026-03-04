@@ -9,16 +9,20 @@ void UInventoryEntryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
-
-	WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+	}
 }
 
 void UInventoryEntryWidget::NativeDestruct()
 {
-	WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
-
 	Super::NativeDestruct();
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+	}
+
 }
 
 void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
@@ -26,8 +30,6 @@ void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
 
 	UItemData* ItemData = Cast<UItemData>(ListItemObject);
-	if (!ItemData)
-		return;
 
 	if (ItemData)
 	{
@@ -59,6 +61,8 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 
 void UInventoryEntryWidget::HandleAmountChanged()
 {
-	Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
-	CachedItemData = nullptr;
+	if (CachedItemData)
+	{
+		Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
+	}
 }

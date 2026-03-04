@@ -15,7 +15,7 @@
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UInventoryEntryWidget : public UBaseWidget, public IUserObjectListEntry
+class VALKYRIEWAR_API UInventoryEntryWidget : public UUserWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 
@@ -43,7 +43,6 @@ protected:
 	TObjectPtr<UImage> BackGround = nullptr;
 
 private:
-	UWorldEventSystem* WorldEventSystem;
-
-	UItemData* CachedItemData;
+	UPROPERTY()
+	TObjectPtr<UItemData> CachedItemData = nullptr;
 };

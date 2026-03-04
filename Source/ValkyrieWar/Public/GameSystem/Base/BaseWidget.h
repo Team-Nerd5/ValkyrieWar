@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Data/Enum/CommonEnums.h"
 #include "BaseWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCloseUIRequested, UBaseWidget*, RequestingWidget);
@@ -42,8 +43,7 @@ public:
 	/** 이 UI 위에 다른 팝업이 열렸을 때 호출 */
 	virtual void OnFocusLost();
 
-	/**/
-	virtual void CreateTopMenu();
+	void CreateTopMenu();
 
 	/** UI가 현재 열려있는지 확인 */
 	FORCEINLINE bool IsOpen() const { return bIsOpen; }
@@ -62,6 +62,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UWorldEventSystem> EventSystem = nullptr;
+
+	UPROPERTY()
+	EUIType UIType;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UCanvasPanel> RootCanvas = nullptr;
 
 public:
 	/** UI 레이어 타입 (Persistent: 지속형, Popup: 팝업형) */

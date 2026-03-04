@@ -14,18 +14,12 @@
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UActionButtonWidget : public UBaseWidget
+class VALKYRIEWAR_API UActionButtonWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 protected:
 	virtual void NativeConstruct() override;
-
-public:
-	UFUNCTION(BlueprintCallable)
-	virtual void OpenUI() override;
-	UFUNCTION(BlueprintCallable)
-	virtual void CloseUI() override;
 
 public:
 	// 인벤토리 타입에 따라 표시할 버튼 세팅

@@ -2,6 +2,14 @@
 
 
 #include "GameSystem/Base/BaseWidget.h"
+#include "Data/Table/GameData/GoodsDataRow.h"
+
+#include "Widget/HUD/TopMenuWidget.h"
+
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
+
+#include "GameSystem/Library/GameDataHelper.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 void UBaseWidget::NativeConstruct()
@@ -15,6 +23,8 @@ void UBaseWidget::OpenUI()
 {
 	bIsOpen = true;
 	SetVisibility(ESlateVisibility::Visible);
+
+    CreateTopMenu();
 }
 
 void UBaseWidget::CloseUI()
@@ -35,4 +45,25 @@ void UBaseWidget::OnFocusLost()
 
 void UBaseWidget::CreateTopMenu()
 {
+    if (TopMenuClass)
+    {
+        FGoodsDataRow Data;
+
+        if (UGameDataHelper::GetGoodsData(UIType, GetGameInstance(), Data))
+        {
+            UTopMenuWidget* TopMenu = CreateWidget<UTopMenuWidget>(this, TopMenuClass);
+
+            if (TopMenu)
+            {
+                if (RootCanvas)
+                {
+                    UCanvasPanelSlot* CanvasSlot = RootCanvas->AddChildToCanvas(TopMenu);
+
+                    CanvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 0.0f));
+                    CanvasSlot->SetOffsets(FMargin(0.0f, 0.0f, 0.0f, 80.0f));
+                }
+                TopMenu->SetData(&Data);
+            }
+        }
+    }
 }

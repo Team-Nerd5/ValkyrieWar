@@ -13,7 +13,7 @@
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UEquipmentSlotWidget : public UBaseWidget
+class VALKYRIEWAR_API UEquipmentSlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -34,8 +34,4 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> ArmorIcon = nullptr;
-
-private:
-	UPROPERTY()
-	TObjectPtr<UInventorySystem> InventorySystem;
 };

@@ -70,8 +70,6 @@ private:
 	// UIType에 따라 인벤토리 세팅하기 위한 함수
 	void RefreshUIByMode();
 
-	virtual void CreateTopMenu() override;
-
 	void SortInventory();
 
 protected:

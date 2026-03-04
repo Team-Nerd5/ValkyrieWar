@@ -21,20 +21,6 @@ void UActionButtonWidget::NativeConstruct()
 		Btn_Equip->OnClicked.AddDynamic(this, &UActionButtonWidget::Equip);
 	if (Btn_Unequip)
 		Btn_Unequip->OnClicked.AddDynamic(this, &UActionButtonWidget::Unequip);
-	if (Btn_Cancel)
-		Btn_Cancel->OnClicked.AddDynamic(this, &UActionButtonWidget::CloseUI);
-
-	CloseUI();
-}
-
-void UActionButtonWidget::OpenUI()
-{
-	Super::OpenUI();
-}
-
-void UActionButtonWidget::CloseUI()
-{
-	Super::CloseUI();
 }
 
 void UActionButtonWidget::SetVisibleButton(EUIType InCurrentUIType)
@@ -75,8 +61,6 @@ void UActionButtonWidget::SetupItem(UItemData* InItemData)
 #pragma endregion
 
 	CachedItemData = InItemData;
-
-	OpenUI();
 }
 
 void UActionButtonWidget::SetupCharacterUID(uint64 InCharacterUID)
@@ -132,8 +116,6 @@ void UActionButtonWidget::Sell()
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 
 	CachedItemData = nullptr;
-
-	CloseUI();
 }
 
 void UActionButtonWidget::Equip()
@@ -163,8 +145,6 @@ void UActionButtonWidget::Equip()
 
 	CachedItemData = nullptr;
 	CachedCharacterUID = 0;
-
-	CloseUI();
 }
 
 void UActionButtonWidget::Unequip()
@@ -194,6 +174,4 @@ void UActionButtonWidget::Unequip()
 	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
 
 	CachedItemData = nullptr;
-
-	CloseUI();
 }

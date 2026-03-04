@@ -8,12 +8,6 @@ void UEquipmentSlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-	}
-
 	WeaponIcon->SetVisibility(ESlateVisibility::Hidden);
 	HelmetIcon->SetVisibility(ESlateVisibility::Hidden);
 	ArmorIcon->SetVisibility(ESlateVisibility::Hidden);
@@ -21,54 +15,54 @@ void UEquipmentSlotWidget::NativeConstruct()
 
 void UEquipmentSlotWidget::RefreshEquipment(uint64 InCharacterUID)
 {
-	if (!InventorySystem)
-		return;
+	if (UInventorySystem* InventorySystem = GetGameInstance()->GetSubsystem<UInventorySystem>())
+	{
+		if (WeaponIcon)
+		{
+			UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Weapon);
+			if (WeaponData)
+			{
+				WeaponIcon->SetVisibility(ESlateVisibility::Visible);
+				UTexture2D* IconTexture = WeaponData->GetTableData()->Icon.LoadSynchronous();
+				if (IconTexture)
+					WeaponIcon->SetBrushFromTexture(IconTexture);
+			}
+			else
+			{
+				WeaponIcon->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
 
-	if (WeaponIcon)
-	{
-		UItemData* WeaponData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Weapon);
-		if (WeaponData)
+		if (HelmetIcon)
 		{
-			WeaponIcon->SetVisibility(ESlateVisibility::Visible);
-			UTexture2D* IconTexture = WeaponData->GetTableData()->Icon.LoadSynchronous();
-			if (IconTexture)
-				WeaponIcon->SetBrushFromTexture(IconTexture);
+			UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Helmet);
+			if (HelmetData)
+			{
+				HelmetIcon->SetVisibility(ESlateVisibility::Visible);
+				UTexture2D* IconTexture = HelmetData->GetTableData()->Icon.LoadSynchronous();
+				if (IconTexture)
+					HelmetIcon->SetBrushFromTexture(IconTexture);
+			}
+			else
+			{
+				HelmetIcon->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
-		else
-		{
-			WeaponIcon->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-	
-	if(HelmetIcon)
-	{
-		UItemData* HelmetData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Helmet);
-		if (HelmetData)
-		{
-			HelmetIcon->SetVisibility(ESlateVisibility::Visible);
-			UTexture2D* IconTexture = HelmetData->GetTableData()->Icon.LoadSynchronous();
-			if (IconTexture)
-				HelmetIcon->SetBrushFromTexture(IconTexture);
-		}
-		else
-		{
-			HelmetIcon->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
 
-	if(ArmorIcon)
-	{
-		UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Armor);
-		if (ArmorData)
+		if (ArmorIcon)
 		{
-			ArmorIcon->SetVisibility(ESlateVisibility::Visible);
-			UTexture2D* IconTexture = ArmorData->GetTableData()->Icon.LoadSynchronous();
-			if (IconTexture)
-				ArmorIcon->SetBrushFromTexture(IconTexture);
-		}
-		else
-		{
-			ArmorIcon->SetVisibility(ESlateVisibility::Hidden);
+			UItemData* ArmorData = InventorySystem->GetEquippedItemByGroup(InCharacterUID, EEquipGroup::Armor);
+			if (ArmorData)
+			{
+				ArmorIcon->SetVisibility(ESlateVisibility::Visible);
+				UTexture2D* IconTexture = ArmorData->GetTableData()->Icon.LoadSynchronous();
+				if (IconTexture)
+					ArmorIcon->SetBrushFromTexture(IconTexture);
+			}
+			else
+			{
+				ArmorIcon->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
 	}
 }
