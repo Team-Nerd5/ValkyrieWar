@@ -56,6 +56,9 @@ protected:
 	// 선택된 캐릭터가 장착한 장비칸 UI업데이트 함수
 	UFUNCTION()
 	void OnUpdateEquipmentForUID(uint64 InCharacterUID);
+	// 인벤토리 아이템 선택 취소 업데이트 함수
+	UFUNCTION()
+	void OnUpdateSelectedCancel();
 	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);

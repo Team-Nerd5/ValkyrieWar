@@ -24,13 +24,14 @@ protected:
 	virtual void NativeDestruct() override;
 
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
 	// 인벤토리 타일뷰에서 들어온 아이템을 UI에 표시하기 위한 함수
 	UFUNCTION()
 	void Init(UItemData* InData);
 
 	UFUNCTION()
-	void HandleAmountChanged();
+	void OnAmountChanged();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -41,6 +42,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> BackGround = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> SelectImage = nullptr;
 
 private:
 	UPROPERTY()

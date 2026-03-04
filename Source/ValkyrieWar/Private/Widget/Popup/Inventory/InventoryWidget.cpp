@@ -40,7 +40,8 @@ void UInventoryWidget::NativeConstruct()
 	if (WorldEventSystem)
 	{
 		WorldEventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
-		WorldEventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+		WorldEventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+		WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.AddDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
 	}
 
 	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
@@ -53,8 +54,12 @@ void UInventoryWidget::NativeConstruct()
 
 void UInventoryWidget::NativeDestruct()
 {
-	WorldEventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
-	WorldEventSystem->Widget.OnChangeEquipCharacter.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+	if (WorldEventSystem)
+	{
+		WorldEventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		WorldEventSystem->Widget.OnUpdateCharacterEquipment.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+		WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.RemoveDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
+	}
 
 	Super::NativeDestruct();
 }
@@ -198,6 +203,11 @@ void UInventoryWidget::OnUpdateEquipmentForUID(uint64 InCharacterUID)
 	}
 }
 
+void UInventoryWidget::OnUpdateSelectedCancel()
+{
+	InventoryTileView->ClearSelection();
+}
+
 void UInventoryWidget::OnItemClicked(UObject* InItemData)
 {
 	UItemData* ItemData = Cast<UItemData>(InItemData);
@@ -211,7 +221,7 @@ void UInventoryWidget::OnItemClicked(UObject* InItemData)
 #pragma endregion
 
 	ActionButtonWidget->SetupItem(ItemData);
-	ActionButtonWidget->SetupCharacterUID(TempCharacterUID);		// 현재 캐릭터 목록 미구현으로 인해 임시 사용
+	ActionButtonWidget->SetupCharacterUID(TempCharacterUID);		// 현재 캐릭터 목록 미구현으로 인해 임시 사용(선택한 캐릭터 입력)
 	ActionButtonWidget->SetVisibleButton(SelectedInventoryType);
 }
 
@@ -254,6 +264,8 @@ void UInventoryWidget::RefreshUIByMode()
 
 		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Hidden);
 
+		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
+
 		FilterReset();
 	}
 	else if(SelectedInventoryType == EUIType::PopupCharacterInfo)
@@ -271,6 +283,8 @@ void UInventoryWidget::RefreshUIByMode()
 
 		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Visible);
 		EquipmentSlotWidget->RefreshEquipment(0);
+
+		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
 
 		FilterReset();
 	}
@@ -305,5 +319,13 @@ void UInventoryWidget::SortInventory()
 			return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
 		});
 
-	InventoryTileView->SetListItems(CachedItemList);
+	if (InventoryTileView)
+	{
+		InventoryTileView->ClearSelection();
+		InventoryTileView->SetListItems(CachedItemList);
+	}
+	if (ActionButtonWidget)
+	{
+		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 }

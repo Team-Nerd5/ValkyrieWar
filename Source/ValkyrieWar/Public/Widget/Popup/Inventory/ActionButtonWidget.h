@@ -41,6 +41,9 @@ protected:
 	// 장착 해제 버튼 클릭시 실행
 	UFUNCTION()
 	void Unequip();
+	// 선택 취소 버튼 클릭시 실행
+	UFUNCTION()
+	void SelectCancel();
 
 protected:
 	UPROPERTY(meta = (BindWidget))

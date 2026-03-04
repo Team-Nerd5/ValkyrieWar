@@ -10,8 +10,9 @@
  * 위젯 관련 이벤트 구조체
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventoryAmountChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeEquipCharacter, uint64, InCharacterUID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateCharacterEquipment, uint64, InCharacterUID);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
@@ -22,8 +23,10 @@ struct VALKYRIEWAR_API FWidgetEventData
 public:
 	// 인벤토리 Tileview 갱신용
 	FOnUpdateInventory OnUpdateInventory;
+	// 인벤토리 아이템 선택 취소용
+	FOnUpdateInventorySelectedCancel OnUpdateInventorySelectedCancel;
 	// 인벤토리 Tileview Entry Widget 아이템 양 갱신용
 	FOnUpdateInventoryAmountChanged OnUpdateInventoryAmountChanged;
 	// 장비 장착 및 해제시 캐릭터 정보 장비칸 UI 갱신용
-	FOnChangeEquipCharacter OnChangeEquipCharacter;
+	FOnUpdateCharacterEquipment OnUpdateCharacterEquipment;
 };

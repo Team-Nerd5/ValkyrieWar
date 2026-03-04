@@ -37,7 +37,7 @@ void UTestInventoryWidget::NativeConstruct()
 		Btn_FilterGoods->OnClicked.AddDynamic(this, &UTestInventoryWidget::FIlterGoods);
 
 	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UTestInventoryWidget::FilterReset);
-	EventSystem->Widget.OnChangeEquipCharacter.AddDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
+	EventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
 
 	TileView->OnItemClicked().AddUObject(this, &UTestInventoryWidget::ItemClicked);
 
@@ -53,7 +53,7 @@ void UTestInventoryWidget::NativeDestruct()
 	Super::NativeDestruct();
 
 	EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UTestInventoryWidget::FilterReset);
-	EventSystem->Widget.OnChangeEquipCharacter.RemoveDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
+	EventSystem->Widget.OnUpdateCharacterEquipment.RemoveDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
 }
 
 void UTestInventoryWidget::OpenUI()

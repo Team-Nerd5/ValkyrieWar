@@ -11,23 +11,31 @@ void UInventoryEntryWidget::NativeConstruct()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
+	}
+
+	if (SelectImage)
+	{
+		SelectImage->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
 void UInventoryEntryWidget::NativeDestruct()
 {
-	Super::NativeDestruct();
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::HandleAmountChanged);
+		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
 	}
 
+	Super::NativeDestruct();
 }
 
 void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
+
+	if (SelectImage)
+		SelectImage->SetVisibility(ESlateVisibility::Hidden);
 
 	UItemData* ItemData = Cast<UItemData>(ListItemObject);
 
@@ -38,17 +46,31 @@ void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 	}
 }
 
+void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
+{
+	if (SelectImage)
+	{
+		SelectImage->SetVisibility(bIsSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+	}
+}
+
 void UInventoryEntryWidget::Init(UItemData* InData)
 {
-	if (InData->GetItemGroup() == EItemGroup::Goods || InData->GetItemGroup() == EItemGroup::GrowthItem)
+	if (!InData)
+		return;
+	
+	if (Amount)
 	{
-		Amount->SetText(FText::AsNumber(InData->GetAmount()));
-		Amount->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		Amount->SetText(FText::AsNumber(0));
-		Amount->SetVisibility(ESlateVisibility::Hidden);
+		if (InData->GetItemGroup() == EItemGroup::Goods || InData->GetItemGroup() == EItemGroup::GrowthItem)
+		{
+			Amount->SetText(FText::AsNumber(InData->GetAmount()));
+			Amount->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Amount->SetText(FText::AsNumber(0));
+			Amount->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 
 	if (InData->GetTableData().DataId > 0)
@@ -59,10 +81,13 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 	}
 }
 
-void UInventoryEntryWidget::HandleAmountChanged()
+void UInventoryEntryWidget::OnAmountChanged()
 {
-	if (CachedItemData)
+	if (Amount)
 	{
-		Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
+		if (CachedItemData)
+		{
+			Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
+		}
 	}
 }

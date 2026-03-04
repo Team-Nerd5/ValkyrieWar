@@ -21,6 +21,8 @@ void UActionButtonWidget::NativeConstruct()
 		Btn_Equip->OnClicked.AddDynamic(this, &UActionButtonWidget::Equip);
 	if (Btn_Unequip)
 		Btn_Unequip->OnClicked.AddDynamic(this, &UActionButtonWidget::Unequip);
+	if (Btn_Cancel)
+		Btn_Cancel->OnClicked.AddDynamic(this, &UActionButtonWidget::SelectCancel);
 }
 
 void UActionButtonWidget::SetVisibleButton(EUIType InCurrentUIType)
@@ -61,6 +63,8 @@ void UActionButtonWidget::SetupItem(UItemData* InItemData)
 #pragma endregion
 
 	CachedItemData = InItemData;
+
+	SetVisibility(ESlateVisibility::Visible);
 }
 
 void UActionButtonWidget::SetupCharacterUID(uint64 InCharacterUID)
@@ -96,14 +100,17 @@ void UActionButtonWidget::Sell()
 	}
 #pragma endregion
 
-	if (!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
-	{
-		uint64 TempCharacterUID = CachedItemData->GetEquipCharacter();
-		InventorySystem->UnEquipItem(CachedItemData);
-		WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
-	}
 	// 개수 입력 필요시 추가
 	InventorySystem->SellItem(CachedItemData, 1);
+
+	if (!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
+	{
+		// 판매 아이템이 장착아이템이라면 장착해제
+		uint64 TempCharacterUID = CachedItemData->GetEquipCharacter();
+		InventorySystem->UnEquipItem(CachedItemData);
+		// 인벤토리 장비칸 갱신
+		WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(TempCharacterUID);
+	}
 
 	// 양의 변화가 필요한 아이템인 경우 개수 갱신
 	if (CachedItemData->GetItemGroup() == EItemGroup::Goods ||
@@ -111,11 +118,14 @@ void UActionButtonWidget::Sell()
 	{
 		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.Broadcast();
 	}
-
-	// 판매 아이템이 장착아이템이라면 장착해제
+	// 인벤토리 갱신
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	// 인벤토리 선택 해제
+	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
 
 	CachedItemData = nullptr;
+
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UActionButtonWidget::Equip()
@@ -141,10 +151,13 @@ void UActionButtonWidget::Equip()
 	InventorySystem->EquipItem(CachedItemData, CachedCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(CachedCharacterUID);
+	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(CachedCharacterUID);
+	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
 
 	CachedItemData = nullptr;
 	CachedCharacterUID = 0;
+
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UActionButtonWidget::Unequip()
@@ -171,7 +184,17 @@ void UActionButtonWidget::Unequip()
 	InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-	WorldEventSystem->Widget.OnChangeEquipCharacter.Broadcast(TempCharacterUID);
+	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(TempCharacterUID);
+	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
 
 	CachedItemData = nullptr;
+
+	SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UActionButtonWidget::SelectCancel()
+{
+	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
+
+	SetVisibility(ESlateVisibility::Hidden);
 }
