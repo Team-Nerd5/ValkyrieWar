@@ -3,6 +3,16 @@
 
 #include "Widget/HUD/BattleWidget.h"
 #include "Components/Image.h"
+#include "Widget/Item/Battle/WallHealthBarWidget.h"
+
+void UBattleWidget::NativeConstruct()
+{
+	if (AllyWallHealthBar && EnemyWallHealthBar)
+	{
+		AllyWallHealthBar->Init();
+		EnemyWallHealthBar->Init();
+	}
+}
 
 FReply UBattleWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
 {

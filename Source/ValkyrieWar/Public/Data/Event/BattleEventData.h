@@ -7,6 +7,9 @@
 #include "BattleEventData.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBattleStateChanged, EBattleState, InState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAllyWallHealthChanged, float, CurrentHealth, float, MaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyWallHealthChanged, float, CurrentHealth, float, MaxHealth);
+
 /**
  * 
  */
@@ -17,4 +20,6 @@ public:
 	GENERATED_BODY()
 public:
 	FOnBattleStateChanged OnBattleStateChanged;
+	FOnAllyWallHealthChanged OnAllyWallHealthChanged;
+	FOnEnemyWallHealthChanged OnEnemyWallHealthChanged;
 };

@@ -14,6 +14,7 @@ class VALKYRIEWAR_API UBattleWidget : public UBaseWidget
 {
 	GENERATED_BODY()
 public:
+	virtual void NativeConstruct() override;
 	virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 	virtual FReply NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 	virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
@@ -26,6 +27,12 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> JoyPadBGImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UWallHealthBarWidget> AllyWallHealthBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UWallHealthBarWidget> EnemyWallHealthBar;
 
 private:
 	bool bIsTouching = false;
