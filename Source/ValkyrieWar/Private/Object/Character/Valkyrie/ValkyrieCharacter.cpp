@@ -202,6 +202,25 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	//캐릭터 블루프린트 생성 후 무기 세팅
 	//장비 음..
 	UpdateWeaponMesh();
+	if (UInventorySystem* InvenSys = GetGameInstance()->GetSubsystem<UInventorySystem>())
+	{
+		uint64 TestItemUID = 777; // 내 맘대로 정한 임시 고유번호
+
+		// 형 DT에 있는 진짜 무기(활/칼) 아이템 코드로 변경해! (예: 411101)
+		int32 TestDataID = 411101;
+
+		// 1. 인벤토리에 아이템 강제 추가 (서류 작업)
+		InvenSys->AddItem(TestItemUID, TestDataID, 1);
+
+		// 2. 추가된 아이템을 내 캐릭터 손에 쥐여주기 (현장 작업)
+		EquipWeapon(Data->GetUID(), TestItemUID);
+
+		UE_LOG(LogTemp, Warning, TEXT("🗡️ [테스트] %d 번호 무기 장착 완료!"), TestDataID);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("뭐 없다 아이가;;;"));
+	}
 
 }
 void AValkyrieCharacter::BeginComboWindow()
