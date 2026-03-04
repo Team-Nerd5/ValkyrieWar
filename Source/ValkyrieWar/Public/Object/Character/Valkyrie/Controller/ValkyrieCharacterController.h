@@ -101,8 +101,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	FRotator CameraRotate = FRotator(-55, -90, 0);
 
-	
-
 	FORCEINLINE void SetBattleUI(class UBattleWidget* InWidget) { BattleUI = InWidget; }
 protected:
 	UPROPERTY()
