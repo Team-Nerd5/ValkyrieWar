@@ -66,7 +66,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UItemData> CachedItemData = nullptr;
-	uint64 CachedCharacterUID = 0;
 
 	uint64 CachedCharacterUID = 0;
 };
