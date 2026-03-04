@@ -24,7 +24,6 @@ void UANS_ComboWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequence
 	{
 		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
 		{
-			// 📢 "창문 닫힘! 형, 내가 들고 온 'NextSectionName'으로 점프해!"
 			Character->EndComboWindow(NextSectionName);
 		}
 	}

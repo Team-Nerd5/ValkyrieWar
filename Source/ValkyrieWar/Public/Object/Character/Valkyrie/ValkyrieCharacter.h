@@ -39,7 +39,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ResetCombo();
-
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteAttack() override;
 	virtual void ExecuteSkill() override;
 
@@ -51,12 +51,24 @@ public:
 	* 캐릭터 Spawn 후 데이터 세팅에 사용
 	*/
 	void SetData(UValkyrieData* InData);
+
+	
 protected:
 	virtual void BeginPlay() override;
 
 	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
 	void UpdateWeaponMesh();
+
+	UPROPERTY()
+	TObjectPtr<class AValkyrieWeapon> CurrentWeaponActor;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<class AArrowProjectile> ArrowClass;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<class AValkyrieWeapon> WeaponClass;
+
 
 protected:
 	/** Top down camera */
@@ -65,6 +77,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;
+
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)

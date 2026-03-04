@@ -39,6 +39,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> AttackAction;
 
+
+
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
@@ -145,6 +147,8 @@ private:
 	bool bIsTouch = false;
 
 	bool bIsReturningToCenter = false;
+
+
 
 	
 	void RefreshInteractionTime();

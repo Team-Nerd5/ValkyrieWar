@@ -409,6 +409,18 @@ void AValkyrieCharacterController::Move(FVector2D InMoveDir)
 {
 	if (ControlledPawn)
 	{
+		if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(ControlledPawn))
+		{
+			// 캐릭터의 애니메이션 인스턴스를 가져온다
+			if (UAnimInstance* AnimInst = ValkyrieChar->GetMesh()->GetAnimInstance())
+			{
+				// 어떤 몽타주든 재생 중이라면 이동 명령을 무시!
+				if (AnimInst->IsAnyMontagePlaying())
+				{
+					return; // 입구 컷!
+				}
+			}
+		}
 		// 카메라가 아니라 컨트롤러 회전 기준으로 이동 (일반적인 방식)
 		//const FRotator Rotation = GetControlRotation();
 		const FRotator YawRotation(0, CameraRotate.Yaw, 0);
