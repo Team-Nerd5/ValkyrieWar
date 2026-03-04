@@ -16,25 +16,26 @@ class VALKYRIEWAR_API UItemData : public UObject
 	GENERATED_BODY()
 
 public:
-	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData);
+	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData);
 	void AddAmount(int32 InAmount);
 	void Equip(uint64 InEquipCharacter);
 
-	FORCEINLINE EItemType GetItemType() { return TableData->ItemType; }
+	FORCEINLINE EItemType GetItemType() { return TableData.ItemType; }
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
 	FORCEINLINE EEquipGroup GetEquipGroup() { return EquipGroup; }
 	FORCEINLINE int32 GetAmount() { return Amount; }
-	FORCEINLINE int32 GetAttackID() { return TableData ? TableData->AttackId : 0; }
-	FORCEINLINE TArray<int32> GetSkillID() { return TableData ? TableData->SkillId : TArray<int32>(); }
+	FORCEINLINE int32 GetAttackID() { return TableData.AttackId; }
+	FORCEINLINE TArray<int32> GetSkillID() { return TableData.SkillId; }
 	FORCEINLINE uint64 GetEquipCharacter() { return EquipCharacter; }
 	FORCEINLINE const uint64 GetUID() { return UID; }
-	FORCEINLINE const FItemDataRow* GetTableData() { return TableData; }
-	FORCEINLINE bool IsSkeletalWeapon() { return TableData->IsSkeletal; }
-	FORCEINLINE TSoftObjectPtr<USkeletalMesh> GetSkeletalMesh() { return TableData->SkeletalMesh; }
-	FORCEINLINE TSoftObjectPtr<UStaticMesh> GetStaticMesh() { return TableData->StaticMesh; }
+	FORCEINLINE const FItemDataRow GetTableData() { return TableData; }
+	FORCEINLINE bool IsSkeletalWeapon() { return TableData.IsSkeletal; }
+	FORCEINLINE TSoftObjectPtr<USkeletalMesh> GetSkeletalMesh() { return TableData.SkeletalMesh; }
+	FORCEINLINE TSoftObjectPtr<UStaticMesh> GetStaticMesh() { return TableData.StaticMesh; }
 
 private:
-	const FItemDataRow* TableData = nullptr;
+	UPROPERTY()
+	FItemDataRow TableData;
 
 	UPROPERTY()
 	uint64 UID = 0;

@@ -6,6 +6,7 @@
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "Widget/HUD/BattleWidget.h"
+#include "Widget/Loading/LoadingWidget.h"
 
 void ABattleGameState::ChangeState(EBattleState InState)
 {
@@ -23,6 +24,8 @@ void ABattleGameState::ChangeState(EBattleState InState)
 				UE_LOG(LogTemp, Error, TEXT("BattleUI is not exist!! Can't start game"));
 				return;
 			}
+
+			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 
 			APlayerController* PC = GetWorld()->GetFirstPlayerController();
 			if (PC)
@@ -60,8 +63,7 @@ void ABattleGameState::ChangeState(EBattleState InState)
 
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
-			UIManager->CloseAllPopupUI();
-			UIManager->ResetAllUIStates();
+			//레벨 전환으로 가야할 듯..
 		}
 		break;
 	}

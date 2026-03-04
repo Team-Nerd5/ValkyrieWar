@@ -25,8 +25,10 @@ void UAttackModule::MakeData()
 
 		for (FAttackDataRow* Attack : AllRows)
 		{
+			if (!Attack) continue;
+
 			UAttackData* NewData = NewObject<UAttackData>(this);
-			NewData->MakeData(Attack, GameManager.Get());
+			NewData->MakeData(*Attack, GameManager.Get());
 			AttackData.Add(Attack->DataId, NewData);
 		}
 	}

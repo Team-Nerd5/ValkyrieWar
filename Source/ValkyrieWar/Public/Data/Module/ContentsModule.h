@@ -18,7 +18,7 @@ class VALKYRIEWAR_API UContentsModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	TArray<FContentsDataRow*> GetAllDataSorted();
+	TArray<FContentsDataRow> GetAllDataSorted();
 
 	int32 GetGoodsId(EUIType InUIType);
 
@@ -26,8 +26,10 @@ protected:
 	virtual void MakeData() override;
 
 public:
-	FContentsDataRow* const GetTableData(int32 InDataId);
+	FContentsDataRow const GetTableData(int32 InDataId);
 private:
-	TMap<int32, FContentsDataRow*> TableDataByDataId;
-	TArray<FContentsDataRow*> MenuContents;
+	UPROPERTY()
+	TMap<int32, FContentsDataRow> TableDataByDataId;
+	UPROPERTY()
+	TArray<FContentsDataRow> MenuContents;
 };

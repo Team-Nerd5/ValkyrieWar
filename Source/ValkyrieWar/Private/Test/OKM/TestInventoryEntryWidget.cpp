@@ -21,7 +21,7 @@ void UTestInventoryEntryWidget::Init(UObject* InData)
 
 	UID->SetText(FText::AsNumber(ItemData->GetUID()));
 
-	DataID->SetText(FText::AsNumber(ItemData->GetTableData()->DataId));
+	DataID->SetText(FText::AsNumber(ItemData->GetTableData().DataId));
 
 	FText ItemGroupText = StaticEnum<EItemGroup>()->GetDisplayNameTextByValue(static_cast<int64>(ItemData->GetItemGroup()));
 	ItemGroup->SetText(ItemGroupText);

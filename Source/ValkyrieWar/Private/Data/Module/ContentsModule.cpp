@@ -16,7 +16,7 @@ void UContentsModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-TArray<FContentsDataRow*> UContentsModule::GetAllDataSorted()
+TArray<FContentsDataRow> UContentsModule::GetAllDataSorted()
 {
 	MenuContents.Sort([](const FContentsDataRow& A, const FContentsDataRow& B) {
 		return A.Order < B.Order;
@@ -29,9 +29,9 @@ int32 UContentsModule::GetGoodsId(EUIType InUIType)
 {
 	for (auto data : TableDataByDataId)
 	{
-		if (data.Value->MenuType == InUIType)
+		if (data.Value.MenuType == InUIType)
 		{
-			return data.Value->GoodsId;
+			return data.Value.GoodsId;
 		}
 	}
 
@@ -47,17 +47,19 @@ void UContentsModule::MakeData()
 
 		for (FContentsDataRow* Item : AllRows)
 		{
-			TableDataByDataId.Add(Item->DataId, Item);
+			if (!Item) continue;
+
+			TableDataByDataId.Add(Item->DataId, *Item);
 
 			if (Item->ContentType == EContentType::Menu)
 			{
-				MenuContents.Add(Item);
+				MenuContents.Add(*Item);
 			}
 		}
 	}
 }
 
-FContentsDataRow* const UContentsModule::GetTableData(int32 inDataId)
+FContentsDataRow const UContentsModule::GetTableData(int32 inDataId)
 {
 	return *TableDataByDataId.Find(inDataId);
 }

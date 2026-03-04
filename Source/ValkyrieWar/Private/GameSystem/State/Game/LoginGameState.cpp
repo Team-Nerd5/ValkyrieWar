@@ -81,12 +81,6 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 	case ELoginState::MoveToLobby:
 		if (UGameManager* GameManager = GetGameInstance<UGameManager>())
 		{
-			if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
-			{
-				UIManager->CloseAllPopupUI();
-				UIManager->ResetAllUIStates();
-			}
-
 			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 			{
 				LevelManager->LoadLobbyMap();

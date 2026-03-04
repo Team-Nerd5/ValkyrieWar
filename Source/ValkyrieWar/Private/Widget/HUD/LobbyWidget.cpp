@@ -25,6 +25,16 @@ void ULobbyWidget::NativeConstruct()
     }
 }
 
+void ULobbyWidget::NativeDestruct()
+{
+    Super::NativeDestruct();
+
+    if (StageButton)
+    {
+        StageButton->OnClicked.RemoveDynamic(this, &ULobbyWidget::ShowStageInternal);
+    }
+}
+
 void ULobbyWidget::OpenUI()
 {
     UIType = EUIType::Lobby;
@@ -33,12 +43,12 @@ void ULobbyWidget::OpenUI()
 	{
 		if (UContentsModule* Contents = DataManager->GetContentsModule())
 		{
-			TArray<FContentsDataRow*> ContentsList = Contents->GetAllDataSorted();
+			TArray<FContentsDataRow> ContentsList = Contents->GetAllDataSorted();
 
             int32 MaxColumns = 3;
 
 			//버튼 생성
-			for (FContentsDataRow* Data : ContentsList)
+			for (FContentsDataRow Data : ContentsList)
 			{
                 ULobbyMenuWidget* NewMenu = CreateWidget<ULobbyMenuWidget>(this, MenuItemClass);
                 if (NewMenu)
@@ -50,8 +60,8 @@ void ULobbyWidget::OpenUI()
 
                     if (GridSlot)
                     {
-                        int32 Row = Data->Order / MaxColumns;
-                        int32 Col = Data->Order % MaxColumns;
+                        int32 Row = Data.Order / MaxColumns;
+                        int32 Col = Data.Order % MaxColumns;
 
                         GridSlot->SetRow(Row);
                         GridSlot->SetColumn(Col);

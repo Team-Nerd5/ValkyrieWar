@@ -43,6 +43,15 @@ void ULoginWidget::NativeConstruct()
     }
 }
 
+void ULoginWidget::NativeDestruct()
+{
+    Super::NativeDestruct();
+    if (EventSystem)
+    {
+        EventSystem->Login.OnReadyToStart.RemoveDynamic(this, &ULoginWidget::OnReadyToStart);
+    }
+}
+
 void ULoginWidget::OnStartGame()
 {
     if (EventSystem)

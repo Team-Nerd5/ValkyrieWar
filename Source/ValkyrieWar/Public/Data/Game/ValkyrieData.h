@@ -27,7 +27,8 @@ private:
 	UPROPERTY()
 	uint64 UID = 0;
 
-	const FValkyrieDataRow* TableData = nullptr;
+	UPROPERTY()
+	FValkyrieDataRow TableData;
 
 	UPROPERTY()
 	TObjectPtr<UAttackData> AttackData = nullptr;
@@ -36,7 +37,7 @@ private:
 	TArray<TObjectPtr<USkillData>> SkillData;
 
 	//기본 데이터 세팅
-	void MakeData(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+	void MakeData(const FValkyrieDataRow InTableData, UGameManager* InGameManager);
 
 	UPROPERTY()
 	TMap<EStatusType, float> Stat;
@@ -46,15 +47,15 @@ public:
 	void UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager);
 
 	//새로 캐릭터를 획득
-	void Initialize(const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+	void Initialize(const FValkyrieDataRow InTableData, UGameManager* InGameManager);
 
 	//저장된 데이터 로드 시(모듈에서 호출되는걸로 하자...)
-	void LoadData(uint64 InUID, const FValkyrieDataRow* InTableData, UGameManager* InGameManager);
+	void LoadData(uint64 InUID, const FValkyrieDataRow InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE const uint64 GetUID() { return UID; }
-	FORCEINLINE const int32 GetDataID() { return TableData ? TableData->DataId : 0; }
+	FORCEINLINE const int32 GetDataID() { return TableData.DataId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
-	FORCEINLINE TSubclassOf<class AValkyrieCharacter> GetSpawnClass() { return TableData ? TableData->SpawnClass : nullptr; }
+	FORCEINLINE TSubclassOf<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 };

@@ -31,6 +31,16 @@ void ALobbyPlayerController::BeginPlay()
 	ChageGameState(ELobbyState::Init);
 }
 
+void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Lobby.OnLobbyStateChanged.RemoveDynamic(this, &ALobbyPlayerController::ChageGameState);
+	}
+
+}
+
 void ALobbyPlayerController::ChageGameState(ELobbyState InState)
 {
 	if (ALobbyGameState* State = GetWorld()->GetGameState<ALobbyGameState>())

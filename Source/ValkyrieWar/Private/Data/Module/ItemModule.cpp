@@ -26,7 +26,8 @@ void UItemModule::MakeData()
 
 		for (FItemDataRow* Item : AllRows)
 		{
-			TableDataByDataId.Add(Item->DataId, Item);
+			if (!Item) continue;
+			TableDataByDataId.Add(Item->DataId, *Item);
 		}
 	}
 	if (DataTable == nullptr) {
@@ -34,17 +35,25 @@ void UItemModule::MakeData()
 	}
 }
 
+void UItemModule::SetList()
+{
+	OwnItemList.Empty();
+
+	OwnItems.GenerateValueArray(OwnItemList);
+}
+
 void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 {
-	FItemDataRow* TableData = GetTableDataById(InDataId);
+	FItemDataRow TableData = GetTableDataById(InDataId);
 
-	if (TableData)
+	if (TableData.DataId > 0)
 	{
 		UItemData* NewItem = NewObject<UItemData>(this);
 
 		NewItem->Initialize(InUID, InAmount, TableData);
 
 		OwnItems.Add(InUID, NewItem);
+		SetList();
 	}
 	else
 	{
@@ -55,9 +64,9 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 //아이템류는 중복저장하면 안됨(장비는 가능)
 void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 {
-	FItemDataRow* TableData = GetTableDataById(InDataId);
+	FItemDataRow TableData = GetTableDataById(InDataId);
 
-	if (TableData && GameManager.IsValid())
+	if (TableData.DataId > 0 && GameManager.IsValid())
 	{
 		UItemData* NewItem = NewObject<UItemData>(this);
 		uint64 UID = GameManager->GetItemUID();
@@ -65,6 +74,7 @@ void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 		NewItem->Initialize(UID, InAmount, TableData);
 
 		OwnItems.Add(UID, NewItem);
+		SetList();
 	}
 	else
 	{
@@ -76,22 +86,23 @@ void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 {
 	UItemData* TargetItem = *OwnItems.Find(InUID);
 
+	if (!TargetItem) return;
+
 	TargetItem->AddAmount(InAmount);
 
 	if (TargetItem->GetAmount() <= 0)
 	{
 		OwnItems.Remove(InUID);
+		SetList();
 	}
 }
 
-FItemDataRow* UItemModule::GetTableDataById(int32 InDataId)
+FItemDataRow UItemModule::GetTableDataById(int32 InDataId)
 {
-	FItemDataRow** FoundRow = TableDataByDataId.Find(InDataId);
-
-	if (FoundRow)
+	if (TableDataByDataId.Contains(InDataId))
 	{
-		return *FoundRow;
+		return *TableDataByDataId.Find(InDataId);
 	}
-	UE_LOG(LogTemp, Error, TEXT("ID %d마 이거없다 아이가 터진다 이거 "), InDataId);
-	return nullptr;
+
+	return FItemDataRow();
 }

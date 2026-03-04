@@ -9,13 +9,14 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
 #include "GameSystem/Library/Data/GameDataFactory.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Object/SaveGame/AccountSaveGame.h"
 
-#include "GameSystem/Library/GameBaseLibrary.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widget/Loading/LoadingWidget.h"
+#include "Widget/HUD/LoginWidget.h"
 
 void ULevelManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -133,7 +134,9 @@ void ULevelManager::OnMapLoadCompleted()
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
-		UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
+		//Persistant는 명시적 제거
+		UIManager->CloseUI<ULoginWidget>(EUIType::Login);
+		UIManager->CloseAllPopupUI();
 	}
 
 	// 최종 맵 이동

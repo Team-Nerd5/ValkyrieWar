@@ -35,21 +35,15 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 	
 	if (InItemGroup == EItemGroup::None)
 	{
-		// 인벤토리 전체 불러오기
-		for (auto& Data : DataManager->GetItemModule()->GetItems())
-		{
-			UItemData* Item = Data.Value;
-			FilteredResult.Add(Item);
-		}
+		FilteredResult = DataManager->GetItemModule()->GetItems();
 	}
 	else
 	{
 		if (InEquipGroup == EEquipGroup::None)
 		{
 			// 특정 아이템 그룹 전부 불러오기
-			for (auto& Data : DataManager->GetItemModule()->GetItems())
+			for (auto Item : DataManager->GetItemModule()->GetItems())
 			{
-				UItemData* Item = Data.Value;
 				if (Item && Item->GetItemGroup() == InItemGroup)
 				{
 					FilteredResult.Add(Item);
@@ -59,9 +53,8 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 		else
 		{
 			// 특정 아이템 그룹 내 특정 장비 그룹 불러오기
-			for (auto& Data : DataManager->GetItemModule()->GetItems())
+			for (auto Item : DataManager->GetItemModule()->GetItems())
 			{
-				UItemData* Item = Data.Value;
 				if (Item && Item->GetItemGroup() == InItemGroup && Item->GetEquipGroup() == InEquipGroup)
 				{
 					FilteredResult.Add(Item);
@@ -82,9 +75,8 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 	}
 #pragma endregion
 
-	for (auto& Data : DataManager->GetItemModule()->GetItems())
+	for (auto Item : DataManager->GetItemModule()->GetItems())
 	{
-		UItemData* Item = Data.Value;
 		if (InCharacterUID == 0)
 		{
 			return nullptr;
@@ -113,18 +105,14 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 
 	// 테스트를 위해 UItemData가 아닌 ItemData의 UID와 DataID를 따로 받게 했음
 	// 나중에 필요시 UItemData로 변경
-
-	UItemData* Item = nullptr;
-	if (DataManager->GetItemModule()->GetItems().Contains(InUID))
-	{
-		Item = DataManager->GetItemModule()->GetItem(InUID);
-	}
+		 
+	 UItemData* Item = DataManager->GetItemModule()->GetItem(InUID);
 
 	if (Item)	// UID로 찾았을 경우
 	{
 		if (Item->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
 		{
-			DataManager->GetItemModule()->AddItem(Item->GetTableData()->DataId, InAmount);	// 장비일 때
+			DataManager->GetItemModule()->AddItem(Item->GetTableData().DataId, InAmount);	// 장비일 때
 		}
 		else
 		{
@@ -133,40 +121,42 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 		return;
 	}
 
-	if (!Item)	// UID로 못찾았을 경우
-	{
-		UItemData* Data = nullptr;
-		for (auto& Pair : DataManager->GetItemModule()->GetItems())
-		{
-			UItemData* PairItem = Pair.Value;
-			if (PairItem && PairItem->GetTableData() && PairItem->GetTableData()->DataId == InDataId)
-			{
-				Data = PairItem;
-				break;
-			}
-		}
+	//아래는 왜 하는건지 모르겠음?
+	//if (!Item)	// UID로 못찾았을 경우
+	//{
+	//	DataManager->GetItemModule()->GetItem
+	//	UItemData* Data = nullptr;
+	//	for (auto Item : DataManager->GetItemModule()->GetItems())
+	//	{
+	//		UItemData* PairItem = Pair.Value;
+	//		if (PairItem && PairItem->GetTableData() && PairItem->GetTableData().DataId == InDataId)
+	//		{
+	//			Data = PairItem;
+	//			break;
+	//		}
+	//	}
 
-		if (Data)	// DataID로 찾았을 경우
-		{
-			if (Data->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
-			{
-				for (int32 i = 0; i < InAmount; ++i)									// 장비일 때
-				{
-					DataManager->GetItemModule()->AddItem(InDataId, 1);
-				}
-			}
-			else
-			{
-				DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);	// 장비가 아닐 때
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));
-			DataManager->GetItemModule()->AddItem(InDataId, 1);
-		}
-		return;
-	}
+	//	if (Data)	// DataID로 찾았을 경우
+	//	{
+	//		if (Data->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
+	//		{
+	//			for (int32 i = 0; i < InAmount; ++i)									// 장비일 때
+	//			{
+	//				DataManager->GetItemModule()->AddItem(InDataId, 1);
+	//			}
+	//		}
+	//		else
+	//		{
+	//			DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);	// 장비가 아닐 때
+	//		}
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));
+	//		DataManager->GetItemModule()->AddItem(InDataId, 1);
+	//	}
+	//	return;
+	//}
 }
 
 void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
@@ -183,15 +173,8 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 		return;
 	}
 #pragma endregion
-	
-	if (DataManager->GetItemModule()->GetItems().Contains(InItem->GetUID()))
-	{
-		DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
-	}
-	else
-	{
-		return;
-	}
+
+	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
 }
 
 void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
@@ -209,21 +192,12 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 	}
 #pragma endregion
 
-
-	if (DataManager->GetItemModule()->GetItems().Contains(InItem->GetUID()))
-	{
-		DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
-
-		// 아이템 가격에 따른 플레이어 골드 추가 필요
-	}
-	else
-	{
-		return;
-	}
+	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
 }
 
 void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 {
+	//하..나중에 좀
 #pragma region 유효성 검사
 	if (!(DataManager->GetItemModule()))
 	{
@@ -235,11 +209,6 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] InItem이 없습니다"));
 		return;
 	}
-	if (!DataManager->GetItemModule()->GetItems().Contains(InItem->GetUID()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 해당 ItemData UID의 아이템을 찾을 수 없습니다"));
-		return;
-	}
 	if (InItem->GetItemGroup() != EItemGroup::Equip)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 장착할 수 없는 아이템 입니다"));
@@ -248,24 +217,23 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 	}
 #pragma endregion
 
-	for (auto& Pair : DataManager->GetItemModule()->GetItems())
+	for (auto Item : DataManager->GetItemModule()->GetItems())
 	{
-		UItemData* Existing = Pair.Value;
-		if (!Existing)
+		if (!Item)
 			continue;
 
 		// 장착하고 있는 아이템과 장착할려는 아이템이 같은 때 스킵
-		if (Existing->GetUID() == InItem->GetUID())
+		if (Item->GetUID() == InItem->GetUID())
 			continue;
 
 		// 장착하고 있는 아이템 그룹과 장착할려고하는 아이템의 그룹이 같지 않을 때 스킵
-		if (Existing->GetEquipGroup() != InItem->GetEquipGroup())
+		if (Item->GetEquipGroup() != InItem->GetEquipGroup())
 			continue;
 
 		// 이미 같은 캐릭터에 장착되어있다면 기존 장비 장착 해제
-		if (Existing->GetEquipCharacter() == InCharacterUID && InCharacterUID != 0)
+		if (Item->GetEquipCharacter() == InCharacterUID && InCharacterUID != 0)
 		{
-			Existing->Equip(0);
+			Item->Equip(0);
 			break;
 		}
 	}
@@ -284,11 +252,6 @@ void UInventorySystem::UnEquipItem(UItemData* InItem)
 	if (!InItem)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] InItem이 없습니다"));
-		return;
-	}
-	if (!DataManager->GetItemModule()->GetItems().Contains(InItem->GetUID()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] 해당 ItemData UID의 아이템을 찾을 수 없습니다"));
 		return;
 	}
 #pragma endregion

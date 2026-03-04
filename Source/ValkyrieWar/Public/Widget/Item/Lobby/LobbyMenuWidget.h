@@ -33,7 +33,7 @@ public:
 public:
 	virtual void NativeConstruct() override;
 
-	void SetData(FContentsDataRow* InTableData);
+	void SetData(FContentsDataRow InTableData);
 
 protected:
 	UFUNCTION()

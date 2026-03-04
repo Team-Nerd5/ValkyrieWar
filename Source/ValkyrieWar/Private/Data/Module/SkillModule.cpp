@@ -39,8 +39,10 @@ void USkillModule::MakeData()
 
 		for (FSkillDataRow* Skill : AllRows)
 		{
+			if (!Skill) continue;
+
 			USkillData* NewData = NewObject<USkillData>(this);
-			NewData->MakeData(Skill, GameManager.Get());
+			NewData->MakeData(*Skill, GameManager.Get());
 			SkillData.Add(Skill->DataId, NewData);
 		}
 	}

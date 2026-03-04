@@ -43,19 +43,24 @@ public:
 	void AddItemAmount(uint64 InUID, int32 InAmount);
 
 
-	FORCEINLINE TMap<uint64, UItemData*> GetItems() { return OwnItems; }
+	FORCEINLINE TArray<UItemData*> GetItems() { return OwnItemList; }
 	FORCEINLINE UItemData* GetItem(uint64 InUID)
 	{
-		UItemData** FoundItem = OwnItems.Find(InUID);
-		return FoundItem ? *FoundItem : nullptr; // 없으면 터지지말고 nullptr
+		UItemData* FoundItem = *OwnItems.Find(InUID);
+		return FoundItem ? FoundItem : nullptr; // 없으면 터지지말고 nullptr
 	}
 
-	FItemDataRow* GetTableDataById(int32 InDataId);
+	FItemDataRow GetTableDataById(int32 InDataId);
 protected:
 	virtual void MakeData() override;
 
+	void SetList();
 private:
-	TMap<uint64, UItemData*> OwnItems;
+	UPROPERTY()
+	TMap<uint64, TObjectPtr<UItemData>> OwnItems;
+	UPROPERTY()
+	TMap<int32, FItemDataRow> TableDataByDataId;
 
-	TMap<int32, FItemDataRow*> TableDataByDataId;
+	UPROPERTY()
+	TArray<TObjectPtr<UItemData>> OwnItemList;
 };

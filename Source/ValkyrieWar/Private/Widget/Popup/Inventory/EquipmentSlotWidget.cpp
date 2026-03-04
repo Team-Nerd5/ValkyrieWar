@@ -23,7 +23,7 @@ void UEquipmentSlotWidget::RefreshEquipment(uint64 InCharacterUID)
 			if (WeaponData)
 			{
 				WeaponIcon->SetVisibility(ESlateVisibility::Visible);
-				UTexture2D* IconTexture = WeaponData->GetTableData()->Icon.LoadSynchronous();
+				UTexture2D* IconTexture = WeaponData->GetTableData().Icon.LoadSynchronous();
 				if (IconTexture)
 					WeaponIcon->SetBrushFromTexture(IconTexture);
 			}
@@ -39,7 +39,7 @@ void UEquipmentSlotWidget::RefreshEquipment(uint64 InCharacterUID)
 			if (HelmetData)
 			{
 				HelmetIcon->SetVisibility(ESlateVisibility::Visible);
-				UTexture2D* IconTexture = HelmetData->GetTableData()->Icon.LoadSynchronous();
+				UTexture2D* IconTexture = HelmetData->GetTableData().Icon.LoadSynchronous();
 				if (IconTexture)
 					HelmetIcon->SetBrushFromTexture(IconTexture);
 			}
@@ -55,7 +55,7 @@ void UEquipmentSlotWidget::RefreshEquipment(uint64 InCharacterUID)
 			if (ArmorData)
 			{
 				ArmorIcon->SetVisibility(ESlateVisibility::Visible);
-				UTexture2D* IconTexture = ArmorData->GetTableData()->Icon.LoadSynchronous();
+				UTexture2D* IconTexture = ArmorData->GetTableData().Icon.LoadSynchronous();
 				if (IconTexture)
 					ArmorIcon->SetBrushFromTexture(IconTexture);
 			}

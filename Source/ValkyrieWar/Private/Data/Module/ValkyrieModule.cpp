@@ -30,7 +30,7 @@ bool UValkyrieModule::HasValkyrie(int32 InDataId)
 uint64 UValkyrieModule::CreateValkyrie(int32 InDataId)
 {
 	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
-	NewValkyrie->Initialize(TableDataByDataId.Find(InDataId), GameManager.Get());
+	NewValkyrie->Initialize(*TableDataByDataId.Find(InDataId), GameManager.Get());
 
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
 
@@ -40,7 +40,7 @@ uint64 UValkyrieModule::CreateValkyrie(int32 InDataId)
 void UValkyrieModule::LoadData(uint64 InUID, int32 InDataId)
 {
 	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
-	NewValkyrie->LoadData(InUID, TableDataByDataId.Find(InDataId), GameManager.Get());
+	NewValkyrie->LoadData(InUID, *TableDataByDataId.Find(InDataId), GameManager.Get());
 
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
 }
@@ -54,6 +54,8 @@ void UValkyrieModule::MakeData()
 
 		for (FValkyrieDataRow* Valkyrie : AllRows)
 		{
+			if (!Valkyrie) continue;
+
 			TableDataByDataId.Add(Valkyrie->DataId, *Valkyrie);
 		}
 	}

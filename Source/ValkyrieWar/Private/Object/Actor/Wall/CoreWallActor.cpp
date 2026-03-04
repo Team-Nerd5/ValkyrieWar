@@ -23,9 +23,6 @@ void ACoreWallActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// GAS 기본 초기화(필요한 프로젝트면 활성화)
-	 ASC->InitAbilityActorInfo(this, this);
-
 	if (UWorld* World = GetWorld())
 	{
 		if (UBattleDirectorSubsystem* Subsys = World->GetSubsystem<UBattleDirectorSubsystem>())
@@ -37,6 +34,8 @@ void ACoreWallActor::BeginPlay()
 
 	if (ASC)
 	{
+		ASC->InitAbilityActorInfo(this, this);
+
 		const UStatAttributeSet* WallSet = ASC->GetSet<UStatAttributeSet>();
 		if (WallSet)
 		{

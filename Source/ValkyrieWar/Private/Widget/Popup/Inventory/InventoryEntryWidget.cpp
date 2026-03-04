@@ -51,9 +51,9 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 		Amount->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	if (InData->GetTableData())
+	if (InData->GetTableData().DataId > 0)
 	{
-		UTexture2D* IconTexture = InData->GetTableData()->Icon.LoadSynchronous();
+		UTexture2D* IconTexture = InData->GetTableData().Icon.LoadSynchronous();
 		if(IconTexture)
 			Icon->SetBrushFromTexture(IconTexture);
 	}

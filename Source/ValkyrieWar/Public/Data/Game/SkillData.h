@@ -17,12 +17,13 @@ class VALKYRIEWAR_API USkillData : public UObject
 {
 	GENERATED_BODY()
 public:
-	void MakeData(const FSkillDataRow* InTableData, UGameManager* InGameManager);
+	void MakeData(const FSkillDataRow InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
-	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
+	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
 private:
-	const FSkillDataRow* TableData;
 	UPROPERTY()
-	TArray<USkillEffectData*> EffectList;
+	FSkillDataRow TableData;
+	UPROPERTY()
+	TArray<TObjectPtr<USkillEffectData>> EffectList;
 };

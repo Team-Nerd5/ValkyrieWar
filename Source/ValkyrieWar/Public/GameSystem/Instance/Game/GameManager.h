@@ -52,15 +52,11 @@ protected:
 	TObjectPtr<UDataTable> MapDataTable = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Table")
-	TMap<ETableDataType, UDataTable*> GameDataTables;
+	TMap<ETableDataType, TObjectPtr<UDataTable>> GameDataTables;
 
 private:
 	uint64 ItemUID = 100000000;
 	uint64 CharacterUID = 0;
 
-	UPROPERTY()
 	uint64 SelectedValkyrieUID = 0;
-
-	UPROPERTY()
-	TObjectPtr<UValkyrieData> SelectedValkyrie = nullptr;
 };

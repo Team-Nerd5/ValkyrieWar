@@ -4,19 +4,19 @@
 #include "Data/Game/SkillData.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
-void USkillData::MakeData(const FSkillDataRow* InTableData, UGameManager* InGameManager)
+void USkillData::MakeData(const FSkillDataRow InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
 
 	//SkillEffectModule에서 값 가져옴..
 
-	if (InGameManager && InTableData)
+	if (InGameManager)
 	{
 		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
 
 		if (DataManager)
 		{
-			EffectList = DataManager->GetSkillEffectModule()->GetEffects(TableData->EffectGroupId);
+			EffectList = DataManager->GetSkillEffectModule()->GetEffects(TableData.EffectGroupId);
 		}
 	}
 }

@@ -195,14 +195,12 @@ void UTestInventoryWidget::SortInventory()
 {
 	CachedItemList.Sort([](UItemData& A, UItemData& B)
 		{
-			const auto* TableA = A.GetTableData();
-			const auto* TableB = B.GetTableData();
+			const auto TableA = A.GetTableData();
+			const auto TableB = B.GetTableData();
 
 			if (A.GetItemGroup() == B.GetItemGroup())
 			{
-				if (TableA && TableB)
-					return A.GetTableData()->DataId < B.GetTableData()->DataId;
-				return false;
+				return A.GetTableData().DataId < B.GetTableData().DataId;
 			}
 
 			if (A.GetItemGroup() == EItemGroup::None) return false;

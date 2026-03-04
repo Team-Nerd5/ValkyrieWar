@@ -7,17 +7,14 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
-void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow* InTableData)
+void UItemData::Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData)
 {
 	UID = InUID;
 	Amount = InAmount;
 	TableData = InTableData;
 
-	if (InTableData)
-	{
-		ItemGroup = UGameDataHelper::GetItemGroup(InTableData->ItemType);
-		EquipGroup = UGameDataHelper::GetEquipGroup(InTableData->ItemType);
-	}
+	ItemGroup = UGameDataHelper::GetItemGroup(InTableData.ItemType);
+	EquipGroup = UGameDataHelper::GetEquipGroup(InTableData.ItemType);
 }
 
 void UItemData::AddAmount(int32 InAmount)

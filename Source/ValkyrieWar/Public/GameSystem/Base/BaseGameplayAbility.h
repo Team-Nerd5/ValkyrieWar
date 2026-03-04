@@ -35,5 +35,5 @@ public:
 private:
 
 	UPROPERTY()
-	TArray<UGameplayEffect*> CachedEffects;
+	TArray<TObjectPtr<UGameplayEffect>> CachedEffects;
 };

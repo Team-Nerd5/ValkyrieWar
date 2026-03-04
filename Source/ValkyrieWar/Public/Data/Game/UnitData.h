@@ -26,7 +26,8 @@ private:
 	UPROPERTY()
 	uint64 UID = 0;
 
-	const FUnitDataRow* TableData = nullptr;
+	UPROPERTY()
+	FUnitDataRow TableData;
 
 	UPROPERTY()
 	TObjectPtr<UAttackData> AttackData = nullptr;
@@ -38,7 +39,7 @@ private:
 	TMap<EStatusType, float> Stat;
 
 public:
-	void MakeData(const FUnitDataRow* InTableData, UGameManager* InGameManager);
+	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE uint64 GetUID() { return UID; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }

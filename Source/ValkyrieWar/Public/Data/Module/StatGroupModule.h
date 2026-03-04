@@ -17,16 +17,17 @@ class VALKYRIEWAR_API UStatGroupModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	FORCEINLINE FStatGroupDataRow* const GetData(int32 InDataId)
+	FORCEINLINE FStatGroupDataRow const GetData(int32 InDataId)
 	{
 		if (TableDataByDataId.Contains(InDataId))
 		{
 			return *TableDataByDataId.Find(InDataId);
 		}
-		return nullptr;
+		return FStatGroupDataRow();
 	}
 protected:
 	virtual void MakeData() override;
 private:
-	TMap<int32, FStatGroupDataRow*> TableDataByDataId;
+	UPROPERTY()
+	TMap<int32, FStatGroupDataRow> TableDataByDataId;
 };

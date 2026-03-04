@@ -5,18 +5,18 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
-void UAttackData::MakeData(const FAttackDataRow* InTableData, UGameManager* InGameManager)
+void UAttackData::MakeData(const FAttackDataRow InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
 
 	//SkillEffectModule에서 값 가져옴..
 
-	if (InGameManager && InTableData)
+	if (InGameManager)
 	{
 		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
 		if (DataManager)
 		{
-			EffectList = DataManager->GetSkillEffectModule()->GetEffects(TableData->EffectGroupId);
+			EffectList = DataManager->GetSkillEffectModule()->GetEffects(TableData.EffectGroupId);
 		}
 	}
 	

@@ -17,6 +17,8 @@ class VALKYRIEWAR_API ALoginPlayerController : public APlayerController
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 
 	UFUNCTION()
 	void ChageGameState(ELoginState InState);

@@ -27,6 +27,7 @@ class VALKYRIEWAR_API UBaseWidget : public UUserWidget
 	GENERATED_BODY()
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 public:
 	/** UI를 활성화하고 화면에 표시 */
 	virtual void OpenUI();

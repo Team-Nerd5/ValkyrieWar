@@ -19,7 +19,7 @@ void UTestEquipmentWidget::EquipInfo(UItemData* InItemData)
 	{
 		UID->SetText(FText::AsNumber(InItemData->GetUID()));
 
-		DataID->SetText(FText::AsNumber(InItemData->GetTableData()->DataId));
+		DataID->SetText(FText::AsNumber(InItemData->GetTableData().DataId));
 
 		FText ItemGroupText = StaticEnum<EEquipGroup>()->GetDisplayNameTextByValue(static_cast<int64>(InItemData->GetEquipGroup()));
 		ItemGroup->SetText(ItemGroupText);

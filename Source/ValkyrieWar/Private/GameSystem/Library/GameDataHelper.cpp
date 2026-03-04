@@ -56,10 +56,10 @@ bool UGameDataHelper::GetGoodsData(EUIType InUIType, UGameInstance* GameInstance
 		int32 GoodsId = DataManager->GetContentsModule()->GetGoodsId(InUIType);
 		if (GoodsId > 0)
 		{
-			FGoodsDataRow* Goods = DataManager->GetGoodsModule()->GetGoodsTable(GoodsId);
-			if (Goods)
+			FGoodsDataRow Goods = DataManager->GetGoodsModule()->GetGoodsTable(GoodsId);
+			if (Goods.DataId > 0)
 			{
-				OutGoodsData = *Goods;
+				OutGoodsData = Goods;
 				return true;
 			}
 		}

@@ -299,14 +299,10 @@ void UInventoryWidget::SortInventory()
 				return ItemA->GetEquipGroup() < ItemB->GetEquipGroup();				// EquipGroup Enum 순서대로 정렬
 			}
 
-			const auto* TableDataA = ItemA->GetTableData();
-			const auto* TableDataB = ItemB->GetTableData();
+			const auto TableDataA = ItemA->GetTableData();
+			const auto TableDataB = ItemB->GetTableData();
 
-			if (!TableDataA && !TableDataB) return false;
-			if (!TableDataA) return false;
-			if (!TableDataB) return true;
-
-			return TableDataA->DataId < TableDataB->DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
+			return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
 		});
 
 	InventoryTileView->SetListItems(CachedItemList);

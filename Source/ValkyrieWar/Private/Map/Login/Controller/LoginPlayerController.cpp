@@ -29,6 +29,16 @@ void ALoginPlayerController::BeginPlay()
 	ChageGameState(ELoginState::Init);
 }
 
+void ALoginPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Login.OnLoginStateChanged.RemoveDynamic(this, &ALoginPlayerController::ChageGameState);
+	}
+}
+
 /// <summary>
 /// UI에서 버튼 누르고 동작시킬 때 이벤트 호출시킴
 /// </summary>

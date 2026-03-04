@@ -3,7 +3,7 @@
 
 #include "Data/Game/SkillEffectData.h"
 
-void USkillEffectData::MakeData(const FSkillEffectDataRow* InTableData)
+void USkillEffectData::MakeData(const FSkillEffectDataRow InTableData)
 {
 	TableData = InTableData;
 }

@@ -3,9 +3,11 @@
 
 #include "GameSystem/State/Game/LobbyGameState.h"
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
 
 #include "Widget/HUD/LobbyWidget.h"
 #include "Widget/HUD/TopMenuWidget.h"
+#include "Widget/Loading/LoadingWidget.h"
 
 void ALobbyGameState::ChangeState(ELobbyState InState)
 {
@@ -18,6 +20,7 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
 			UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
+			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
 		ChangeState(ELobbyState::Ready);
 		//캐릭터 생성/배치
@@ -27,11 +30,10 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		break;
 	case ELobbyState::MoveToStage:
 		//UI 지워주고 스테이지로 레벨전환
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 		{
-			UIManager->CloseAllPopupUI();
-			UIManager->ResetAllUIStates();
-		}
+			LevelManager->LoadBattleMap();
+		}		
 		break;
 	}
 }

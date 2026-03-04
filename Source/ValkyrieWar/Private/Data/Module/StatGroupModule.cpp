@@ -25,7 +25,9 @@ void UStatGroupModule::MakeData()
 
 		for (FStatGroupDataRow* Item : AllRows)
 		{
-			TableDataByDataId.Add(Item->DataId, Item);
+			if (!Item) continue;
+
+			TableDataByDataId.Add(Item->DataId, *Item);
 		}
 	}
 }

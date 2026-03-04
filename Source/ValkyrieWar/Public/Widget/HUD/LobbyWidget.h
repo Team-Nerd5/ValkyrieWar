@@ -18,6 +18,7 @@ class VALKYRIEWAR_API ULobbyWidget : public UBaseWidget
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual void OpenUI() override;
 
 	void ShowStage(int32 InChapter, int32 InStageNum);

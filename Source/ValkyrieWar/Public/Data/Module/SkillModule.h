@@ -23,7 +23,7 @@ protected:
 	virtual void MakeData() override;
 
 private:
-
-	TMap<int32, USkillData*> SkillData;
+	UPROPERTY()
+	TMap<int32, TObjectPtr<USkillData>> SkillData;
 
 };

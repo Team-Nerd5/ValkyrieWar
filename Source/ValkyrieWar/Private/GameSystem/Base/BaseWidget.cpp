@@ -19,6 +19,12 @@ void UBaseWidget::NativeConstruct()
 	EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 }
 
+void UBaseWidget::NativeDestruct()
+{
+    Super::NativeDestruct();
+    EventSystem = nullptr;
+}
+
 void UBaseWidget::OpenUI()
 {
 	bIsOpen = true;

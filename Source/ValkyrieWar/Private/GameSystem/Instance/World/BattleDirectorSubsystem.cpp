@@ -205,7 +205,10 @@ ACoreWallActor* UBattleDirectorSubsystem::GetWallCore(ETeam Team) const
 {
     if (const TWeakObjectPtr<ACoreWallActor>* Found = TeamWallCores.Find(Team))
     {
-        return Found->Get();
+        if (Found->IsValid())
+        {
+            return Found->Get();
+        }
     }
     return nullptr;
 }

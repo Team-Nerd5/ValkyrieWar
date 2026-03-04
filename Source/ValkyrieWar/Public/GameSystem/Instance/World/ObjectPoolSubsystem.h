@@ -47,7 +47,8 @@ private:
 
 private:
 	TMap<EPoolTypes, TUniquePtr<IPoolData>> ObjectPoolMap;
-
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> GeneratedActors;
 };
 
 
@@ -73,11 +74,11 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 	if (PoolData)
 	{
 		PoolData->DataInstance.Reserve(InMaxSize);
-	}
 #pragma region 풀링 시스템 확인 로그
 		UE_LOG(LogTemp, Warning, TEXT("[InitPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
 			*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
 #pragma endregion
+	}
 }
 
 template<typename T>
@@ -107,6 +108,7 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 		{
 			if (SpawnedActor && SpawnedActor->GetClass()->ImplementsInterface(UObjectPoolInterface::StaticClass()))
 			{
+				GeneratedActors.Add(SpawnedActor);
 				// 인터페이스 콜
 				IObjectPoolInterface::Execute_OnGet(SpawnedActor);
 				// Spawn 액터 세팅
@@ -118,6 +120,11 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 				UE_LOG(LogTemp, Log, TEXT("[Subsystem(Spawn)] 풀에서 재사용"));
 			}
 		}
+#pragma region 풀링 시스템 확인 로그
+		UE_LOG(LogTemp, Warning, TEXT("[GetPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
+			*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
+#pragma endregion
+
 	}
 
 	if (!SpawnedActor)
@@ -149,10 +156,6 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 			SpawnedActor->SetFolderPath(FName("Pool"));
 #endif
 	}
-#pragma region 풀링 시스템 확인 로그
-	UE_LOG(LogTemp, Warning, TEXT("[GetPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
-		*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
-#pragma endregion
 
 	return SpawnedActor;
 }
@@ -188,12 +191,13 @@ inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 		if (PoolData && !PoolData->DataInstance.Contains(InActor))
 		{
 			PoolData->AddInstance(InActor);
+#pragma region 풀링 시스템 확인 로그
+			UE_LOG(LogTemp, Warning, TEXT("[ReturnPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
+				*InActor->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
+#pragma endregion
 		}
 	}
-#pragma region 풀링 시스템 확인 로그
-	UE_LOG(LogTemp, Warning, TEXT("[ReturnPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
-		*InActor->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
-#pragma endregion
+
 }
 
 template<typename T>

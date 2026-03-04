@@ -16,7 +16,7 @@ void UGoodsModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-FGoodsDataRow* UGoodsModule::GetGoodsTable(int32 InKey)
+FGoodsDataRow UGoodsModule::GetGoodsTable(int32 InKey)
 {
 	return *TableDataByDataId.Find(InKey);
 }
@@ -30,7 +30,9 @@ void UGoodsModule::MakeData()
 
 		for (FGoodsDataRow* Item : AllRows)
 		{
-			TableDataByDataId.Add(Item->DataId, Item);
+			if (!Item) continue;
+
+			TableDataByDataId.Add(Item->DataId, *Item);
 		}
 	}
 }

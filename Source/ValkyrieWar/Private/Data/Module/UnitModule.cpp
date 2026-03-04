@@ -25,10 +25,12 @@ void UUnitModule::MakeData()
 
 		for (FUnitDataRow* Item : AllRows)
 		{
+			if (!Item) continue;
+
 			TableDataByDataId.Add(Item->DataId, *Item);
 
 			UUnitData* UnitData = NewObject<UUnitData>(this);
-			UnitData->MakeData(Item, GameManager.Get());
+			UnitData->MakeData(*Item, GameManager.Get());
 
 			OwnUnits.Add(Item->DataId, UnitData);
 		}

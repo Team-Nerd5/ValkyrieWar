@@ -16,11 +16,11 @@ void ULobbyMenuWidget::NativeConstruct()
 	}
 }
 
-void ULobbyMenuWidget::SetData(FContentsDataRow* InTableData)
+void ULobbyMenuWidget::SetData(FContentsDataRow InTableData)
 {
-	if (InTableData->Icon.IsValid())
+	if (InTableData.Icon.IsValid())
 	{
-		UTexture2D* IconTexture = InTableData->Icon.LoadSynchronous();
+		UTexture2D* IconTexture = InTableData.Icon.LoadSynchronous();
 
 		//FButtonStyle Style;
 		//FSlateBrush Brush;
@@ -31,10 +31,10 @@ void ULobbyMenuWidget::SetData(FContentsDataRow* InTableData)
 
 	if (MenuName)
 	{
-		MenuName->SetText(FText::FromString(InTableData->Name));
+		MenuName->SetText(FText::FromString(InTableData.Name));
 	}
 
-	CurrentMenuType = InTableData->MenuType;
+	CurrentMenuType = InTableData.MenuType;
 }
 
 

@@ -31,5 +31,5 @@ protected:
 	
 private:
 
-	TMap<int32, UAttackData*> AttackData;
+	TMap<int32, TObjectPtr<UAttackData>> AttackData;
 };

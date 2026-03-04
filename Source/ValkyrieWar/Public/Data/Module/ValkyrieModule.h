@@ -48,7 +48,7 @@ private:
 
 private:
 	UPROPERTY()
-	TMap<uint64, UValkyrieData*> OwnValkyries;
+	TMap<uint64, TObjectPtr<UValkyrieData>> OwnValkyries;
 
 	UPROPERTY()
 	TMap<int32, FValkyrieDataRow> TableDataByDataId;

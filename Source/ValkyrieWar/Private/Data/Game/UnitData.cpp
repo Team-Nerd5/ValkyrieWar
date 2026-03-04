@@ -5,31 +5,31 @@
 #include "Data/Table/GameData/ItemDataRow.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
-void UUnitData::MakeData(const FUnitDataRow* InTableData, UGameManager* InGameManager)
+void UUnitData::MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
 	Stat.Empty();
 
-	if (InGameManager && InTableData)
+	if (InGameManager)
 	{
 		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
 
 		if (DataManager)
 		{
 			//기본 무기 데이터를 가져옴...
-			FItemDataRow* BaseWeapon = DataManager->GetItemModule()->GetTableDataById(TableData->BaseWeaponId);
-			if (BaseWeapon)
+			FItemDataRow BaseWeapon = DataManager->GetItemModule()->GetTableDataById(TableData.BaseWeaponId);
+			if (BaseWeapon.DataId > 0)
 			{
-				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon->AttackId);
-				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon->SkillId);
+				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon.AttackId);
+				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon.SkillId);
 			}
 
-			FStatGroupDataRow* StatData = DataManager->GetStatGroupModule()->GetData(TableData->StatId);
-			if (StatData)
+			FStatGroupDataRow StatData = DataManager->GetStatGroupModule()->GetData(TableData.StatId);
+			if (StatData.DataId > 0)
 			{
-				Stat.Add(EStatusType::Attack, StatData->Attack);
-				Stat.Add(EStatusType::Defence, StatData->Defence);
-				Stat.Add(EStatusType::Health, StatData->Health);
+				Stat.Add(EStatusType::Attack, StatData.Attack);
+				Stat.Add(EStatusType::Defence, StatData.Defence);
+				Stat.Add(EStatusType::Health, StatData.Health);
 			}
 		}
 	}

@@ -19,7 +19,7 @@ void USkillEffectModule::Initialize(UGameManager* InGameManager)
 TArray<USkillEffectData*> USkillEffectModule::GetEffects(int32 InGroupId)
 {
 	if (EffectsByGroupId.Contains(InGroupId))
-		return *EffectsByGroupId.Find(InGroupId);
+		return EffectsByGroupId.Find(InGroupId)->Effects;
 	else
 		return TArray<USkillEffectData*>();
 }
@@ -33,10 +33,12 @@ void USkillEffectModule::MakeData()
 
 		for (FSkillEffectDataRow* SkillEffect : AllRows)
 		{
-			USkillEffectData* Data = NewObject<USkillEffectData>(this);
-			Data->MakeData(SkillEffect);
+			if (!SkillEffect) continue;
 
-			EffectsByGroupId.FindOrAdd(Data->GetGroupId()).Add(Data);
+			USkillEffectData* Data = NewObject<USkillEffectData>(this);
+			Data->MakeData(*SkillEffect);
+
+			EffectsByGroupId.FindOrAdd(Data->GetGroupId()).Effects.Add(Data);
 		}
 	}
 }

@@ -17,17 +17,18 @@ class VALKYRIEWAR_API UAttackData : public UObject
 {
 	GENERATED_BODY()
 public:
-	void MakeData(const FAttackDataRow* InTableData, UGameManager* InGameManager);
+	void MakeData(const FAttackDataRow InTableData, UGameManager* InGameManager);
 
-	FORCEINLINE UAnimInstance* GetAnimInstance() { return TableData->AnimInstance.LoadSynchronous(); }
-	FORCEINLINE UAnimMontage* GetAnimMontage() { return TableData->AnimMontage.LoadSynchronous(); }
+	FORCEINLINE UAnimInstance* GetAnimInstance() { return TableData.AnimInstance.LoadSynchronous(); }
+	FORCEINLINE UAnimMontage* GetAnimMontage() { return TableData.AnimMontage.LoadSynchronous(); }
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
-	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData->AbilityTag; }
-	FORCEINLINE FVector GetLocationOffset() { return TableData->PositionOffset; }
-	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData->RotateOffset); }
+	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
+	FORCEINLINE FVector GetLocationOffset() { return TableData.PositionOffset; }
+	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData.RotateOffset); }
 private:
-	const FAttackDataRow* TableData;
+	UPROPERTY()
+	FAttackDataRow TableData;
 
 	UPROPERTY()
-	TArray<USkillEffectData*> EffectList;
+	TArray<TObjectPtr<USkillEffectData>> EffectList;
 };

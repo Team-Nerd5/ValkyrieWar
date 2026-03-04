@@ -10,6 +10,16 @@
 /**
  * 
  */
+
+USTRUCT(BlueprintType)
+struct FSkillEffects
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	TArray<TObjectPtr<USkillEffectData>> Effects;
+};
+
 UCLASS()
 class VALKYRIEWAR_API USkillEffectModule : public UBaseModule
 {
@@ -23,5 +33,6 @@ protected:
 	virtual void MakeData() override;
 
 private:
-	TMap<int32, TArray<USkillEffectData*>> EffectsByGroupId;
+	UPROPERTY()
+	TMap<int32, FSkillEffects> EffectsByGroupId;
 };
