@@ -75,7 +75,7 @@ void AValkyrieCharacter::ResetCombo()
 	bIsInComboWindow = false;
 	if (GetCharacterMovement())
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 600.f; // 형 캐릭터 원래 속도로
+		GetCharacterMovement()->MaxWalkSpeed = 600.f; 
 	}
 }
 
@@ -88,21 +88,15 @@ void AValkyrieCharacter::BeginPlay()
 		{
 			uint64 TestItemUID = 777;
 			int32 TestWeaponDataID = 411101;
-
-			// 1. 아이템 로드 (동기식으로 가져온다고 가정)
 			ItemModule->LoadItem(TestItemUID, TestWeaponDataID, 1);
 
-			// 2. 데이터를 먼저 변수에 확실히 담아!
 			EquippedWeapon = ItemModule->GetItem(TestItemUID);
 
 			if (EquippedWeapon && DataManager->GetAttackModule())
 			{
 				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());
-
-				// 3. ★데이터가 다 들어온 걸 확인한 이 시점에서 호출!★
 				if (AttackData)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("🏹 [데이터 준비완료] 이제 무기 메쉬 입히러 간다!"));
 					UpdateWeaponMesh();
 				}
 			}
@@ -139,8 +133,7 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 			}
 			if (EquippedWeapon && DataManager->GetAttackModule())
 			{
-				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());
-				UE_LOG(LogTemp, Warning, TEXT("🗡️ [CD Player] 무기 장착! 몽타주 장전 완료!"));
+				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());;
 			}
 		}
 	}
@@ -150,10 +143,7 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
-	if (!WeaponClass) {
-		UE_LOG(LogTemp, Error, TEXT("❌ WeaponClass 없음!"));
-		return;
-	}
+	if (!WeaponClass) return;
 
 	// 1. 일단 무기 액터부터 만든다! (데이터 없어도 일단 껍데기라도 소환)
 	if (CurrentWeaponActor) { CurrentWeaponActor->Destroy(); }
@@ -165,9 +155,7 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 	if (CurrentWeaponActor)
 	{
 		CurrentWeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
-		UE_LOG(LogTemp, Warning, TEXT("✅ 무기 액터 소환 성공! 이제 메쉬 입힌다..."));
 
-		// 2. 그 다음에 데이터를 체크해서 메쉬를 입힌다!
 		UItemData* WeaponDataPtr = EquippedWeapon.Get();
 		UAttackData* AttackDataPtr = AttackData.Get();
 
@@ -177,15 +165,11 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 			CurrentWeaponActor->SetActorRelativeLocation(AttackDataPtr->GetLocationOffset());
 			CurrentWeaponActor->SetActorRelativeRotation(AttackDataPtr->GetRotatinOffset());
 		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("⚠️ 액터는 만들었는데 메쉬 데이터(ItemData/AttackData)가 아직 없네?"));
-		}
 	}
 }
 
 void AValkyrieCharacter::ExecuteAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("🔘 [키 입력] ExecuteAttack 함수가 드디어 불렸어!!"));
 
 	if (!AttackData) return;
 
@@ -194,7 +178,6 @@ void AValkyrieCharacter::ExecuteAttack()
 
 	if (AnimInst && AttackMontage)
 	{
-		// 1. 공격 중이 아닐 때 (1타 쌩으로 시작)
 		if (!AnimInst->Montage_IsPlaying(AttackMontage))
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 0.f;
@@ -210,14 +193,11 @@ void AValkyrieCharacter::ExecuteAttack()
 			bCanNextCombo = false;
 			bIsComboInputOn = false;
 
-			AnimInst->Montage_Play(AttackMontage);
 			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage); 
 		}
-		// 2. 이미 공격 중일 때 (형이 연타하면 무조건 여기로 빠져야 함!)
 		else
 		{
-			bIsComboInputOn = true; // ★ 이게 제일 중요함!! 콤보 예약표 뽑기!
-			UE_LOG(LogTemp, Warning, TEXT("🔄 [콤보 예약] 다음 타수 대기 중!"));
+			bIsComboInputOn = true;
 		}
 	}
 }
@@ -227,10 +207,6 @@ void AValkyrieCharacter::OnAttackNotify()
 	if (CurrentWeaponActor)
 	{
 		CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("❌ [에러] 무기 액터가 없어서 쏠 수가 없어!"));
 	}
 }
 
@@ -275,7 +251,6 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 }
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("⏹️ [리셋] 몽타주 종료됨. 이동 제한 해제!"));
 	ResetCombo();
 }
 void AValkyrieCharacter::BeginComboWindow()
@@ -292,16 +267,12 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 	UAnimMontage* AttackMontage = AttackData->GetAnimMontage();
 
 	if (!AnimInst || !AttackMontage) return;
-
-	// 버튼을 눌러서 예약이 되어있다면?
 	if (bIsComboInputOn)
 	{
 		bIsComboInputOn = false;
 		CurrentComboCount++;
 
-		// 다음 타수(Combo2, Combo3 등)로 애니메이션 스무스하게 점프!
 		AnimInst->Montage_JumpToSection(NextSectionName, AttackMontage);
-		UE_LOG(LogTemp, Warning, TEXT("⏩ [콤보 연결] 다음 섹션(%s)으로 연결!!"), *NextSectionName.ToString());
 
 		if (NextSectionName == FName("Finish"))
 		{
@@ -314,7 +285,6 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 		CurrentComboCount = 0;
 		bIsComboActive = false;
 		ResetCombo();
-		UE_LOG(LogTemp, Warning, TEXT("⏹️ [콤보 종료] 입력이 없어서 공격 끝!"));
 	}
 }
 

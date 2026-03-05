@@ -49,7 +49,7 @@ public:
 	TObjectPtr<USpringArmComponent> SpringArm = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	float AutoCenterWaitTime = 2.0f; // 복귀 대기 시간
+	float AutoCenterWaitTime = 3.0f; // 복귀 대기 시간
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterInterpSpeed = 2.0f; // 복귀 속도
@@ -140,17 +140,11 @@ private:
 	FVector CurrentTargetViewOffset = FVector::ZeroVector;
 	FVector2D PrevTouchLocation = FVector2D::ZeroVector;
 
-
 	float LastInteractionTime = 0.0f;
 	bool bIsInputActive = false;
 	bool bIsDragging = false;
 	bool bIsTouch = false;
-
 	bool bIsReturningToCenter = false;
-
-
-
-	
 	void RefreshInteractionTime();
 	void UpdateCameraPosition(float InDeltaTime);
 
