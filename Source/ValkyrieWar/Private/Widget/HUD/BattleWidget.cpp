@@ -16,11 +16,8 @@ void UBattleWidget::NativeConstruct()
 
 FReply UBattleWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
 {
-	// 자동모드라서 조이스틱 숨긴상황에선 조이스틱에 토치 안먹임
-	if (JoyPadBGImage->GetVisibility() == ESlateVisibility::Hidden || JoyPadBGImage->GetVisibility() == ESlateVisibility::Collapsed)
-	{
+	if (CurrentMode == EInputControlMode::Auto)
 		return FReply::Unhandled();
-	}
 
 	// 조이스틱 안을 터치했나
 	FVector2D LocalTouchPos = JoyPadBGImage->GetCachedGeometry().AbsoluteToLocal(InGestureEvent.GetScreenSpacePosition());
@@ -78,6 +75,9 @@ FReply UBattleWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPoi
 
 void UBattleWidget::SetJoyPadVisibility(bool bIsVisible)
 {
+	CurrentMode = bIsEnabled ? EInputControlMode::Manual : EInputControlMode::Auto;
+
+
 	ESlateVisibility NewVisibility = bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
 
 	if (JoyPadImage) JoyPadImage->SetVisibility(NewVisibility);

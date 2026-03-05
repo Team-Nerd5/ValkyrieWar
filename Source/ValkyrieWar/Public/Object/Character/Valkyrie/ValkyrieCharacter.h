@@ -28,9 +28,9 @@ public:
 
 public:
 	/** Returns TopDownCameraComponent subobject **/
-	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
+	//FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -72,8 +72,8 @@ protected:
 
 protected:
 	/** Top down camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class UCameraComponent* TopDownCameraComponent;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	//class UCameraComponent* TopDownCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;
@@ -82,8 +82,8 @@ protected:
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	/** Camera boom positioning the camera above the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class USpringArmComponent* CameraBoom;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	//class USpringArmComponent* CameraBoom;
 
 	UPROPERTY()
 	TObjectPtr<UValkyrieData> Data = nullptr;

@@ -45,8 +45,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	TObjectPtr<USpringArmComponent> SpringArm = nullptr;
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	TObjectPtr<USpringArmComponent> SpringArm = nullptr;*/
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterWaitTime = 3.0f; // 복귀 대기 시간
@@ -99,14 +99,20 @@ public:
 	float LookAheadInterSpeed = 3.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float MaxLeadDistance = 1200.0f;
+
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere)
 	FRotator CameraRotate = FRotator(-55, -90, 0);
+	UPROPERTY(EditAnywhere)
+	FVector CameraBaseAdd = FVector::ZeroVector;
 
 	FORCEINLINE void SetBattleUI(class UBattleWidget* InWidget) { BattleUI = InWidget; }
 protected:
 	UPROPERTY()
 	TObjectPtr<class UBattleWidget> BattleUI = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ACameraActor> FollowCamera = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -150,8 +156,8 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<APawn> ControlledPawn = nullptr;
-	UPROPERTY()
-	TObjectPtr<UCameraComponent> PawnCamera = nullptr;
+	//UPROPERTY()
+	//<UCameraComponent> PawnCamera = nullptr;
 
 	public:
 #if WITH_EDITOR

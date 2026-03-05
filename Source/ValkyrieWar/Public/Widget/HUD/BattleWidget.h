@@ -43,6 +43,8 @@ protected:
 	TObjectPtr<UWallHealthBarWidget> EnemyWallHealthBar;
 
 private:
+	EInputControlMode CurrentMode = EInputControlMode::Manual;
+
 	bool bIsTouching = false;
 
 	FVector2D JoyPadAxis = FVector2D::ZeroVector;
