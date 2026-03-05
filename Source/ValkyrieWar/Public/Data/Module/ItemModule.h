@@ -44,10 +44,12 @@ public:
 
 
 	FORCEINLINE TArray<UItemData*> GetItems() { return OwnItemList; }
-	FORCEINLINE UItemData* GetItem(uint64 InUID)
+	UItemData* GetItem(uint64 InUID)
 	{
-		UItemData* FoundItem = *OwnItems.Find(InUID);
-		return FoundItem ? FoundItem : nullptr; // 없으면 터지지말고 nullptr
+		if (OwnItems.Contains(InUID))
+			return *OwnItems.Find(InUID);
+		else
+			return nullptr;
 	}
 
 	FItemDataRow GetTableDataById(int32 InDataId);
