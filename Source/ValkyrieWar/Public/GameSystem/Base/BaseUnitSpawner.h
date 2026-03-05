@@ -7,59 +7,27 @@
 
 class UObjectPoolSubsystem;
 class AUnitCharacter;
+class UDataManager;
+class UUnitData;
 
 USTRUCT(BlueprintType)
-struct FPoolEntry
+struct FSinglePoolEntry
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EPoolTypes PoolType = EPoolTypes::None;
 
+	// 테스트는 이 클래스를 그대로 스폰
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AUnitCharacter> UnitClass;
+	TSubclassOf<AUnitCharacter> UnitClass = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ReserveSize = 50;
 
-	// UnitModule에서 찾아서 SetData에 넣을 ID
+	// UnitModule에서 찾아 SetData에 넣을 ID (테스트용)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 UnitDataId = 0;
-};
-
-USTRUCT(BlueprintType)
-struct FWaveOption
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EPoolTypes PoolType = EPoolTypes::None;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 Weight = 1;
-
-	// 병종(옵션)별: 이 옵션이 뽑혔을 때 한 번에 몇 마리 스폰할지
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 SpawnCount = 1;
-};
-
-USTRUCT(BlueprintType)
-struct FWaveConfig
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float StartDelay = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float SpawnInterval = 2.f;
-
-	// TotalToSpawn 삭제, "인구 유지형" 스폰: MaxAlive만 채움
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 MaxAlive = 30;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FWaveOption> Options;
 };
 
 UCLASS()
@@ -70,37 +38,43 @@ class VALKYRIEWAR_API ABaseUnitSpawner : public ABaseActor
 public:
 	ABaseUnitSpawner();
 
-	UFUNCTION(BlueprintCallable, Category = "Wave")
-	void StartWaves();
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
+	void StartSpawning();
 
-	UFUNCTION(BlueprintCallable, Category = "Wave")
-	void StopWaves();
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
+	void StopSpawning();
 
-	// 유닛이 풀로 반환될 때(=OnRelease) 호출해주면 AliveCount가 정확해짐
-	UFUNCTION(BlueprintCallable, Category = "Wave")
+	// 전투 업그레이드(현재는 외부에서 직접 호출해서 테스트 가능)
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
+	void SetSpawnCount(int32 InSpawnCount);
+
+	UFUNCTION(BlueprintPure, Category = "Spawn")
+	int32 GetSpawnCount() const { return SpawnCount; }
+
+	// 유닛이 풀로 반환될 때(=OnRelease) 호출되면 Alive 리스트 즉시 정리
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void NotifyUnitReleased(AUnitCharacter* Unit);
 
-	UFUNCTION(BlueprintPure, Category = "Wave")
+	UFUNCTION(BlueprintPure, Category = "Spawn")
 	int32 GetAliveCount() const { return AliveUnits.Num(); }
-
-	UFUNCTION(BlueprintPure, Category = "Wave")
-	int32 GetCurrentWaveIndex() const { return CurrentWaveIndex; }
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
-	void BP_OnWaveStarted(int32 WaveIndex);
+	// ---- 확장 포인트 ----
+	// 나중에 SpawnUpgradeSubsystem 붙일 때 여기만 바꾸면 됨.
+	virtual int32 ResolveSpawnDataId() const; // 기본: PoolEntry.UnitDataId
+	virtual TSubclassOf<AUnitCharacter> ResolveSpawnClass(int32 ResolvedDataId) const; // 기본: PoolEntry.UnitClass
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Wave|Hook")
-	void BP_OnUnitSpawned(AUnitCharacter* Unit, int32 WaveIndex, EPoolTypes PoolType);
+	// ---- Hook ----
+	UFUNCTION(BlueprintImplementableEvent, Category = "Spawn|Hook")
+	void BP_OnSpawningStarted();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Spawn|Hook")
+	void BP_OnUnitSpawned(AUnitCharacter* Unit, EPoolTypes PoolType);
 
 private:
-	// ---- Timer callbacks ----
-	UFUNCTION()
-	void HandleWaveStart();
-
 	UFUNCTION()
 	void HandleSpawnTick();
 
@@ -110,16 +84,17 @@ private:
 	UFUNCTION()
 	void HandleUnitDestroyed(AActor* DestroyedActor);
 
+	bool TryInitPool();
 	UObjectPoolSubsystem* GetPool() const;
-	const FPoolEntry* FindPoolEntry(EPoolTypes PoolType) const;
 
-	void StartWaveInternal(int32 WaveIndex);
+	// SpawnUpgradeSubsystem 이벤트 수신 (승인된 업그레이드)
+	UFUNCTION()
+	void HandleSpawnLevelUpgraded(int32 InFamilyId, int32 OldLevel, int32 NewLevel);
 
-	// Option 자체를 가중치로 뽑아야 SpawnCount를 쓸 수 있음
-	const FWaveOption* PickWeightedOption(const FWaveConfig& Wave) const;
-
-	// 사각형 스폰
 	FTransform MakeSpawnTransform() const;
+
+	void SpawnOne();
+	UUnitData* ResolveUnitDataObject(int32 DataId) const;
 
 	void RegisterAlive(AUnitCharacter* Unit);
 	void UnregisterAlive(AActor* UnitActor);
@@ -128,35 +103,42 @@ private:
 public:
 	// ===== Pool =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool")
-	TArray<FPoolEntry> PoolEntries;
+	FSinglePoolEntry PoolEntry;
 
 	// ===== Spawn Transform =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	TObjectPtr<AActor> SpawnPointActor = nullptr;
 
-	// 원형 반경 → 사각형 Half Extent (스폰 포인트 기준 Forward/Right로 퍼짐)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	FVector2D SpawnHalfExtent = FVector2D(200.f, 200.f);
 
-	// ===== Waves =====
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
-	TArray<FWaveConfig> Waves;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	// ===== Spawn Loop =====
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	bool bAutoStart = true;
 
-	// 안전장치(NotifyUnitReleased를 못 받는 경우 대비)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta = (ClampMin = "0.01"))
+	float SpawnInterval = 2.f;
+
+	// NotifyUnitReleased를 못 받는 경우 대비(보험)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	float CleanupInterval = 1.0f;
 
+	// 한 틱에서 과도한 스폰 방지
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	int32 MaxSpawnPerTick = 10;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn")
+	int32 UnitId = 0;
+
+	UPROPERTY(EditDefaultsOnly)
+	ETeam Team = ETeam::TeamA;
+
 private:
-	int32 CurrentWaveIndex = INDEX_NONE;
+	UPROPERTY(VisibleAnywhere, Category = "Spawn")
+	int32 SpawnCount = 0;
 
-	// 이번 Tick에 너무 많이 뽑지 않게 상한(성능 보호)
-	UPROPERTY(EditAnywhere, Category = "Wave")
-	int32 MaxSpawnCount = 10;
+	bool bPoolInited = false;
 
-	FTimerHandle WaveStartHandle;
 	FTimerHandle SpawnTickHandle;
 	FTimerHandle CleanupHandle;
 

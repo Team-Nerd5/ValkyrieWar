@@ -6,6 +6,8 @@
 
 #include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+
 #include "GameSystem/Base/BaseUnitSpawner.h"
 
 #include "Data/Struct/UnitEngagementSlotData.h"
@@ -285,6 +287,15 @@ void AUnitCharacter::OnGet_Implementation()
 		if (UBrainComponent* BrainComp = AIC->BrainComponent)
 		{
 			BrainComp->RestartLogic();
+		}
+	}
+
+	if (Brain->Team == ETeam::TeamB)
+	{
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			// TODO: 처치 시 획득 마나 결정
+			WorldEventSystem->Battle.OnManaAdd.Broadcast(20);
 		}
 	}
 

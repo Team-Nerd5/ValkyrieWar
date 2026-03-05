@@ -5,6 +5,7 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "Widget/HUD/BattleWidget.h"
@@ -48,8 +49,7 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		break;
 
 	case EBattleState::Play:
-		// 플레이 시작 시점에 타이머 시작
-		StartStageTimer(TimeLimitSeconds);
+		PlayGame();
 		break;
 
 	case EBattleState::Win:
@@ -130,6 +130,17 @@ void ABattleGameState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void ABattleGameState::PlayGame()
+{
+	// 플레이 시작 시점에 타이머 시작
+	StartStageTimer(TimeLimitSeconds);
+
+	if (USpawnUpgradeSubsystem* Sub = GetWorld()->GetSubsystem<USpawnUpgradeSubsystem>())
+	{
+		Sub->BindUpgradeDelegates();
+	}
+}
+
 void ABattleGameState::CheckTimeOver()
 {
 	if (!bTimerRunning) return;
@@ -139,6 +150,10 @@ void ABattleGameState::CheckTimeOver()
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Battle.OnInGameTimeChanged.Broadcast(Remaining);
+
+		// 테스트용
+		// TODO: 발키리가 적 유닛 공격하여 사망 가능할 시 아래 코드 제거
+		EventSystem->Battle.OnManaAdd.Broadcast(10);
 	}
 
 	if (Remaining <= 0.f)

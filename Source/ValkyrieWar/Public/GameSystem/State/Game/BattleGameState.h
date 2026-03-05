@@ -39,6 +39,9 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
+	void PlayGame();
+
+private:
 	EBattleState State = EBattleState::Init;
 
 	// ===== Timer Data =====

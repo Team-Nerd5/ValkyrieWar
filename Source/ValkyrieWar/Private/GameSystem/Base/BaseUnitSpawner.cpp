@@ -1,8 +1,10 @@
-﻿// BaseUnitSpawner.cpp
-#include "GameSystem/Base/BaseUnitSpawner.h"
+﻿#include "GameSystem/Base/BaseUnitSpawner.h"
+
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
-#include "Object/Character/Unit/UnitCharacter.h"
+#include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "Object/Character/Unit/UnitCharacter.h"
 
 ABaseUnitSpawner::ABaseUnitSpawner()
 {
@@ -13,26 +15,7 @@ void ABaseUnitSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UObjectPoolSubsystem* Pool = GetPool();
-	if (!Pool)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Pool subsystem not found"));
-		return;
-	}
-
-	// 1) 풀 초기화(Reserve)
-	for (const FPoolEntry& Entry : PoolEntries)
-	{
-		if (Entry.PoolType == EPoolTypes::None || !Entry.UnitClass)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Invalid PoolEntry"));
-			continue;
-		}
-
-		Pool->InitPool<AUnitCharacter>(Entry.PoolType, Entry.UnitClass, Entry.ReserveSize);
-	}
-
-	// 2) 안전장치 Cleanup 타이머
+	// 보험용 Cleanup
 	if (CleanupInterval > 0.f)
 	{
 		GetWorldTimerManager().SetTimer(
@@ -44,53 +27,86 @@ void ABaseUnitSpawner::BeginPlay()
 		);
 	}
 
-	// 3) 자동 시작
+	// SpawnUpgradeSubsystem에 바인딩 (승인된 업그레이드만 받음)
+	if (Team == ETeam::TeamA)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
+			{
+				if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+				{
+					WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
+				}
+
+				// 현재 레벨을 즉시 반영(레벨 로드/전환/초기화 대응)
+				if (UnitId > 0)
+				{
+					SetSpawnCount(Sub->GetSpawnLevel(UnitId));
+				}
+			}
+		}
+	}
+	else if (Team == ETeam::TeamB)
+	{
+		// 현재 테스트용으로 구현
+		// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정
+		SetSpawnCount(2);
+	}
+
 	if (bAutoStart)
 	{
-		StartWaves();
+		StartSpawning();
 	}
 }
 
 void ABaseUnitSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	StopWaves();
+	StopSpawning();
 	GetWorldTimerManager().ClearTimer(CleanupHandle);
+
+	if (Team == ETeam::TeamA)
+	{
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Battle.OnSpawnLevelUpgraded.RemoveDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
+		}
+	}
 
 	Super::EndPlay(EndPlayReason);
 }
 
-void ABaseUnitSpawner::StartWaves()
+void ABaseUnitSpawner::StartSpawning()
 {
-	StopWaves();
-
-	if (Waves.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] No Waves configured"));
-		return;
-	}
-
-	CurrentWaveIndex = 0;
-	StartWaveInternal(CurrentWaveIndex);
-}
-
-void ABaseUnitSpawner::StopWaves()
-{
-	GetWorldTimerManager().ClearTimer(WaveStartHandle);
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
 
-	CurrentWaveIndex = INDEX_NONE;
+	if (!TryInitPool()) return;
 
-	// 살아있는 애들 정리
+	BP_OnSpawningStarted();
+
+	const float Interval = FMath::Max(0.01f, SpawnInterval);
+	GetWorldTimerManager().SetTimer(
+		SpawnTickHandle,
+		this,
+		&ABaseUnitSpawner::HandleSpawnTick,
+		Interval,
+		true
+	);
+}
+
+void ABaseUnitSpawner::StopSpawning()
+{
+	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
+
+	// 전투 종료 시 모두 회수
 	if (UObjectPoolSubsystem* Pool = GetPool())
 	{
 		for (TWeakObjectPtr<AUnitCharacter>& W : AliveUnits)
 		{
 			if (AUnitCharacter* U = W.Get())
 			{
-				// 이미 풀로 돌아간 애면 스킵
 				if (U->IsInPool()) continue;
 
-				// 안전하게 풀로 반환(유닛 OnRelease에서 BD 해제 + Notify)
 				if (U->GetMyPoolType() != EPoolTypes::None)
 				{
 					Pool->Release<AUnitCharacter>(U->GetMyPoolType(), U);
@@ -106,174 +122,119 @@ void ABaseUnitSpawner::StopWaves()
 	AliveUnits.Reset();
 }
 
+void ABaseUnitSpawner::SetSpawnCount(int32 InSpawnCount)
+{
+	SpawnCount = FMath::Max(0, InSpawnCount);
+	UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Current Spawn Count = %d"), InSpawnCount);
+
+}
+
 void ABaseUnitSpawner::NotifyUnitReleased(AUnitCharacter* Unit)
 {
 	UnregisterAlive(Unit);
 }
 
-void ABaseUnitSpawner::StartWaveInternal(int32 WaveIndex)
+bool ABaseUnitSpawner::TryInitPool()
 {
-	if (!Waves.IsValidIndex(WaveIndex))
+	if (bPoolInited) return true;
+
+	UObjectPoolSubsystem* Pool = GetPool();
+	if (!Pool)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Invalid wave index: %d"), WaveIndex);
-		StopWaves();
-		return;
+		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Pool subsystem not found"));
+		return false;
 	}
 
-	const FWaveConfig& Wave = Waves[WaveIndex];
-
-	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] StartWave %d StartDelay=%.2f Interval=%.2f MaxAlive=%d Options=%d"),
-		WaveIndex, Wave.StartDelay, Wave.SpawnInterval, Wave.MaxAlive, Wave.Options.Num());
-
-	const float StartDelay = FMath::Max(0.f, Wave.StartDelay);
-
-	GetWorldTimerManager().ClearTimer(WaveStartHandle);
-	if (StartDelay <= 0.f)
+	if (PoolEntry.PoolType == EPoolTypes::None || !PoolEntry.UnitClass)
 	{
-		HandleWaveStart();
-	}
-	else
-	{
-		GetWorldTimerManager().SetTimer(
-			WaveStartHandle,
-			this,
-			&ABaseUnitSpawner::HandleWaveStart,
-			StartDelay,
-			false
-		);
-	}
-}
-
-void ABaseUnitSpawner::HandleWaveStart()
-{
-	if (!Waves.IsValidIndex(CurrentWaveIndex))
-	{
-		StopWaves();
-		return;
+		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Invalid PoolEntry (PoolType/UnitClass)"));
+		return false;
 	}
 
-	BP_OnWaveStarted(CurrentWaveIndex);
-
-	const FWaveConfig& Wave = Waves[CurrentWaveIndex];
-	const float Interval = FMath::Max(0.05f, Wave.SpawnInterval);
-
-	UE_LOG(LogTemp, Log, TEXT("[UnitSpawner] Wave %d spawning started. Interval=%.2f (population 유지형)"),
-		CurrentWaveIndex, Interval);
-
-	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
-	GetWorldTimerManager().SetTimer(
-		SpawnTickHandle,
-		this,
-		&ABaseUnitSpawner::HandleSpawnTick,
-		Interval,
-		true
-	);
+	Pool->InitPool<AUnitCharacter>(PoolEntry.PoolType, PoolEntry.UnitClass, PoolEntry.ReserveSize);
+	bPoolInited = true;
+	return true;
 }
 
 void ABaseUnitSpawner::HandleSpawnTick()
 {
-	if (!Waves.IsValidIndex(CurrentWaveIndex))
-	{
-		StopWaves();
-		return;
-	}
+	if (SpawnCount <= 0) return;
+	if (!TryInitPool()) return;
 
 	CompactAliveUnits();
 
-	const FWaveConfig& Wave = Waves[CurrentWaveIndex];
-
-	// 부족한 만큼만 채우는 "인구 유지형"
-	const int32 Capacity = Wave.MaxAlive - AliveUnits.Num();
-	if (Capacity <= 0)
+	int32 Budget = FMath::Min(SpawnCount, MaxSpawnPerTick);
+	while (Budget-- > 0)
 	{
-		return; // 꽉 찼으면 스폰 안 함
+		SpawnOne();
+	}
+}
+
+void ABaseUnitSpawner::SpawnOne()
+{
+	UObjectPoolSubsystem* Pool = GetPool();
+	if (!Pool) return;
+
+	// 확장 포인트: 나중에 Subsystem 붙이면 여기 결과만 바뀌게 만들기
+	const int32 DataId = ResolveSpawnDataId();
+	const TSubclassOf<AUnitCharacter> SpawnCls = ResolveSpawnClass(DataId);
+	if (!SpawnCls)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] SpawnClass is null (DataId=%d)"), DataId);
+		return;
 	}
 
-	// 이번 Tick에서 너무 많이 뽑지 않도록 예산 제한
-	int32 Budget = FMath::Min(MaxSpawnCount, Capacity);
+	const FTransform SpawnTM = MakeSpawnTransform();
 
-	while (Budget > 0)
+	AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
+		PoolEntry.PoolType,
+		SpawnCls,
+		SpawnTM.GetLocation(),
+		SpawnTM.Rotator()
+	);
+
+	if (!Unit) return;
+
+	Unit->SetOwnerSpawner(this);
+	Unit->SetPoolType(PoolEntry.PoolType);
+
+	// 테스트용: UnitDataId에 해당하는 데이터 주입
+	if (UUnitData* Data = ResolveUnitDataObject(DataId))
 	{
-		const FWaveOption* PickOpt = PickWeightedOption(Wave);
-		if (!PickOpt)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] Options invalid for wave %d"), CurrentWaveIndex);
-			return;
-		}
+		Unit->SetData(Data);
+	}
 
-		const EPoolTypes PickType = PickOpt->PoolType;
-		if (PickType == EPoolTypes::None)
-		{
-			return;
-		}
+	RegisterAlive(Unit);
+	BP_OnUnitSpawned(Unit, PoolEntry.PoolType);
+}
 
-		const FPoolEntry* Entry = FindPoolEntry(PickType);
-		if (!Entry || !Entry->UnitClass)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] No PoolEntry for PoolType=%d"), (int32)PickType);
-			return;
-		}
+UUnitData* ABaseUnitSpawner::ResolveUnitDataObject(int32 DataId) const
+{
+	if (DataId <= 0) return nullptr;
 
-		UObjectPoolSubsystem* Pool = GetPool();
-		if (!Pool)
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UDataManager* DataManager = GI->GetSubsystem<UDataManager>())
 		{
-			UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Pool subsystem missing"));
-			return;
-		}
-
-		const int32 WantSpawn = FMath::Max(1, PickOpt->SpawnCount);
-		const int32 SpawnNow = FMath::Min(WantSpawn, Budget);
-
-		for (int32 i = 0; i < SpawnNow; ++i)
-		{
-			// 중간에 Alive가 늘어났을 수도 있으니 최종 안전 체크
-			if (AliveUnits.Num() >= Wave.MaxAlive)
+			if (DataManager->GetUnitModule())
 			{
-				return;
+				return DataManager->GetUnitModule()->GetUnitDataById(DataId);
 			}
-
-			const FTransform SpawnTM = MakeSpawnTransform();
-
-			AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
-				PickType,
-				Entry->UnitClass,
-				SpawnTM.GetLocation(),
-				SpawnTM.Rotator()
-			);
-
-			if (!Unit) return;
-
-			// 유닛이 OnRelease에서 스포너에게 Alive 감소를 Notify할 수 있도록 소유 스포너 지정
-			Unit->SetOwnerSpawner(this);
-			Unit->SetPoolType(PickType);
-
-			// DataManager 통해 병종 데이터 주입
-			if (UGameInstance* GI = GetGameInstance())
-			{
-				if (UDataManager* DataManager = GI->GetSubsystem<UDataManager>())
-				{
-					if (DataManager->GetUnitModule())
-					{
-						if (UUnitData* InData = DataManager->GetUnitModule()->GetUnitDataById(Entry->UnitDataId))
-						{
-							Unit->SetData(InData);
-						}
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] UnitData not found. PoolType=%d UnitDataId=%d"),
-								(int32)PickType, Entry->UnitDataId);
-						}
-					}
-				}
-			}
-
-			RegisterAlive(Unit);
-			BP_OnUnitSpawned(Unit, CurrentWaveIndex, PickType);
-
-			Budget--;
-			if (Budget <= 0) break;
 		}
 	}
+	return nullptr;
+}
+
+int32 ABaseUnitSpawner::ResolveSpawnDataId() const
+{
+	// 현재 1차 구현: 스포너에 셋팅된 테스트 DataId 그대로 사용
+	return PoolEntry.UnitDataId;
+}
+
+TSubclassOf<AUnitCharacter> ABaseUnitSpawner::ResolveSpawnClass(int32 /*ResolvedDataId*/) const
+{
+	// 현재 1차 구현: 스포너에 셋팅된 테스트 클래스 그대로 사용
+	return PoolEntry.UnitClass;
 }
 
 void ABaseUnitSpawner::HandleCleanupTick()
@@ -295,48 +256,19 @@ UObjectPoolSubsystem* ABaseUnitSpawner::GetPool() const
 	return nullptr;
 }
 
-const FPoolEntry* ABaseUnitSpawner::FindPoolEntry(EPoolTypes PoolType) const
+void ABaseUnitSpawner::HandleSpawnLevelUpgraded(int32 InFamilyId, int32 OldLevel, int32 NewLevel)
 {
-	for (const FPoolEntry& E : PoolEntries)
-	{
-		if (E.PoolType == PoolType) return &E;
-	}
-	return nullptr;
-}
+	UE_LOG(LogTemp, Log, TEXT("HandleSpawnLevelUpgraded : %d - %d"), InFamilyId, NewLevel);
+	if (InFamilyId != UnitId) return;
 
-const FWaveOption* ABaseUnitSpawner::PickWeightedOption(const FWaveConfig& Wave) const
-{
-	int32 Total = 0;
-	for (const FWaveOption& Opt : Wave.Options)
-	{
-		if (Opt.PoolType != EPoolTypes::None && Opt.Weight > 0)
-		{
-			Total += Opt.Weight;
-		}
-	}
-	if (Total <= 0) return nullptr;
-
-	int32 Pick = FMath::RandRange(1, Total);
-	for (const FWaveOption& Opt : Wave.Options)
-	{
-		if (Opt.PoolType == EPoolTypes::None || Opt.Weight <= 0) continue;
-		Pick -= Opt.Weight;
-		if (Pick <= 0) return &Opt;
-	}
-
-	// 안전 fallback
-	for (const FWaveOption& Opt : Wave.Options)
-	{
-		if (Opt.PoolType != EPoolTypes::None) return &Opt;
-	}
-	return nullptr;
+	// 규칙: Lv == SpawnCount
+	SetSpawnCount(NewLevel);
 }
 
 FTransform ABaseUnitSpawner::MakeSpawnTransform() const
 {
 	const FTransform BaseTM = SpawnPointActor ? SpawnPointActor->GetActorTransform() : GetActorTransform();
 
-	// SpawnHalfExtent가 0이면 고정 스폰
 	if (SpawnHalfExtent.X <= 0.f && SpawnHalfExtent.Y <= 0.f)
 	{
 		return BaseTM;
@@ -345,7 +277,6 @@ FTransform ABaseUnitSpawner::MakeSpawnTransform() const
 	const float DX = FMath::FRandRange(-SpawnHalfExtent.X, SpawnHalfExtent.X);
 	const float DY = FMath::FRandRange(-SpawnHalfExtent.Y, SpawnHalfExtent.Y);
 
-	// 스폰 포인트의 회전 기준(Forward/Right)으로 사각형 분포
 	const FVector Forward = BaseTM.GetRotation().GetForwardVector();
 	const FVector Right = BaseTM.GetRotation().GetRightVector();
 
@@ -362,18 +293,13 @@ void ABaseUnitSpawner::RegisterAlive(AUnitCharacter* Unit)
 {
 	if (!Unit) return;
 
-	// 중복 방지
 	for (const TWeakObjectPtr<AUnitCharacter>& W : AliveUnits)
 	{
-		if (W.Get() == Unit)
-		{
-			return;
-		}
+		if (W.Get() == Unit) return;
 	}
 
 	AliveUnits.Add(Unit);
 
-	// Destroy() fallback 대비용
 	Unit->OnDestroyed.RemoveAll(this);
 	Unit->OnDestroyed.AddDynamic(this, &ABaseUnitSpawner::HandleUnitDestroyed);
 }
@@ -397,19 +323,9 @@ void ABaseUnitSpawner::CompactAliveUnits()
 	for (int32 i = AliveUnits.Num() - 1; i >= 0; --i)
 	{
 		AUnitCharacter* Unit = AliveUnits[i].Get();
-
-		// 1) 이미 GC/Destroy
-		if (!Unit || !IsValid(Unit))
+		if (!Unit || !IsValid(Unit) || Unit->IsInPool())
 		{
 			AliveUnits.RemoveAtSwap(i);
-			continue;
-		}
-
-		// 2) Notify 누락 대비: 풀로 돌아간 상태면 Alive에서 제거
-		if (Unit->IsInPool())
-		{
-			AliveUnits.RemoveAtSwap(i);
-			continue;
 		}
 	}
 }
