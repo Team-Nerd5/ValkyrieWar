@@ -28,11 +28,13 @@ public:
 
 public:
 	/** Returns TopDownCameraComponent subobject **/
-	//FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
+	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	//FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void PossessedBy(AController* NewController) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetWeaponType(EWeaponAnimType InNewType);
@@ -72,8 +74,8 @@ protected:
 
 protected:
 	/** Top down camera */
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	//class UCameraComponent* TopDownCameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	class UCameraComponent* TopDownCameraComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;

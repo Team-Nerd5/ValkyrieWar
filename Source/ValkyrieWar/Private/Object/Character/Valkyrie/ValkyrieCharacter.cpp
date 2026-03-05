@@ -51,10 +51,12 @@ AValkyrieCharacter::AValkyrieCharacter()
 	//CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	//CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
-	// Create a camera...
-	//TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	//TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	//Create a camera...
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
+	TopDownCameraComponent->SetupAttachment(RootComponent, USpringArmComponent::SocketName);
 	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	TopDownCameraComponent->SetUsingAbsoluteLocation(true);
+	TopDownCameraComponent->SetUsingAbsoluteRotation(true);
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 
@@ -107,6 +109,17 @@ void AValkyrieCharacter::BeginPlay()
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AValkyrieCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (APlayerController* PC = Cast<APlayerController>(NewController))
+	{
+		// 캐릭터가 빙의될 때 뷰 타겟을 이 캐릭터(내부의 UCameraComponent)로 강제 설정합니다.
+		PC->SetViewTarget(this);
+	}
 }
 
 //이거는 캐릭터 정보창에서 장비를 장착해서 변경되었을때, 해당 캐릭터가 로비 캐릭터일 때만 사용

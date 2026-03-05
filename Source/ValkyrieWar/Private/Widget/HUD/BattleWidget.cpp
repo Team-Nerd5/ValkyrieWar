@@ -75,7 +75,7 @@ FReply UBattleWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPoi
 
 void UBattleWidget::SetJoyPadVisibility(bool bIsVisible)
 {
-	CurrentMode = bIsEnabled ? EInputControlMode::Manual : EInputControlMode::Auto;
+	CurrentMode = bIsVisible ? EInputControlMode::Manual : EInputControlMode::Auto;
 
 
 	ESlateVisibility NewVisibility = bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
