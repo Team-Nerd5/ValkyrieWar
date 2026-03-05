@@ -12,7 +12,7 @@ void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	Collection.InitializeDependency(UDataManager::StaticClass());
 
-	DataManager = Cast<UDataManager>(GetGameInstance()->GetSubsystem<UDataManager>());
+	DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
 
 	// 인벤토리 데이터 테스트용
 	//DataManager->CreateData();
@@ -42,7 +42,7 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 		if (InEquipGroup == EEquipGroup::None)
 		{
 			// 특정 아이템 그룹 전부 불러오기
-			for (auto Item : DataManager->GetItemModule()->GetItems())
+			for (UItemData* Item : DataManager->GetItemModule()->GetItems())
 			{
 				if (Item && Item->GetItemGroup() == InItemGroup)
 				{
@@ -53,7 +53,7 @@ TArray<UItemData*> UInventorySystem::GetFilteredInventoryList(EItemGroup InItemG
 		else
 		{
 			// 특정 아이템 그룹 내 특정 장비 그룹 불러오기
-			for (auto Item : DataManager->GetItemModule()->GetItems())
+			for (UItemData* Item : DataManager->GetItemModule()->GetItems())
 			{
 				if (Item && Item->GetItemGroup() == InItemGroup && Item->GetEquipGroup() == InEquipGroup)
 				{
@@ -75,7 +75,7 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 	}
 #pragma endregion
 
-	for (auto Item : DataManager->GetItemModule()->GetItems())
+	for (UItemData* Item : DataManager->GetItemModule()->GetItems())
 	{
 		if (InCharacterUID == 0)
 		{
@@ -96,6 +96,11 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 {
 #pragma region 유효성 검사
+	if (!DataManager)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(AddItem)] DataManager가 없습니다"));
+		return;
+	}
 	if (!(DataManager->GetItemModule()))
 	{
 		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(AddItem)] ItemModule이 없습니다"));
@@ -106,57 +111,63 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 	// 테스트를 위해 UItemData가 아닌 ItemData의 UID와 DataID를 따로 받게 했음
 	// 나중에 필요시 UItemData로 변경
 		 
-	 UItemData* Item = DataManager->GetItemModule()->GetItem(InUID);
+	UItemData* Item = DataManager->GetItemModule()->GetItem(InUID);
 
-	if (Item)	// UID로 찾았을 경우
+	// UID로 찾았을 때
+	if (Item)	// 아이템이 있을 때
 	{
-		if (Item->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
+		if (Item->GetItemGroup() == EItemGroup::Equip)	
 		{
-			DataManager->GetItemModule()->AddItem(Item->GetTableData().DataId, InAmount);	// 장비일 때
+			for (int32 i = 0; i < InAmount; ++i)
+			{
+				DataManager->GetItemModule()->AddItem(Item->GetTableData().DataId, 1);			// 장비일 때
+			}
 		}
 		else
 		{
-			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);			// 장비가 아닐 때
+			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);				// 장비가 아닐 때
 		}
 		return;
 	}
 
 	//아래는 왜 하는건지 모르겠음?
-	//if (!Item)	// UID로 못찾았을 경우
-	//{
-	//	DataManager->GetItemModule()->GetItem
-	//	UItemData* Data = nullptr;
-	//	for (auto Item : DataManager->GetItemModule()->GetItems())
-	//	{
-	//		UItemData* PairItem = Pair.Value;
-	//		if (PairItem && PairItem->GetTableData() && PairItem->GetTableData().DataId == InDataId)
-	//		{
-	//			Data = PairItem;
-	//			break;
-	//		}
-	//	}
+	// -> UID가 다르더라도 DataID가 같고 장비가 아닐 때 중첩하기 위한 코드(아이템류)
+	
+	// UID로 못찾았을 경우
+	if (!Item)	
+	{
+		// 인벤토리에 DataId가 같은 아이템 찾기
+		UItemData* ItemDataById = nullptr;
+		for (UItemData* FoundItemData : DataManager->GetItemModule()->GetItems())
+		{
+			if (FoundItemData && FoundItemData->GetTableData().DataId == InDataId)
+			{
+				ItemDataById = FoundItemData;
+				break;
+			}
+		}
 
-	//	if (Data)	// DataID로 찾았을 경우
-	//	{
-	//		if (Data->GetItemGroup() == EItemGroup::Equip)	// 아이템이 있을 때
-	//		{
-	//			for (int32 i = 0; i < InAmount; ++i)									// 장비일 때
-	//			{
-	//				DataManager->GetItemModule()->AddItem(InDataId, 1);
-	//			}
-	//		}
-	//		else
-	//		{
-	//			DataManager->GetItemModule()->AddItemAmount(Data->GetUID(), InAmount);	// 장비가 아닐 때
-	//		}
-	//	}
-	//	else
-	//	{
-	//		UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));
-	//		DataManager->GetItemModule()->AddItem(InDataId, 1);
-	//	}
-	//	return;
-	//}
+		if (ItemDataById)	// DataID로 찾았을 경우
+		{
+			if (ItemDataById->GetItemGroup() == EItemGroup::Equip)
+			{
+				for (int32 i = 0; i < InAmount; ++i)									
+				{
+					DataManager->GetItemModule()->AddItem(InDataId, 1);							// 장비일 때
+				}
+			}
+			else
+			{
+				DataManager->GetItemModule()->AddItemAmount(ItemDataById->GetUID(), InAmount);	// 장비가 아닐 때
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));		// 아이템을 새로 얻었을 때
+			DataManager->GetItemModule()->AddItem(InDataId, 1);
+		}
+		return;
+	}
 }
 
 void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
@@ -216,7 +227,7 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 
 	}
 #pragma endregion
-
+	/*
 	for (auto Item : DataManager->GetItemModule()->GetItems())
 	{
 		if (!Item)
@@ -237,7 +248,13 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 			break;
 		}
 	}
+	*/
 
+	// 대상 캐릭터가 같은 부위에 이미 장착한 아이템이 있다면 장착해제
+
+	// 장착할 아이템이 대상 캐릭터가 아닌 이미 다른 캐릭터에 장착되어있다면 장착 해제
+	
+	// 최종적으로 InItem을 대상 케릭터에 장착
 	InItem->Equip(InCharacterUID);
 }
 
@@ -274,4 +291,5 @@ void UInventorySystem::TestAddItem()
 
 	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
 	WorldEvent->Widget.OnUpdateInventory.Broadcast();
+	WorldEvent->Widget.OnUpdateInventoryAmountChanged.Broadcast();
 }
