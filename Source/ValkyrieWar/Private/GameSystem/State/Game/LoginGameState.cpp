@@ -83,7 +83,7 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 		{
 			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 			{
-				LevelManager->LoadLobbyMap();
+				LevelManager->LoadMap(EMapType::Lobby, true, true);
 			}
 		}
 

@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Engine/StreamableManager.h"
 #include "Data/Enum/StateEnums.h"
+#include "Data/Enum/CommonEnums.h"
 #include "LevelManager.generated.h"
 
 /**
@@ -21,11 +22,10 @@ protected:
 	virtual void Deinitialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "LevelManager")
-	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap);
+	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap, bool bShowLoading);
 
 public:
-	void LoadBattleMap();
-	void LoadLobbyMap();	
+	void LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadData = false);
 
 	void InitEvent();
 

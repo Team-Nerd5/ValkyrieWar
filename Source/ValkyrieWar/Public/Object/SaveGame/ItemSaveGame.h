@@ -4,15 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Data/Game/ItemData.h"
 #include "ItemSaveGame.generated.h"
 
 /**
  * 
  */
 
-struct ItemDataStruct
+USTRUCT(BlueprintType)
+struct VALKYRIEWAR_API FItemDataStruct
 {
+	GENERATED_BODY()
+public:
 	uint64 UID;
+	int32 DataId;
 	int32 Amount;
 	uint64 EquipCharacter;
 };
@@ -22,5 +27,10 @@ class VALKYRIEWAR_API UItemSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 public:
-	TMap<uint64, ItemDataStruct*> ItemDataList;
+	UPROPERTY()
+	TMap<uint64, FItemDataStruct> ItemDataList;
+
+public:
+	void AddItem(UItemData* InData);
+	void RemoveItem(uint64 InUID);
 };

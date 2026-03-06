@@ -29,40 +29,43 @@ void ULevelManager::Deinitialize()
     Super::Deinitialize();
 }
 
-void ULevelManager::LoadBattleMap()
+void ULevelManager::LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadData)
 {
 	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
 	{
-		LoadLevelAsync(GameManager->GetMapObject(EMapType::Battle));
+		TSoftObjectPtr<UWorld> MapObject = GameManager->GetMapObject(InMapType);
+		if (MapObject.IsValid())
+		{
+			LoadLevelAsync(MapObject, bShowLoading);
 
-		//우선은 찬걸로 세팅
-		DataLoadProgress = 1.0f;
-		StartMapLoading();
+			if (bIsLoadData)
+			{
+				StartDataLoading();
+			}
+			else
+			{
+				DataLoadProgress = 1.0f;
+				StartMapLoading();
+			}
+		}
+
 	}
+
 }
 
-void ULevelManager::LoadLobbyMap()
-{
-	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
-	{
-		LoadLevelAsync(GameManager->GetMapObject(EMapType::Lobby));
-
-		StartDataLoading();
-	}
-
-}
-
-void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
+void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap, bool bShowLoading)
 {
 	if (InMap.IsNull()) return;
 
 	TargetMap = InMap;
 	DataLoadProgress = 0.0f;
 
-	//UIManager 로딩 위젯
-	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	if (bShowLoading)
 	{
-		UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
+		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		{
+			UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
+		}
 	}
 }
 

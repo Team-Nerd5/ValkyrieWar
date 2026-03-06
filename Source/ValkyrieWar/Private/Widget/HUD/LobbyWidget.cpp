@@ -112,7 +112,7 @@ void ULobbyWidget::ShowStageInternal()
 
     if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
     {
-        LevelManager->LoadBattleMap();
+        LevelManager->LoadMap(EMapType::Battle, true);
     }
 
     //전투 연결 시 로직

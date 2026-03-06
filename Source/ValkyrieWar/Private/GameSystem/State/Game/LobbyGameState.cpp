@@ -32,7 +32,7 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		//UI 지워주고 스테이지로 레벨전환
 		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 		{
-			LevelManager->LoadBattleMap();
+			LevelManager->LoadMap(EMapType::Battle, true);
 		}		
 		break;
 	}
