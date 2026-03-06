@@ -70,7 +70,7 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		{
 			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 			{
-				LevelManager->LoadLobbyMap();
+				LevelManager->LoadMap(EMapType::Lobby, true);
 			}
 			//레벨 전환으로 가야할 듯..
 		}

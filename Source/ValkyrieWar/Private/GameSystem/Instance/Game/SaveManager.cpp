@@ -265,13 +265,6 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 #pragma region Add save data
 void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter)
 {
-	ItemDataStruct* ItemData = *Item->ItemDataList.Find(InUID);
-
-	if (ItemData)
-	{
-		ItemData->Amount = InAmount;
-		ItemData->EquipCharacter = InEquipCharacter;
-	}
 
 	SaveInternal(ESaveType::Item);
 }
@@ -283,18 +276,7 @@ void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharac
 #pragma region Set data after load saved data
 void USaveManager::SetItemData()
 {
-	if (Item)
-	{
-		UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
-
-		if (DataManager)
-		{
-			for (auto Data : Item->ItemDataList)
-			{
-				DataManager->GetItemModule()->LoadItem(Data.Value->UID, Data.Value->Amount, Data.Value->EquipCharacter);
-			}
-		}
-	}
+	
 }
 
 void USaveManager::SetAccountData()
