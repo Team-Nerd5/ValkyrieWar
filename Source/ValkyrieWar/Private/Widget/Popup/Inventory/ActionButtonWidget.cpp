@@ -23,6 +23,14 @@ void UActionButtonWidget::NativeConstruct()
 		Btn_Unequip->OnClicked.AddDynamic(this, &UActionButtonWidget::Unequip);
 	if (Btn_Cancel)
 		Btn_Cancel->OnClicked.AddDynamic(this, &UActionButtonWidget::SelectCancel);
+	if (AmountSliderBar)
+	{
+		AmountSliderBar->SetMinValue(1.0f);
+		AmountSliderBar->SetStepSize(1.0f);
+		AmountSliderBar->MouseUsesStep = true;
+		AmountSliderBar->SynchronizeProperties();
+		AmountSliderBar->OnValueChanged.AddDynamic(this, &UActionButtonWidget::AmountValueChange);
+	}
 }
 
 void UActionButtonWidget::SetVisibleButton(EUIType InCurrentUIType)
@@ -30,6 +38,23 @@ void UActionButtonWidget::SetVisibleButton(EUIType InCurrentUIType)
 	if (InCurrentUIType == EUIType::PopupInventory)
 	{
 		Btn_Sell->SetVisibility(ESlateVisibility::Visible);
+		if (CachedItemData)
+		{
+			if (CachedItemData->GetAmount() > 1)
+			{
+				AmountSliderBar->SetVisibility(ESlateVisibility::Visible);
+
+				AmountText->SetText(FText::AsNumber(AmountValue));
+				ResetSliderBar();
+				AmountText->SetVisibility(ESlateVisibility::Visible);
+			}
+			else
+			{
+				AmountSliderBar->SetVisibility(ESlateVisibility::Hidden);
+				AmountText->SetVisibility(ESlateVisibility::Hidden);
+				ResetSliderBar();
+			}
+		}
 
 		Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
 		Btn_Unequip->SetVisibility(ESlateVisibility::Hidden);
@@ -37,16 +62,18 @@ void UActionButtonWidget::SetVisibleButton(EUIType InCurrentUIType)
 	else if (InCurrentUIType == EUIType::PopupCharacterInfo)
 	{
 		Btn_Sell->SetVisibility(ESlateVisibility::Hidden);
-
-		if (CachedItemData->GetEquipCharacter() == 0)
+		if (CachedItemData)
 		{
-			Btn_Equip->SetVisibility(ESlateVisibility::Visible);
-			Btn_Unequip->SetVisibility(ESlateVisibility::Hidden);
-		}
-		else
-		{
-			Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
-			Btn_Unequip->SetVisibility(ESlateVisibility::Visible);
+			if (CachedItemData->GetEquipCharacter() == 0)
+			{
+				Btn_Equip->SetVisibility(ESlateVisibility::Visible);
+				Btn_Unequip->SetVisibility(ESlateVisibility::Hidden);
+			}
+			else
+			{
+				Btn_Equip->SetVisibility(ESlateVisibility::Hidden);
+				Btn_Unequip->SetVisibility(ESlateVisibility::Visible);
+			}
 		}
 	}
 	else
@@ -63,6 +90,7 @@ void UActionButtonWidget::SetupItem(UItemData* InItemData)
 #pragma endregion
 
 	CachedItemData = InItemData;
+	AmountSliderBar->SetMaxValue(InItemData->GetAmount());
 
 	SetVisibility(ESlateVisibility::Visible);
 }
@@ -79,6 +107,12 @@ void UActionButtonWidget::SetupCharacterUID(uint64 InCharacterUID)
 	CachedCharacterUID = InCharacterUID;
 }
 
+void UActionButtonWidget::AmountValueChange(float Value)
+{
+	AmountValue = static_cast<int32>(Value);
+
+	AmountText->SetText(FText::AsNumber(AmountValue));
+}
 
 void UActionButtonWidget::Sell()
 {
@@ -100,8 +134,7 @@ void UActionButtonWidget::Sell()
 	}
 #pragma endregion
 
-	// 개수 입력 필요시 추가
-	InventorySystem->SellItem(CachedItemData, 1);
+	InventorySystem->SellItem(CachedItemData, AmountValue);
 
 	if (!(CachedItemData->GetEquipGroup() == EEquipGroup::None))
 	{
@@ -118,13 +151,14 @@ void UActionButtonWidget::Sell()
 	{
 		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.Broadcast();
 	}
-	// 인벤토리 갱신
-	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	// 인벤토리 선택 해제
 	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
+	// 인벤토리 갱신
+	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 
 	CachedItemData = nullptr;
 
+	ResetSliderBar();
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -157,6 +191,7 @@ void UActionButtonWidget::Equip()
 	CachedItemData = nullptr;
 	CachedCharacterUID = 0;
 
+	ResetSliderBar();
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -189,6 +224,7 @@ void UActionButtonWidget::Unequip()
 
 	CachedItemData = nullptr;
 
+	ResetSliderBar();
 	SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -196,5 +232,13 @@ void UActionButtonWidget::SelectCancel()
 {
 	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();
 
+	ResetSliderBar();
 	SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UActionButtonWidget::ResetSliderBar()
+{
+	if (AmountSliderBar)
+		AmountSliderBar->SetValue(1.0);
+	AmountValue = 1;
 }

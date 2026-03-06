@@ -30,6 +30,7 @@ protected:
 	UFUNCTION()
 	void Init(UItemData* InData);
 
+	// 아이템의 양 업데이트 할 때 바인드할 함수
 	UFUNCTION()
 	void OnAmountChanged();
 
@@ -45,6 +46,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> SelectImage = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> EquippingCharacterIcon = nullptr;	// 캐릭터가 장착한 아이템을 표시하기 위한 캐릭터아이콘
 
 private:
 	UPROPERTY()

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Components/Button.h"
+#include "Components/Slider.h"
+#include "Components/TextBlock.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "Data/Game/ItemData.h"
@@ -32,6 +34,9 @@ public:
 	void SetupCharacterUID(uint64 InCharacterUID);
 
 protected:
+	// 슬라이더의 값이 변할 때 실행
+	UFUNCTION()
+	void AmountValueChange(float Value);
 	// 판매 버튼 클릭시 실행
 	UFUNCTION()
 	void Sell();
@@ -45,6 +50,9 @@ protected:
 	UFUNCTION()
 	void SelectCancel();
 
+private:
+	void ResetSliderBar();
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Sell = nullptr;
@@ -54,6 +62,10 @@ protected:
 	TObjectPtr<UButton> Btn_Unequip = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_Cancel = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USlider> AmountSliderBar = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> AmountText = nullptr;
 
 private:
 	UPROPERTY()
@@ -63,6 +75,8 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UItemData> CachedItemData = nullptr;
+
+	int32 AmountValue = 1;
 
 	uint64 CachedCharacterUID = 0;
 };

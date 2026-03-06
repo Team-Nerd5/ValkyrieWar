@@ -13,6 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventoryAmountChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateCharacterEquipment, uint64, InCharacterUID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHiddenInventoryPopup);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
@@ -29,4 +30,6 @@ public:
 	FOnUpdateInventoryAmountChanged OnUpdateInventoryAmountChanged;
 	// 장비 장착 및 해제시 캐릭터 정보 장비칸 UI 갱신용
 	FOnUpdateCharacterEquipment OnUpdateCharacterEquipment;
+	// 인벤토리에서 띄운 팝업 숨기기용
+	FOnHiddenInventoryPopup OnHiddenInventoryPopup;
 };
