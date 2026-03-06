@@ -103,16 +103,14 @@ public:
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere)
 	FRotator CameraRotate = FRotator(-55, -90, 0);
-	UPROPERTY(EditAnywhere)
-	float CameraLength = 1200.0f;
 
 	FORCEINLINE void SetBattleUI(class UBattleWidget* InWidget) { BattleUI = InWidget; }
 protected:
 	UPROPERTY()
 	TObjectPtr<class UBattleWidget> BattleUI = nullptr;
 
-	//UPROPERTY()
-	//TObjectPtr<ACameraActor> FollowCamera = nullptr;
+	UPROPERTY()
+	TWeakObjectPtr<ACameraActor> FollowCamera = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -130,12 +128,7 @@ protected:
 	void OnTouchReleased();
 	//다중 터치꼬임 방지용
 	ETouchIndex::Type CurrentDragTouchIndex = ETouchIndex::Touch1;
-	//// 블루프린트에서 구현 UI변경이니까 에디터가 편해용
-	//UFUNCTION(BlueprintImplementableEvent, Category = "Camera Control")
-	//void OnControlModeChanged(EInputControlMode InNewMode);
 
-	//우선은 BeginPlay에서 생성되도록
-	void SpawnValkyrie();
 	void Move(FVector2D InMoveDir);
 
 	UFUNCTION()
@@ -157,8 +150,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<APawn> ControlledPawn = nullptr;
-	UPROPERTY()
-	TWeakObjectPtr<UCameraComponent> PawnCamera = nullptr;
 
 	public:
 #if WITH_EDITOR

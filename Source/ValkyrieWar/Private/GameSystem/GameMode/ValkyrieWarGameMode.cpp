@@ -31,7 +31,27 @@ AActor* AValkyrieWarGameMode::ChoosePlayerStart_Implementation(AController* Play
     return Super::ChoosePlayerStart_Implementation(Player);
 }
 
-AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(APlayerController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn)
+void AValkyrieWarGameMode::RestartPlayer(AController* NewPlayer)
+{
+    if (UGameManager* GameManager = GetGameInstance<UGameManager>())
+    {
+        UValkyrieData* Selected = GameManager->GetSelectedValkyrie();
+
+        if (Selected)
+        {
+            if (auto SpawnClass = Selected->GetSpawnClass())
+            {
+                AValkyrieCharacter* Valkyrie = SpawnValkyrie(NewPlayer, SpawnClass);
+                if (Valkyrie)
+                {
+                    Valkyrie->SetData(Selected);
+                }
+            }
+        }
+    }
+}
+
+AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(AController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn)
 {
     if (!IsValid(NewPlayer) || !IsValid(PawnClassToSpawn))
     {
@@ -44,10 +64,9 @@ AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(APlayerController* NewPl
         OldPawn->Destroy();
     }
 
-    AActor* StartSpot = ChoosePlayerStart_Implementation(NewPlayer);
+    AActor* StartSpot = ChoosePlayerStart(NewPlayer); // 기존에 작성하신 함수 그대로 사용
     FTransform SpawnTransform = StartSpot ? StartSpot->GetActorTransform() : FTransform::Identity;
 
-    //생성위치 충돌 시 조정
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
@@ -55,6 +74,7 @@ AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(APlayerController* NewPl
 
     if (IsValid(SpawnedCharacter))
     {
+        // 여기서 빙의를 시켜주면, 엔진이 알아서 이 캐릭터를 뷰 타겟(View Target)으로 완벽하게 고정합니다.
         NewPlayer->Possess(SpawnedCharacter);
     }
 

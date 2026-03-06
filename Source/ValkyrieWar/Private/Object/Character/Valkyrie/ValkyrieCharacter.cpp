@@ -29,6 +29,7 @@
 #include "Data/Attribute/StatAttributeSet.h"
 
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
+#include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 #include "Object/Weapon/Range/ValkyrieBow.h"
 
 AValkyrieCharacter::AValkyrieCharacter()
@@ -43,24 +44,10 @@ AValkyrieCharacter::AValkyrieCharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Create a camera boom...
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(RootComponent);
-	//CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
-	//CameraBoom->TargetArmLength = 1200.f;
-	//CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-	//CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
-
-	//Create a camera...
-	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	TopDownCameraComponent->SetupAttachment(RootComponent, USpringArmComponent::SocketName);
-	//TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	TopDownCameraComponent->SetUsingAbsoluteLocation(true);
-	TopDownCameraComponent->SetUsingAbsoluteRotation(true);
-
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 
 	PrimaryActorTick.bCanEverTick = true;
+
 }
 
 void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
@@ -84,6 +71,7 @@ void AValkyrieCharacter::ResetCombo()
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
 		if (UItemModule* ItemModule = DataManager->GetItemModule())
@@ -111,16 +99,6 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AValkyrieCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (APlayerController* PC = Cast<APlayerController>(NewController))
-	{
-		// 캐릭터가 빙의될 때 뷰 타겟을 이 캐릭터(내부의 UCameraComponent)로 강제 설정합니다.
-		PC->SetViewTarget(this);
-	}
-}
 
 //이거는 캐릭터 정보창에서 장비를 장착해서 변경되었을때, 해당 캐릭터가 로비 캐릭터일 때만 사용
 //데이터 업데이트 및 로비에배치된 캐릭터 무기 변경

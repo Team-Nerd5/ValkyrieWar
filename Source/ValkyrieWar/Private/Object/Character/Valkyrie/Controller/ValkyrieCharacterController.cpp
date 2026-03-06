@@ -1,9 +1,7 @@
 ﻿#include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "GameFramework/Pawn.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-//#include "Camera/CameraActor.h"
+#include "Camera/CameraActor.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -60,8 +58,6 @@ void AValkyrieCharacterController::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	SpawnValkyrie();	
-
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraBoundsVolume::StaticClass(), FoundActors);
 	if (FoundActors.Num() > 0)
@@ -86,15 +82,6 @@ void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 		ActivateTouchInterface(MyTouchInterface);
 
 		if (BattleUI) BattleUI->SetJoyPadVisibility(true);
-
-		//카메라를 캐릭터 위치로..?
-		/*if (PawnCamera && SpringArm)
-		{
-			SpringArm->SetWorldRotation(CameraRotate);
-
-			PawnCamera->AttachToComponent(SpringArm, FAttachmentTransformRules::SnapToTargetNotIncludingScale, USpringArmComponent::SocketName);
-			PawnCamera->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
-		}*/
 	}
 	else
 	{
@@ -103,11 +90,6 @@ void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 		ActivateTouchInterface(nullptr);
 
 		if (BattleUI) BattleUI->SetJoyPadVisibility(false);
-
-		/*if (PawnCamera)
-		{
-			PawnCamera->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		}*/
 	}
 
 	StopMovement();
@@ -178,18 +160,14 @@ void AValkyrieCharacterController::OnPossess(APawn* aPawn)
 
 	ControlledPawn = aPawn;
 
-	if (ControlledPawn)
-	{
-		this->AddTickPrerequisiteActor(ControlledPawn);
+	FollowCamera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass());
 
-		PawnCamera = ControlledPawn->GetComponentByClass<UCameraComponent>();
-		PawnCamera->SetRelativeRotation(CameraRotate);
-	}
+	SetViewTargetWithBlend(FollowCamera.Get());
 }
 
 void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 {
-	if (!PawnCamera.IsValid() || !ControlledPawn) return;
+	if (!FollowCamera.IsValid() || !ControlledPawn) return;
 
 	bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
 	bool bIsMovingInput = bIsInputActive || bIsJoypadActive;
@@ -239,25 +217,25 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	CurrentLookAheadOffset = FMath::VInterpTo(CurrentLookAheadOffset, TargetLookAhead, InDeltaTime, LookAheadInterSpeed);
 
-	// 1. 카메라가 최종적으로 바라보아야 할 초점(Focal Point / Pivot) 계산
-	FVector FocalPoint = CharLoc + AutoViewOffset + DragOffset + CurrentLookAheadOffset;
 
-	// 2. SpringArm 시뮬레이션: 초점에서 카메라의 회전 방향 반대로 CameraDistance만큼 후퇴
-	FVector CameraForward = CameraRotate.Vector(); // 설정된 카메라 회전값의 정면 벡터
-	FVector TargetCamLoc = FocalPoint - (CameraForward * CameraLength);
+	FVector TotalOffset = DragOffset + CurrentLookAheadOffset;
+
+	FVector CameraForward = CameraRotate.Vector();
+	FVector TargetCamLoc = ControlledPawn->GetActorLocation() + AutoViewOffset + TotalOffset;
 
 	if (CurrentControlMode == EInputControlMode::Manual)
 	{
-		// 수동 모드일 때도 동일하게 거리(Distance)가 적용된 절대 좌표 사용
-		PawnCamera->SetWorldRotation(CameraRotate);
-		PawnCamera->SetWorldLocation(TargetCamLoc);
+		// 절대 월드 좌표로 적용
+		FollowCamera->SetActorRotation(CameraRotate);
+		FollowCamera->SetActorLocation(TargetCamLoc);
+
 		return;
 	}
 
 	float CurrentLagSpeed = AutoLagSpeed;
 
 	// 3. 현재 카메라 위치에서 목표 위치로 부드럽게 보간 (Lag 효과)
-	FVector CurrentCamLoc = PawnCamera->GetComponentLocation();
+	FVector CurrentCamLoc = FollowCamera->GetActorLocation();
 	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, CurrentLagSpeed);
 
 	// 4. 바운드 박스 영역 제한
@@ -276,15 +254,15 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 	}
 
 	// 5. 최종 월드 위치 및 회전 적용
-	PawnCamera->SetWorldRotation(CameraRotate);
-	PawnCamera->SetWorldLocation(NewCamLoc);
+	FollowCamera->SetActorRotation(CameraRotate);
+	FollowCamera->SetActorLocation(NewCamLoc);
 }
 
 #if WITH_EDITOR
 void AValkyrieCharacterController::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (!PawnCamera.IsValid())
+	if (!FollowCamera.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Valkyrie Camera connection lost"));
 		return;
@@ -292,7 +270,7 @@ void AValkyrieCharacterController::PostEditChangeProperty(FPropertyChangedEvent&
 
 	FVector CharLoc = ControlledPawn->GetActorLocation();
 	FVector FinalTargetLoc = CharLoc;
-	PawnCamera->SetWorldRotation(CameraRotate);
+	FollowCamera->SetActorRotation(CameraRotate);
 }
 #endif
 
@@ -388,8 +366,8 @@ void AValkyrieCharacterController::OnTouchTriggered()
 	if (Delta.SizeSquared() > 1.0f)
 	{
 		float CurrentPanSpeed = (CurrentControlMode == EInputControlMode::Manual) ? ManualPanSpeed : AutoPanSpeed;
-		FVector CamForward = PawnCamera->GetForwardVector();
-		FVector CamRight = PawnCamera->GetRightVector();
+		FVector CamForward = FollowCamera->GetActorForwardVector();
+		FVector CamRight = FollowCamera->GetActorRightVector();
 		FVector FlatForward = FVector(CamForward.X, CamForward.Y, 0.0f).GetSafeNormal();
 		FVector FlatRight = FVector(CamRight.X, CamRight.Y, 0.0f).GetSafeNormal();
 
@@ -404,30 +382,6 @@ void AValkyrieCharacterController::OnTouchReleased()
 	bIsTouch = false;
 	bIsDragging = false;
 	RefreshInteractionTime();
-}
-
-void AValkyrieCharacterController::SpawnValkyrie()
-{
-	if (UGameManager* GameManager = GetGameInstance<UGameManager>())
-	{
-		UValkyrieData* Selected = GameManager->GetSelectedValkyrie();
-
-		if (Selected)
-		{
-			AValkyrieWarGameMode* GameMode = GetWorld()->GetAuthGameMode<AValkyrieWarGameMode>();
-			if (GameMode)
-			{
-				if (auto SpawnClass = Selected->GetSpawnClass())
-				{
-					AValkyrieCharacter* Valkyrie = GameMode->SpawnValkyrie(this, SpawnClass);
-					if (Valkyrie)
-					{
-						Valkyrie->SetData(Selected);
-					}
-				}
-			}
-		}
-	}
 }
 
 void AValkyrieCharacterController::Move(FVector2D InMoveDir)

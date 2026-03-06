@@ -17,8 +17,10 @@ public:
 	AValkyrieWarGameMode();
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
+	virtual void RestartPlayer(AController* NewPlayer) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Game|Player")
-	AValkyrieCharacter* SpawnValkyrie(APlayerController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn);
+	AValkyrieCharacter* SpawnValkyrie(AController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn);
 };
 
 
