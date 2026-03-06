@@ -74,13 +74,13 @@ FText UBattleResultWidget::GetHeaderText() const
 	switch (BattleState)
 	{
 	case EBattleState::Win:
-		return FText::FromString(TEXT("VICTORY"));
+		return FText::FromString(TEXT("Win"));
 
 	case EBattleState::Defeat:
-		return FText::FromString(TEXT("DEFEAT"));
+		return FText::FromString(TEXT("Defeat"));
 
 	case EBattleState::TimeOver:
-		return FText::FromString(TEXT("TIME OVER"));
+		return FText::FromString(TEXT("Draw"));
 
 	default:
 		return FText::GetEmpty();
