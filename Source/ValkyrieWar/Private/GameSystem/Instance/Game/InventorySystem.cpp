@@ -164,7 +164,7 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));		// 아이템을 새로 얻었을 때
-			DataManager->GetItemModule()->AddItem(InDataId, 1);
+			DataManager->GetItemModule()->AddItem(InDataId, InAmount);
 		}
 		return;
 	}
@@ -208,7 +208,6 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 
 void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 {
-	//하..나중에 좀
 #pragma region 유효성 검사
 	if (!(DataManager->GetItemModule()))
 	{
@@ -227,33 +226,22 @@ void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
 
 	}
 #pragma endregion
-	/*
-	for (auto Item : DataManager->GetItemModule()->GetItems())
-	{
-		if (!Item)
-			continue;
-
-		// 장착하고 있는 아이템과 장착할려는 아이템이 같은 때 스킵
-		if (Item->GetUID() == InItem->GetUID())
-			continue;
-
-		// 장착하고 있는 아이템 그룹과 장착할려고하는 아이템의 그룹이 같지 않을 때 스킵
-		if (Item->GetEquipGroup() != InItem->GetEquipGroup())
-			continue;
-
-		// 이미 같은 캐릭터에 장착되어있다면 기존 장비 장착 해제
-		if (Item->GetEquipCharacter() == InCharacterUID && InCharacterUID != 0)
-		{
-			Item->Equip(0);
-			break;
-		}
-	}
-	*/
 
 	// 대상 캐릭터가 같은 부위에 이미 장착한 아이템이 있다면 장착해제
-
+	if (InItem->GetEquipGroup() != EEquipGroup::None)
+	{
+		if (UItemData* AlreadyEquipped = GetEquippedItemByGroup(InCharacterUID, InItem->GetEquipGroup()))
+		{
+			AlreadyEquipped->Equip(0);
+		}
+	}
 	// 장착할 아이템이 대상 캐릭터가 아닌 이미 다른 캐릭터에 장착되어있다면 장착 해제
-	
+	uint64 ItemOwner = InItem->GetEquipCharacter();
+	if (ItemOwner != 0 && ItemOwner != InCharacterUID)
+	{
+		InItem->Equip(0);
+	}
+
 	// 최종적으로 InItem을 대상 케릭터에 장착
 	InItem->Equip(InCharacterUID);
 }
