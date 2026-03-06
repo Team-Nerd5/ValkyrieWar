@@ -164,8 +164,6 @@ void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	// *** DELETED: 엔진 버그 뚫어보겠다고 넣었던 더러운 물리 팩트체크 로직, 로그 싹 다 날림! 깔끔하게 본연의 기능만 유지 ***
-
 	UpdateCameraPosition(DeltaTime);
 
 	if (BattleUI)
@@ -220,7 +218,6 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		bIsReturningToCenter = true;
 	}
 
-	// 복귀 실행 (도착하면 스위치 끔)
 	if (bIsReturningToCenter)
 	{
 		float Speed = (bIsMovingInput || bIsAttackingOrSkill) ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
@@ -334,7 +331,6 @@ void AValkyrieCharacterController::RefreshInteractionTime()
 
 void AValkyrieCharacterController::OnInputStarted()
 {
-	// *** DELETED: 입구 컷 확인용 Error 로그 삭제 ***
 	float X = 0.0f;
 	float Y = 0.0f;
 	bool bFoundInput = false;
@@ -368,7 +364,6 @@ void AValkyrieCharacterController::OnTouchTriggered()
 {
 	if (!bIsDragging) return;
 
-	// 조이스틱 조작이나 공격 중일 때는 카메라 위치만 갱신해두고 탈출!
 	bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
 	if (bIsInputActive || bIsJoypadActive)
 	{
@@ -406,7 +401,6 @@ void AValkyrieCharacterController::OnTouchTriggered()
 
 void AValkyrieCharacterController::OnTouchReleased()
 {
-	// *** DELETED: 릴리즈 확인용 Warning 로그 삭제 ***
 	bIsTouch = false;
 	bIsDragging = false;
 	RefreshInteractionTime();
