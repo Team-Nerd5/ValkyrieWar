@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameSystem/Base/BaseWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "ManaDisplayWidget.generated.h"
 
 class UTextBlock;
@@ -14,7 +14,7 @@ class UWidgetAnimation;
  * 현재 마나 표시 위젯
  */
 UCLASS()
-class VALKYRIEWAR_API UManaDisplayWidget : public UBaseWidget
+class VALKYRIEWAR_API UManaDisplayWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

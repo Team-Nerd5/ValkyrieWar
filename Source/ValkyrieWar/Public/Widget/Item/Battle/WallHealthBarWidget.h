@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameSystem/Base/BaseWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Data/Enum/CommonEnums.h"
 #include "WallHealthBarWidget.generated.h"
 
@@ -9,7 +9,7 @@ class UProgressBar;
 class UTextBlock;
 
 UCLASS()
-class VALKYRIEWAR_API UWallHealthBarWidget : public UBaseWidget
+class VALKYRIEWAR_API UWallHealthBarWidget : public UUserWidget
 {
     GENERATED_BODY()
 

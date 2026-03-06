@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameSystem/Base/BaseWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "BattleTimerWidget.generated.h"
 
 class UTextBlock;
 
 UCLASS()
-class VALKYRIEWAR_API UBattleTimerWidget : public UBaseWidget
+class VALKYRIEWAR_API UBattleTimerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

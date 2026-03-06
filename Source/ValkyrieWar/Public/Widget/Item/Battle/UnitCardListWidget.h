@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GameSystem/Base/BaseWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Data/Enum/CommonEnums.h"
 #include "UnitCardListWidget.generated.h"
 
@@ -9,7 +9,7 @@ class UWidgetAnimation;
 class UUnitUpgradeCardWidget;
 
 UCLASS()
-class VALKYRIEWAR_API UUnitCardListWidget : public UBaseWidget
+class VALKYRIEWAR_API UUnitCardListWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

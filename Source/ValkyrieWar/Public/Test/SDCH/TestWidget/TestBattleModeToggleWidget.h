@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameSystem/Base/BaseWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "TestBattleModeToggleWidget.generated.h"
 
 class UButton;
 class UImage;
 
 UCLASS()
-class VALKYRIEWAR_API UTestBattleModeToggleWidget : public UBaseWidget
+class VALKYRIEWAR_API UTestBattleModeToggleWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
