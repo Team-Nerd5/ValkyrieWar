@@ -130,6 +130,11 @@ void AValkyrieCharacterController::ToggleControlMode()
 	{
 		SetControlMode(EInputControlMode::Manual);
 	}
+
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Battle.OnBattleModeChanged.Broadcast(CurrentControlMode);
+	}
 }
 
 void AValkyrieCharacterController::SetupInputComponent()
