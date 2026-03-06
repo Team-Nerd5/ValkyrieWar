@@ -39,6 +39,7 @@ public:
 	void ResetCombo();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteAttack() override;
+
 	virtual void ExecuteSkill() override;
 
 	virtual void OnAttackNotify() override;
@@ -46,13 +47,23 @@ public:
 	virtual void OnSkillNotify() override;
 
 	/*
+	virtual void StartAttackSequence() ; // 공격모션실행
+
+	virtual void FaceTarget(AActor* Target) ;
+
+	AActor* FindTarget(float SearchRadius);
+	
 	* 캐릭터 Spawn 후 데이터 세팅에 사용
+	
 	*/
+	
 	void SetData(UValkyrieData* InData);
 
 	
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime);
 
 	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
@@ -67,6 +78,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AValkyrieWeapon> WeaponClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintReadWrite, Category = "Combat")
+	float DetectionRange = 1200.0f; // 색적 범위
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
@@ -87,11 +100,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
 	void EndComboWindow(FName NextSectionName);
 
-	AActor* FindTarget();
+	
 private:
 	int32 CurrentComboCount = 0; // 현 콤보수
 	bool bCanNextCombo = false; // 콤보 이어지나
 	bool bIsComboActive = false;
 	bool bIsComboInputOn = false; // 타이머안에 클릭은 했냐
 	bool bIsInComboWindow = false;
+	bool bIsAutoChasing; // 색적중임?
 };
