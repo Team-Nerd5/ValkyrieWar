@@ -117,7 +117,7 @@ public:
 	bool bAutoStart = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta = (ClampMin = "0.01"))
-	float SpawnInterval = 2.f;
+	float SpawnInterval = 5.f;
 
 	// NotifyUnitReleased를 못 받는 경우 대비(보험)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
