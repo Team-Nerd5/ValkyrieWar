@@ -290,15 +290,6 @@ void AUnitCharacter::OnGet_Implementation()
 		}
 	}
 
-	if (Brain->Team == ETeam::TeamB)
-	{
-		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-		{
-			// TODO: 처치 시 획득 마나 결정
-			WorldEventSystem->Battle.OnManaAdd.Broadcast(20);
-		}
-	}
-
 	bInPool = false;
 }
 
@@ -340,6 +331,15 @@ void AUnitCharacter::OnRelease_Implementation()
 	}
 
 	if (Brain) Brain->ResetRuntimeBrainState();
+
+	if (Brain->Team == ETeam::TeamB)
+	{
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			// TODO: 처치 시 획득 마나 결정
+			WorldEventSystem->Battle.OnManaAdd.Broadcast(20);
+		}
+	}
 
 	bInPool = true;
 	OwnerSpawner = nullptr;
