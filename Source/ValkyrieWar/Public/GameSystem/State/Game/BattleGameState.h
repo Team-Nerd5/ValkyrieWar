@@ -40,6 +40,8 @@ protected:
 
 private:
 	void PlayGame();
+	void CheckTimeOver();
+	void ShowBattleResult();
 
 private:
 	EBattleState State = EBattleState::Init;
@@ -52,6 +54,4 @@ private:
 	double EndTimeSeconds = 0.0;
 
 	FTimerHandle TimerCheckHandle;
-
-	void CheckTimeOver();
 };

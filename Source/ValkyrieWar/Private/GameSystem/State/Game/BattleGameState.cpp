@@ -6,10 +6,12 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
+#include "GameSystem/Instance/Game/LevelManager.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "Widget/HUD/BattleWidget.h"
 #include "Widget/Loading/LoadingWidget.h"
+#include "Widget/Popup/Battle/BattleResultWidget.h"
 
 void ABattleGameState::ChangeState(EBattleState InState)
 {
@@ -54,26 +56,22 @@ void ABattleGameState::ChangeState(EBattleState InState)
 
 	case EBattleState::Win:
 		//결과 UI를 Win으로 열어줌
-		StopStageTimer();
-		UE_LOG(LogTemp, Warning, TEXT("Win!"));
-		break;
-
 	case EBattleState::Defeat:
 		//결과 UI를 Defeat으로 열여줌
-		StopStageTimer();
-		UE_LOG(LogTemp, Warning, TEXT("Lose.."));
-		break;
-
 	case EBattleState::TimeOver:
 		// 결과 UI를 Draw로 열어줌
+		ShowBattleResult();
 		StopStageTimer();
-		UE_LOG(LogTemp, Warning, TEXT("TimeOver!"));
 		break;
 
 	case EBattleState::MoveToLobby:
 		StopStageTimer();
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
+			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
+			{
+				LevelManager->LoadLobbyMap();
+			}
 			//레벨 전환으로 가야할 듯..
 		}
 		break;
@@ -160,5 +158,21 @@ void ABattleGameState::CheckTimeOver()
 	{
 		StopStageTimer();
 		ChangeState(EBattleState::TimeOver);
+	}
+}
+
+void ABattleGameState::ShowBattleResult()
+{
+	if (State == EBattleState::Win
+		|| State == EBattleState::Defeat
+		|| State == EBattleState::TimeOver)
+	{
+		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		{
+			if (UBattleResultWidget* ResultWidget = UIManager->OpenUI<UBattleResultWidget>(EUIType::PopupBattleResult))
+			{
+				ResultWidget->SetBattleResult(State);
+			}
+		}
 	}
 }

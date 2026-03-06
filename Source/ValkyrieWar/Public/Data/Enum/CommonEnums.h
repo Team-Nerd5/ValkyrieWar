@@ -27,6 +27,9 @@ enum class EUIType : uint8
 	PopupGachaRate,
 
 	PopupUnitEnforce,
+
+	// Battle Popup
+	PopupBattleResult,
 };
 
 UENUM(BlueprintType)
