@@ -12,16 +12,14 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAllyWallHealthChanged, float, In
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyWallHealthChanged, float, InCurrentHealth, float, InMaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInGameTimeChanged, float, InCurrentTime);
 
-// 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpgradeClicked, int32, FamilyId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBattleModeChanged, EInputControlMode, InCurrentMode);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
 	FOnUpgradeStateChanged,
 	int32, FamilyId,
 	int32, Level,
 	int32, Cost,
-	bool, bAffordable,
-	bool, bIsMax
+	bool, bAffordable
 );
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSpawnLevelUpgraded, int32, FamilyId, int32, OldLevel, int32, NewLevel);
 

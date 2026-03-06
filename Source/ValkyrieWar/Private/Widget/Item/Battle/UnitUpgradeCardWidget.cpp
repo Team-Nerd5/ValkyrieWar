@@ -19,7 +19,6 @@ void UUnitUpgradeCardWidget::Init(int32 InUnitId)
 {
 	UnitId = InUnitId;
 
-	// Init 시점에도 스타일 적용 가능(아이콘/텍스트는 BP에서 갱신)
 	EnsureWidgetTree();
 	ApplyCardStyle(false);
 	ApplyStateVisuals();
@@ -51,7 +50,6 @@ void UUnitUpgradeCardWidget::NativeConstruct()
 
 void UUnitUpgradeCardWidget::NativeDestruct()
 {
-	// 위젯 소멸 시 델리게이트 정리 (중복/메모리/GC 안전)
 	if (UpgradeButton)
 	{
 		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitUpgradeCardWidget::HandleUpgradeButton);
@@ -64,9 +62,6 @@ void UUnitUpgradeCardWidget::HandleUpgradeButton()
 {
 	UE_LOG(LogTemp, Log, TEXT("HandleUpgradeButton : %d"), UnitId);
 	if (UnitId <= 0) return;
-
-	// MAX면 클릭 무시
-	if (bIsMaxCached) return;
 
 	// 비용 부족이면 클릭 무시(버튼 비활성화가 되어있어도 안전)
 	if (!bAffordableCached) return;
@@ -87,23 +82,16 @@ void UUnitUpgradeCardWidget::SetAffordable(bool bAffordable)
 	ApplyStateVisuals();
 }
 
-void UUnitUpgradeCardWidget::SetMaxLevel(bool bIsMax)
+void UUnitUpgradeCardWidget::ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable)
 {
-	bIsMaxCached = bIsMax;
-	ApplyStateVisuals();
-}
+	// BP에서 텍스트/아이콘 갱신(원하면 BP로 다시 돌려도 됨)
+	// BP_SetLevel(InLevel);
+	// BP_SetCost(InCost);
 
-void UUnitUpgradeCardWidget::ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable, bool bIsMax)
-{
-	// BP에서 텍스트/아이콘 갱신
-	//BP_SetLevel(InLevel);
-	//BP_SetCost(InCost);
-
-	LevelText->SetText(FText::AsNumber(InLevel));
-	CostText->SetText(FText::AsNumber(InCost));
+	if (LevelText) LevelText->SetText(FText::AsNumber(InLevel));
+	if (CostText)  CostText->SetText(FText::AsNumber(InCost));
 
 	bAffordableCached = bAffordable;
-	bIsMaxCached = bIsMax;
 	ApplyStateVisuals();
 }
 
@@ -199,7 +187,7 @@ FLinearColor UUnitUpgradeCardWidget::GetTextColor() const
 
 FLinearColor UUnitUpgradeCardWidget::GetManaColor() const
 {
-	return FLinearColor(0.27f, 0.90f, 1.00f, 1.f); // #45E6FF
+	return FLinearColor(0.023153f, 0.074214f, 1.00f, 1.f); // #45E6FF
 }
 
 FLinearColor UUnitUpgradeCardWidget::GetWarnColor() const
@@ -226,9 +214,10 @@ void UUnitUpgradeCardWidget::ApplyCardStyle(bool bIsDesignTime)
 		CardBorder->SetBrushColor(Bg);
 	}
 
+	// 글로우는 "affordable일 때만" 보여주도록 ApplyStateVisuals에서 제어
 	if (GlowBorder)
 	{
-		GlowBorder->SetBrushColor(FLinearColor(Mana.R, Mana.G, Mana.B, 0.14f)); // 은은한 글로우
+		GlowBorder->SetBrushColor(FLinearColor(0.102f, 0.118f, 0.165f, 0.85f));
 	}
 
 	if (UnitIconImage && bIsDesignTime)
@@ -255,8 +244,7 @@ void UUnitUpgradeCardWidget::ApplyCardStyle(bool bIsDesignTime)
 		{
 			CostText->SetText(FText::FromString(TEXT("30")));
 		}
-		CostText->SetColorAndOpacity(FSlateColor(Mana));
-
+		// affordable 여부에 따른 색상은 ApplyStateVisuals에서 처리
 		FSlateFontInfo Font = CostText->GetFont();
 		Font.Size = 16;
 		CostText->SetFont(Font);
@@ -273,34 +261,25 @@ void UUnitUpgradeCardWidget::ApplyStateVisuals()
 	const FLinearColor Mana = GetManaColor();
 	const FLinearColor Warn = GetWarnColor();
 
-	// MAX면: 글로우 끄고, 비용 텍스트 회색/버튼 비활성
-	if (bIsMaxCached)
-	{
-		if (GlowBorder) GlowBorder->SetVisibility(ESlateVisibility::Hidden);
-		if (CostText)   CostText->SetColorAndOpacity(FSlateColor(FLinearColor(0.44f, 0.46f, 0.54f, 1.f)));
-		if (UpgradeButton) UpgradeButton->SetIsEnabled(false);
-
-		if (UnitIconImage) UnitIconImage->SetRenderOpacity(0.75f);
-		if (LevelText)     LevelText->SetRenderOpacity(0.85f);
-		return;
-	}
-
-	// 일반 상태
+	// 버튼 enable은 affordable만 사용
 	if (UpgradeButton)
 	{
 		UpgradeButton->SetIsEnabled(bAffordableCached);
 	}
 
+	// 비용 텍스트 컬러: affordable이면 Mana, 아니면 Warn
 	if (CostText)
 	{
 		CostText->SetColorAndOpacity(FSlateColor(bAffordableCached ? Mana : Warn));
 	}
 
+	// 글로우: affordable일 때만 표시
 	if (GlowBorder)
 	{
 		GlowBorder->SetVisibility(bAffordableCached ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 
+	// afford 불가면 살짝 흐리게
 	const float Opacity = bAffordableCached ? 1.f : 0.80f;
 	if (UnitIconImage) UnitIconImage->SetRenderOpacity(Opacity);
 	if (LevelText)     LevelText->SetRenderOpacity(Opacity);

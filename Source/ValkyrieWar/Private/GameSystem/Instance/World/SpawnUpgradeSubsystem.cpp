@@ -48,10 +48,12 @@ void USpawnUpgradeSubsystem::UnbindUpgradeDelegates()
 int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 FamilyId) const
 {
 	if (FamilyId <= 0) return 0;
+
 	if (const int32* Found = SpawnLevels.Find(FamilyId))
 	{
 		return *Found;
 	}
+
 	return 0;
 }
 
@@ -66,7 +68,8 @@ void USpawnUpgradeSubsystem::SetCurrentMana(int32 InMana, bool bBroadcastAll)
 
 	if (bBroadcastAll)
 	{
-		SyncAll(); // 마나로 affordable이 변하므로 전체 갱신
+		// 마나 변경으로 affordable이 바뀔 수 있으므로 전체 갱신
+		SyncAll();
 	}
 }
 
@@ -105,17 +108,10 @@ int32 USpawnUpgradeSubsystem::CalcCost(int32 InFamilyId, int32 InCurrentLevel) c
 	if (!Rule)
 	{
 		// 룰이 없으면 프로토 기본값
-		return FMath::Max(30, 30 + (InCurrentLevel) * 10);
+		return FMath::Max(30, 30 + InCurrentLevel * 10);
 	}
 
-	return Rule->BaseCost + (InCurrentLevel) * Rule->CostStep;
-}
-
-bool USpawnUpgradeSubsystem::IsMax(int32 InFamilyId, int32 InCurrentLevel) const
-{
-	const FUpgradeCostRule* Rule = CostRules.Find(InFamilyId);
-	if (!Rule) return false;
-	return InCurrentLevel >= Rule->MaxLevel;
+	return Rule->BaseCost + InCurrentLevel * Rule->CostStep;
 }
 
 bool USpawnUpgradeSubsystem::SpendMana(int32 Cost)
@@ -138,15 +134,6 @@ void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 
 	int32& Level = SpawnLevels.FindOrAdd(InFamilyId);
 	const int32 OldLevel = Level;
-
-	// MAX면 UI만 갱신
-	if (IsMax(InFamilyId, Level))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("USpawnUpgradeSubsystem::IsMax!"));
-
-		BroadcastState(InFamilyId);
-		return;
-	}
 
 	// 업그레이드 비용(현재 레벨 기준)
 	const int32 Cost = CalcCost(InFamilyId, Level);
@@ -177,6 +164,7 @@ void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 void USpawnUpgradeSubsystem::EnsureFamily(int32 FamilyId, int32 DefaultLevel, bool bBroadcast)
 {
 	InitFamilyIfNeeded(FamilyId, DefaultLevel);
+
 	if (bBroadcast)
 	{
 		BroadcastState(FamilyId);
@@ -191,19 +179,17 @@ void USpawnUpgradeSubsystem::BroadcastState(int32 FamilyId)
 	InitFamilyIfNeeded(FamilyId, 1);
 
 	const int32 Level = GetSpawnLevel(FamilyId);
-	const bool bMax = IsMax(FamilyId, Level);
-
-	const int32 Cost = bMax ? 0 : CalcCost(FamilyId, Level);
-	const bool bAffordable = (!bMax) && CanAfford(Cost);
+	const int32 Cost = CalcCost(FamilyId, Level);
+	const bool bAffordable = CanAfford(Cost);
 
 	WorldEventSystem->Battle.OnUpgradeStateChanged.Broadcast(
-		FamilyId, Level, Cost, bAffordable, bMax
+		FamilyId, Level, Cost, bAffordable
 	);
 }
 
 void USpawnUpgradeSubsystem::SyncAll()
 {
-	// 룰이 등록되었지만 아직 레벨 초기화가 안된 가족이 있을 수 있으니, CostRules도 같이 훑어줌(안정성)
+	// 룰이 등록되었지만 아직 레벨 초기화가 안된 family가 있을 수 있으니 CostRules도 훑어줌
 	for (const TPair<int32, FUpgradeCostRule>& RulePair : CostRules)
 	{
 		InitFamilyIfNeeded(RulePair.Key, 1);

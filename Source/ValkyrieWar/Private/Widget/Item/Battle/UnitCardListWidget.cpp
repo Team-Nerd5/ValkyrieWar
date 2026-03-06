@@ -25,7 +25,6 @@ void UUnitCardListWidget::NativeConstruct()
 	BindDelegates();
 
 	// 처음 진입 시점에 현재 상태를 한번 밀어줌
-	// (마나/레벨/비용/affordable/max 를 카드에 반영)
 	if (UWorld* World = GetWorld())
 	{
 		if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
@@ -52,14 +51,10 @@ void UUnitCardListWidget::CacheCardsIfNeeded()
 {
 	Cards.Reset();
 
-	// 1) BindWidgetOptional로 직접 잡힌 카드들
 	if (Card_1) Cards.Add(Card_1);
 	if (Card_2) Cards.Add(Card_2);
 	if (Card_3) Cards.Add(Card_3);
 	if (Card_4) Cards.Add(Card_4);
-
-	// 2) 혹시 나중에 동적 생성 방식으로 확장한다면,
-	//    생성한 카드들을 Cards에 Add 해주기만 하면 됨.
 }
 
 void UUnitCardListWidget::BindDelegates()
@@ -70,7 +65,6 @@ void UUnitCardListWidget::BindDelegates()
 	{
 		WorldEventSystem->Battle.OnBattleModeChanged.AddUniqueDynamic(this, &UUnitCardListWidget::OnBattleModeChanged);
 
-		// 업그레이드 상태(UI) 이벤트는 리스트가 한 번만 구독
 		WorldEventSystem->Battle.OnUpgradeStateChanged.AddUniqueDynamic(this, &UUnitCardListWidget::OnUpgradeStateChanged);
 
 		bBound = true;
@@ -118,11 +112,10 @@ void UUnitCardListWidget::SetVisibleByMode(EInputControlMode InMode)
 	}
 }
 
-void UUnitCardListWidget::OnUpgradeStateChanged(int32 FamilyId, int32 Level, int32 Cost, bool bAffordable, bool bIsMax)
+void UUnitCardListWidget::OnUpgradeStateChanged(int32 FamilyId, int32 Level, int32 Cost, bool bAffordable)
 {
 	if (FamilyId <= 0) return;
 
-	// 카드 목록이 아직 캐시 안됐을 수 있으니 안전
 	if (Cards.Num() == 0)
 	{
 		CacheCardsIfNeeded();
@@ -130,7 +123,7 @@ void UUnitCardListWidget::OnUpgradeStateChanged(int32 FamilyId, int32 Level, int
 
 	if (UUnitUpgradeCardWidget* Card = FindCardByFamilyId(FamilyId))
 	{
-		Card->ApplyUpgradeState(Level, Cost, bAffordable, bIsMax);
+		Card->ApplyUpgradeState(Level, Cost, bAffordable);
 	}
 }
 

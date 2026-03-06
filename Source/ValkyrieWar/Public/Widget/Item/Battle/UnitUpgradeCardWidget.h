@@ -29,16 +29,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UnitCard")
 	void BP_SetCost(int32 InCost);
 
-	// 리스트/관리자에서 호출: 상태 한번에 반영
+	// 리스트/관리자에서 호출: 상태 한번에 반영 (MAX 제거)
 	UFUNCTION(BlueprintCallable, Category = "UnitCard")
-	void ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable, bool bIsMax);
+	void ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable);
 
 	// (옵션) 개별 세팅도 유지
 	UFUNCTION(BlueprintCallable, Category = "UnitCard")
 	void SetAffordable(bool bAffordable);
-
-	UFUNCTION(BlueprintCallable, Category = "UnitCard")
-	void SetMaxLevel(bool bIsMax);
 
 protected:
 	virtual void NativePreConstruct() override;
@@ -73,9 +70,8 @@ private:
 	UPROPERTY()
 	int32 UnitId = 0;
 
-	// cached states
+	// cached states (MAX 제거)
 	bool bAffordableCached = true;
-	bool bIsMaxCached = false;
 
 	UFUNCTION()
 	void HandleUpgradeButton();

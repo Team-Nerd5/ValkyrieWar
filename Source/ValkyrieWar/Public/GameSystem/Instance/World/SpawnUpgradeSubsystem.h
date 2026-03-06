@@ -10,9 +10,6 @@ struct FUpgradeCostRule
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 MaxLevel = 10;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 BaseCost = 30;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -77,10 +74,9 @@ private:
 	void InitFamilyIfNeeded(int32 InFamilyId, int32 InDefaultLevel = 0);
 
 	int32 CalcCost(int32 FamilyId, int32 CurrentLevel) const;
-	bool  IsMax(int32 FamilyId, int32 CurrentLevel) const;
 
-	bool  CanAfford(int32 Cost) const { return CurrentMana >= Cost; }
-	bool  SpendMana(int32 Cost); // 성공 시 차감
+	bool CanAfford(int32 Cost) const { return CurrentMana >= Cost; }
+	bool SpendMana(int32 Cost); // 성공 시 차감
 
 	void BroadcastState(int32 FamilyId); // UI용 상태
 };
