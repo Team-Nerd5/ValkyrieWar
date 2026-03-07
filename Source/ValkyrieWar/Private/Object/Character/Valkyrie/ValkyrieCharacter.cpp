@@ -279,10 +279,8 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 	}
 }
 
-AActor* AValkyrieCharacter::FindTarget()
-{
-
-	return nullptr;
-}
-
-
+//AActor* AValkyrieCharacter::FindTarget()
+//{
+//
+//	return nullptr;
+//}

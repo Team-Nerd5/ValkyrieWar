@@ -63,8 +63,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaTime);
-
 	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
 	void UpdateWeaponMesh();
