@@ -109,3 +109,27 @@ enum class EReservationState : uint8
 	MovingToTarget,  // 예약 타깃으로 이동 중
 	InCombat         // 공격 중
 };
+
+UENUM(BlueprintType)
+enum class EInventoryFilterType : uint8
+{
+	All,
+	Equipment,
+	Item,
+};
+
+UENUM(BlueprintType)
+enum class ECharacterINfoFilterType : uint8
+{
+	All,
+	Weapon,
+	Armor,
+	Helmet,
+};
+
+UENUM(BlueprintType)
+enum class ETabType : uint8
+{
+	Inventory,
+	CharacterInfo,
+};

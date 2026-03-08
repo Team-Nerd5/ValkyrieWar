@@ -20,7 +20,6 @@ void UInventoryWidget::NativeConstruct()
 	{
 		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
 	}
-	WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 
 	if (Btn_FilterReset)
 		Btn_FilterReset->OnClicked.AddDynamic(this, &UInventoryWidget::FilterReset);
@@ -37,11 +36,11 @@ void UInventoryWidget::NativeConstruct()
 	if (BackButton)
 		BackButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnClickClose);
 
-	if (WorldEventSystem)
+	if (EventSystem)
 	{
-		WorldEventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
-		WorldEventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
-		WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.AddDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
+		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		EventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+		EventSystem->Widget.OnUpdateInventorySelectedCancel.AddDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
 	}
 
 	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
@@ -54,11 +53,11 @@ void UInventoryWidget::NativeConstruct()
 
 void UInventoryWidget::NativeDestruct()
 {
-	if (WorldEventSystem)
+	if (EventSystem)
 	{
-		WorldEventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
-		WorldEventSystem->Widget.OnUpdateCharacterEquipment.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
-		WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.RemoveDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
+		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		EventSystem->Widget.OnUpdateCharacterEquipment.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
+		EventSystem->Widget.OnUpdateInventorySelectedCancel.RemoveDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
 	}
 
 	Super::NativeDestruct();

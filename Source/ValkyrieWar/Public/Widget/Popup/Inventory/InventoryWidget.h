@@ -109,9 +109,6 @@ private:
 	TObjectPtr<UInventorySystem> InventorySystem;
 
 	UPROPERTY()
-	TObjectPtr<UWorldEventSystem> WorldEventSystem;
-
-	UPROPERTY()
 	TArray<UItemData*> CachedItemList;
 
 	// 선택된 인벤토리 타입 저장
