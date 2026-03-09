@@ -12,27 +12,19 @@
 #include "Components/TileView.h"
 #include "Components/Button.h"
 
+#include "Algo/Sort.h"
+
 void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData)
 {
 	TabType = ETabType::Inventory;
 
-	if (TabMenuClass)
+	if (TabMenu)
 	{
-		UTabMenuWidget* TabMenu = CreateWidget<UTabMenuWidget>(this, TabMenuClass);
-
-		if (TabMenu)
+		for (auto Data : InMenuNameData)
 		{
-			if (TabMenuContainer)
-			{
-				TabMenuContainer->AddChild(TabMenu);
-			}
-
-			for (auto Data : InMenuNameData)
-			{
-				int32 FilterIndex = static_cast<int32>(Data.Key);
-				FString TabName = Data.Value;
-				TabMenu->AddTab(TabType, FilterIndex, TabName);
-			}
+			int32 FilterIndex = static_cast<int32>(Data.Key);
+			FString TabName = Data.Value;
+			TabMenu->AddTab(TabType, FilterIndex, TabName);
 		}
 	}
 
@@ -43,23 +35,13 @@ void UItemListWidget::SetMenu(TMap<ECharacterInfoFilterType, FString> InMenuName
 {
 	TabType = ETabType::CharacterInfo;
 
-	if (TabMenuClass)
+	if (TabMenu)
 	{
-		UTabMenuWidget* TabMenu = CreateWidget<UTabMenuWidget>(this, TabMenuClass);
-
-		if (TabMenu)
+		for (auto Data : InMenuNameData)
 		{
-			if (TabMenuContainer)
-			{
-				TabMenuContainer->AddChild(TabMenu);
-			}
-
-			for (auto Data : InMenuNameData)
-			{
-				int32 FilterIndex = static_cast<int32>(Data.Key);
-				FString TabName = Data.Value;
-				TabMenu->AddTab(TabType, FilterIndex, TabName);
-			}
+			int32 FilterIndex = static_cast<int32>(Data.Key);
+			FString TabName = Data.Value;
+			TabMenu->AddTab(TabType, FilterIndex, TabName);
 		}
 	}
 
@@ -73,31 +55,27 @@ void UItemListWidget::SetData(TArray<class UItemData*> InItemList)
 	UpdateFilteredItemList();
 }
 
+void UItemListWidget::InitFilterIndex(int32 InIndex)
+{
+	SelectedFilterIndex = InIndex;
+
+	UpdateFilteredItemList();
+
+	if (TabMenu)
+	{
+		TabMenu->SetTab(InIndex);
+	}
+}
+
 void UItemListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Widget.OnTabMenuSelected.AddDynamic(this, &UItemListWidget::OnTabMenuChanged);
-	}
+	
 }
 
 void UItemListWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
-
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Widget.OnTabMenuSelected.RemoveDynamic(this, &UItemListWidget::OnTabMenuChanged);
-	}
-}
-
-//탭이 눌림
-void UItemListWidget::OnTabMenuChanged(int32 InSelectedTab)
-{
-	SelectedFilterIndex = InSelectedTab;
-
-	UpdateFilteredItemList();
 }
 
 void UItemListWidget::OnItemSelected(UObject* InItemData)
@@ -179,8 +157,11 @@ void UItemListWidget::UpdateFilteredItemList()
 
 	if (InventoryTileView)
 	{
+		SortInventory();
+
 		InventoryTileView->ClearSelection();
 		InventoryTileView->SetListItems(FilteredItemList);
+
 	}
 }
 
@@ -194,4 +175,35 @@ void UItemListWidget::UpdateButton()
 	{
 		EquipButton->SetVisibility(TabType == ETabType::CharacterInfo ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+}
+
+void UItemListWidget::SortInventory()
+{
+	Algo::Sort(FilteredItemList, [](UItemData* ItemA, UItemData* ItemB) {
+			if (!ItemA && !ItemB) return false;
+			if (!ItemA) return false;
+			if (!ItemB) return true;
+
+			if (ItemA->GetItemGroup() != ItemB->GetItemGroup())
+			{
+				if (ItemA->GetItemGroup() == EItemGroup::None) return false;		// A의 ItemGroup이 None이면 뒤로
+				if (ItemB->GetItemGroup() == EItemGroup::None) return true;			// B의 ItemGroup이 None이면 A를 앞으로
+
+				return ItemA->GetItemGroup() < ItemB->GetItemGroup();				// ItemGroup Enum 순서대로 정렬
+			}
+
+			if (ItemA->GetEquipGroup() != ItemB->GetEquipGroup())
+			{
+				if (ItemA->GetEquipGroup() == EEquipGroup::None) return false;		// A의 EquipGroup이 None이면 뒤로
+				if (ItemB->GetEquipGroup() == EEquipGroup::None) return true;		// B의 EquipGroup이 None이면 A를 앞으로
+
+				return ItemA->GetEquipGroup() < ItemB->GetEquipGroup();				// EquipGroup Enum 순서대로 정렬
+			}
+
+			const auto TableDataA = ItemA->GetTableData();
+			const auto TableDataB = ItemB->GetTableData();
+
+			return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
+		});
+
 }

@@ -2,15 +2,22 @@
 
 
 #include "Map/Lobby/LobbyPlayerController.h"
-#include "GameSystem/Instance/Game/UIManager.h"
 
+#include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/State/Game/LobbyGameState.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Object/Cheat/LobbyCheatManager.h"
+
 #include "Camera/CameraActor.h"
+
+ALobbyPlayerController::ALobbyPlayerController()
+{
+	CheatClass = ULobbyCheatManager::StaticClass();
+}
 
 void ALobbyPlayerController::BeginPlay()
 {

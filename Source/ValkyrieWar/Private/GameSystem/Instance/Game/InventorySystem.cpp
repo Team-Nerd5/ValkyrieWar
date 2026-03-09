@@ -4,6 +4,9 @@
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+
+#include "GameSystem/Library/GameBaseLibrary.h"
+
 #include "Data/Module/ItemModule.h"
 
 void UInventorySystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -122,77 +125,18 @@ TArray<UItemData*> UInventorySystem::GetEquipItems()
 	return EquipItems;
 }
 
-void UInventorySystem::AddItem(uint64 InUID, int32 InAmount)
-{
-#pragma region 유효성 검사
-	if (!DataManager)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(AddItem)] DataManager가 없습니다"));
-		return;
-	}
-	if (!(DataManager->GetItemModule()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(AddItem)] ItemModule이 없습니다"));
-		return;
-	}
-#pragma endregion
-
-		 
-	UItemData* Item = DataManager->GetItemModule()->GetItem(InUID);
-
-	// UID로 찾았을 때
-	if (Item)	// 아이템이 있을 때
-	{
-		if (Item->GetItemGroup() == EItemGroup::Equip)	
-		{
-			for (int32 i = 0; i < InAmount; ++i)
-			{
-				DataManager->GetItemModule()->AddItem(Item->GetTableData().DataId, 1);			// 장비일 때
-			}
-		}
-		else
-		{
-			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);				// 장비가 아닐 때
-		}
-		return;
-	}	
-}
-
 void UInventorySystem::AddItem(int32 InDataId, int32 InAmount)
 {
-
-	// 테스트를 위해 UItemData가 아닌 ItemData의 UID와 DataID를 따로 받게 했음
-	// 나중에 필요시 UItemData로 변경
-	// 
-	// 인벤토리에 DataId가 같은 아이템 찾기
-	UItemData* ItemDataById = nullptr;
-	for (UItemData* FoundItemData : DataManager->GetItemModule()->GetItems())
+	if (!DataManager)
 	{
-		if (FoundItemData && FoundItemData->GetTableData().DataId == InDataId)
-		{
-			ItemDataById = FoundItemData;
-			break;
-		}
+		DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
 	}
 
-	if (ItemDataById)	// DataID로 찾았을 경우
+	DataManager->GetItemModule()->AddItem(InDataId, InAmount);
+
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		if (ItemDataById->GetItemGroup() == EItemGroup::Equip)
-		{
-			for (int32 i = 0; i < InAmount; ++i)
-			{
-				DataManager->GetItemModule()->AddItem(InDataId, 1);							// 장비일 때
-			}
-		}
-		else
-		{
-			DataManager->GetItemModule()->AddItemAmount(ItemDataById->GetUID(), InAmount);	// 장비가 아닐 때
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));		// 아이템을 새로 얻었을 때
-		DataManager->GetItemModule()->AddItem(InDataId, InAmount);
+		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	}
 }
 
@@ -212,7 +156,10 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 #pragma endregion
 
 	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
-	//Sell과 동일하게 업데이트 호출
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	}
 }
 
 void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
@@ -231,9 +178,12 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 #pragma endregion
 
 	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
-	//이걸 좀 바꿔서 현재 아이템을 반환하게..
-	//nullptr이면 지워서 없어진거임
-	//아이템 변경되었다고 호출
+
+	//인벤토리 업데이트
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+	}
 }
 
 void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)

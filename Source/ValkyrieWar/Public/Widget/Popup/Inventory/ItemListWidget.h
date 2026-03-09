@@ -21,12 +21,13 @@ public:
 
 	void SetData(TArray<class UItemData*> InItemList);
 
+	void InitFilterIndex(int32 InIndex);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	UFUNCTION()
-	void OnTabMenuChanged(int32 InSelectedTab);
+
 
 	UFUNCTION()
 	void OnItemSelected(UObject* InItemData);
@@ -35,15 +36,14 @@ protected:
 
 	void UpdateButton();
 
+	void SortInventory();
+
 protected:
 	ETabType TabType;
 	int32 SelectedFilterIndex = 0;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UTabMenuWidget> TabMenuClass;
-
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UPanelWidget> TabMenuContainer;
+	TObjectPtr<class UTabMenuWidget> TabMenu;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTileView> InventoryTileView = nullptr;

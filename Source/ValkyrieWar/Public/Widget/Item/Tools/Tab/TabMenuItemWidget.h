@@ -26,10 +26,15 @@ public:
 	void SetTab(ETabType TabType, int32 InFilterIndex, FString InTabName);
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UCheckBox> TabButton;
+	TObjectPtr<class UButton> TabButton;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> TabName;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> NormalImage;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> PressedImage;
 
 	bool bIsOn = false;
 
@@ -42,5 +47,5 @@ protected:
 	virtual void NativeDestruct() override;
 
 	UFUNCTION()
-	void OnTabButtonClicked(bool bIsSelected);
+	void OnTabButtonClicked();
 };

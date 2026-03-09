@@ -21,6 +21,15 @@ void UTopMenuWidget::NativeConstruct()
 	}
 }
 
+void UTopMenuWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	if (BackButton)
+	{
+		BackButton->OnClicked.RemoveDynamic(this, &UTopMenuWidget::OnClickBackButton);
+	}
+}
+
 void UTopMenuWidget::SetData(FGoodsDataRow* InData)
 {
 	if (BackButtonPanel)

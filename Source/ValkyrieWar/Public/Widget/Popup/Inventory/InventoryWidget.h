@@ -25,6 +25,8 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+	virtual void NativeOnInitialized() override;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void OpenUI() override;
@@ -36,19 +38,18 @@ protected:
 
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);
-	// 보유중인 캐릭터 타일뷰 클릭 했을 때 실행될 함수
-	//UFUNCTION()
-	//void OnCharacterClicked(UObject* InCharacterData);
 
 	UFUNCTION()
 	void OnClickClose();
 
-private:
+	UFUNCTION()
+	void OnInventoryUpdate();
 
-	void SortInventory();
+	UFUNCTION()
+	void OnTabMenuChanged(int32 InSelectedTab);
 
 protected:
-	//UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UItemListWidget> ItemListWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)

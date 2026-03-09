@@ -42,6 +42,17 @@ void UItemModule::SetList()
 	OwnItems.GenerateValueArray(OwnItemList);
 }
 
+uint64 UItemModule::GetExistItemUID(int32 InDataId)
+{
+	for(UItemData* Item : OwnItemList)
+	{
+		if (Item && Item->GetTableData().DataId == InDataId)
+			return Item->GetUID();
+	}
+
+	return 0;
+}
+
 void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 {
 	FItemDataRow TableData = GetTableDataById(InDataId);
@@ -65,26 +76,34 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 {
 	FItemDataRow TableData = GetTableDataById(InDataId);
-
-	if (TableData.DataId > 0 && GameManager.IsValid())
+		
+	if (uint64 ItemUID = GetExistItemUID(InDataId) > 0)
 	{
-		UItemData* NewItem = NewObject<UItemData>(this);
-		uint64 UID = GameManager->GetItemUID();
-
-		NewItem->Initialize(UID, InAmount, TableData);
-
-		OwnItems.Add(UID, NewItem);
-		SetList();
+		UItemData* Item = GetItem(ItemUID);
+		if(Item->GetItemGroup() == EItemGroup::Equip)
+		{
+			AddNewItem(TableData, InAmount);
+		}
+		else
+		{
+			Item->AddAmount(InAmount);
+			if (Item->GetAmount() <= 0)
+			{
+				OwnItems.Remove(ItemUID);
+				SetList();
+			}
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("%d Item Table Data is not Exist!"), InDataId);
-	}
+		AddNewItem(TableData, InAmount);
+	}	
 }
 
+//장비 판매 시 이 함수 호출
 void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 {
-	UItemData* TargetItem = *OwnItems.Find(InUID);
+	UItemData* TargetItem = GetItem(InUID);
 
 	if (!TargetItem) return;
 
@@ -93,6 +112,19 @@ void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 	if (TargetItem->GetAmount() <= 0)
 	{
 		OwnItems.Remove(InUID);
+		SetList();
+	}
+}
+void UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
+{
+	if (InTableData.DataId > 0 && GameManager.IsValid())
+	{
+		UItemData* NewItem = NewObject<UItemData>(this);
+		uint64 UID = GameManager->GetItemUID();
+
+		NewItem->Initialize(UID, InAmount, InTableData);
+
+		OwnItems.Add(UID, NewItem);
 		SetList();
 	}
 }

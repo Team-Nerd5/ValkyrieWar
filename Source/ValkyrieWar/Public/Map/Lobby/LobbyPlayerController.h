@@ -16,6 +16,8 @@ class VALKYRIEWAR_API ALobbyPlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	ALobbyPlayerController();
+
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

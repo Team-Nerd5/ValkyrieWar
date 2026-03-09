@@ -10,7 +10,8 @@ public class ValkyrieWar : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new string[] { 
             "Core", "CoreUObject", "Engine", "InputCore",
-            "NavigationSystem", "AIModule", "Niagara", "EnhancedInput" });
+            "NavigationSystem", "AIModule", "Niagara", "EnhancedInput",
+            "Slate", "SlateCore"});
         PrivateDependencyModuleNames.AddRange(new string[] {
             "GameplayAbilities", "GameplayTags", "GameplayTasks",
             "UMG"

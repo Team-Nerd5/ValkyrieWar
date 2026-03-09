@@ -17,6 +17,7 @@ class VALKYRIEWAR_API UTopMenuWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	void SetData(FGoodsDataRow* InData);
 

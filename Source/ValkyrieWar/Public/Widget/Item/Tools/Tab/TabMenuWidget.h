@@ -22,6 +22,8 @@ class VALKYRIEWAR_API UTabMenuWidget : public UUserWidget
 public:
 	void AddTab(ETabType InTabType, int32 InFilterIndex, FString InTabName);
 
+	void SetTab(int32 InIndex);
+
 protected:
 
 	UFUNCTION()

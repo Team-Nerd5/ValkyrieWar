@@ -25,6 +25,17 @@ void UTabMenuWidget::AddTab(ETabType InTabType, int32 InFilterIndex, FString InT
 	}
 }
 
+void UTabMenuWidget::SetTab(int32 InIndex)
+{
+	if (InIndex < TabItems.Num())
+	{
+		for (int32 i = 0; i < TabItems.Num(); i++)
+		{			
+			TabItems[i]->SetTabSelected(i == InIndex);
+		}
+	}
+}
+
 //탭 이미지 세팅
 void UTabMenuWidget::HandleTabClicked(UTabMenuItemWidget* ClickedTab)
 {

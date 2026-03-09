@@ -57,6 +57,8 @@ protected:
 	virtual void MakeData() override;
 
 	void SetList();
+	uint64 GetExistItemUID(int32 InDataId);
+	void AddNewItem(FItemDataRow InTableData, int32 InAmount);
 private:
 	UPROPERTY()
 	TMap<uint64, TObjectPtr<UItemData>> OwnItems;

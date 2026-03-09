@@ -29,9 +29,7 @@ public:
 	TArray<UItemData*> GetAllItems();
 	TArray<UItemData*> GetEquipItems();
 
-	void AddItem(uint64 InUID, int32 InAmount);
-
-	//아이템 UID 없이 테스트할 때 사용
+	//이게 원래 맞음..UID로 호출 하면 안됨
 	void AddItem(int32 InDataId, int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)

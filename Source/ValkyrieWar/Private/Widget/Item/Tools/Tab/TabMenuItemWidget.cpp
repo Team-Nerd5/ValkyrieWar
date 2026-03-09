@@ -2,7 +2,7 @@
 
 
 #include "Widget/Item/Tools/Tab/TabMenuItemWidget.h"
-#include "Components/CheckBox.h"
+#include "Components/Button.h"
 #include "Components/TextBlock.h"
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
@@ -14,10 +14,8 @@ void UTabMenuItemWidget::NativeConstruct()
 	Super::NativeConstruct();
 	if (TabButton)
 	{
-		TabButton->OnCheckStateChanged.AddDynamic(this, &UTabMenuItemWidget::OnTabButtonClicked);
+		TabButton->OnClicked.AddDynamic(this, &UTabMenuItemWidget::OnTabButtonClicked);
 	}
-
-	SetTabSelected(bIsOn);
 }
 
 void UTabMenuItemWidget::NativeDestruct()
@@ -25,15 +23,26 @@ void UTabMenuItemWidget::NativeDestruct()
 	Super::NativeDestruct();
 	if (TabButton)
 	{
-		TabButton->OnCheckStateChanged.RemoveDynamic(this, &UTabMenuItemWidget::OnTabButtonClicked);
+		TabButton->OnClicked.RemoveDynamic(this, &UTabMenuItemWidget::OnTabButtonClicked);
 	}
+	OnTabItemSelected.Clear();
 }
 
 void UTabMenuItemWidget::SetTabSelected(bool bSelected)
 {
-	if (TabButton)
+	bIsOn = bSelected;
+
+	if (TabButton && PressedImage && NormalImage)
 	{
-		TabButton->SetIsChecked(bSelected);
+		FButtonStyle NewStyle = TabButton->GetStyle();
+
+		UTexture2D* ButtonTexture = bIsOn ? PressedImage : NormalImage;
+
+		NewStyle.Normal.SetResourceObject(ButtonTexture);
+		NewStyle.Hovered.SetResourceObject(ButtonTexture);
+		NewStyle.Pressed.SetResourceObject(ButtonTexture);
+
+		TabButton->SetStyle(NewStyle);
 	}
 }
 
@@ -49,10 +58,11 @@ void UTabMenuItemWidget::SetTab(ETabType InTabType, int32 InFilterIndex, FString
 	FilterIndex = InFilterIndex;
 }
 
-void UTabMenuItemWidget::OnTabButtonClicked(bool bIsSelected)
+void UTabMenuItemWidget::OnTabButtonClicked()
 {
-	SetTabSelected(bIsSelected);
-	if (bIsSelected)
+	bIsOn = !bIsOn;
+
+	if (bIsOn)
 	{
 		//다른 탭 버튼 꺼주기 위한 이벤트
 		OnTabItemSelected.Broadcast(this);
