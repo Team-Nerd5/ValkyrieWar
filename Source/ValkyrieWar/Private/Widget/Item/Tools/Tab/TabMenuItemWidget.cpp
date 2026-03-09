@@ -51,19 +51,15 @@ void UTabMenuItemWidget::SetTab(ETabType InTabType, int32 InFilterIndex, FString
 
 void UTabMenuItemWidget::OnTabButtonClicked(bool bIsSelected)
 {
+	SetTabSelected(bIsSelected);
 	if (bIsSelected)
 	{
+		//다른 탭 버튼 꺼주기 위한 이벤트
 		OnTabItemSelected.Broadcast(this);
 		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 		{
-			EventSystem->Widget.OnTabMenuSelected.Broadcast(TabType, FilterIndex);
-		}
-	}
-	else
-	{
-		if (TabButton)
-		{
-			TabButton->SetIsChecked(true);
+			//누른 필터 정보를 아이템 리스트로 보내는 이벤트
+			EventSystem->Widget.OnTabMenuSelected.Broadcast(FilterIndex);
 		}
 	}
 }

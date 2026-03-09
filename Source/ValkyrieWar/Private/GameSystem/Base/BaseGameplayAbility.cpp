@@ -45,7 +45,7 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
 {
     if (!InTargetActor || CachedEffects.Num() <= 0) return;
 
-    // 1. 타겟의 ASC 가져오기 (GAS가 없는 적일 수도 있으니 체크)
+    //타겟의 ASC 가져오기
     UAbilitySystemComponent* MyASC = GetAbilitySystemComponentFromActorInfo();
     UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InTargetActor);
 
@@ -137,7 +137,7 @@ void UBaseGameplayAbility::UpdateData(FGameplayTag InAbilityTag, TArray<USkillEf
             }
         }
 
-        // 4. 캐시 목록에 추가
+        //캐시 목록에 추가
         CachedEffects.Add(NewEffect);
     }
 }

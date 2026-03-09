@@ -32,7 +32,7 @@ protected:
 
 	// 아이템의 양 업데이트 할 때 바인드할 함수
 	UFUNCTION()
-	void OnAmountChanged();
+	void OnAmountChanged(uint64 InUID);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

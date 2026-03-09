@@ -31,35 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void CloseUI() override;
 
-public:
-	// 인벤토리 타입 변경 함수
-	UFUNCTION(BlueprintCallable)
-	void UpdateInventoryType(EUIType InUIType);
-
 protected:
-	UFUNCTION()
-	void FilterReset();
-	UFUNCTION()
-	void FilterWeapon();
-	UFUNCTION()
-	void FilterArmor();
-	UFUNCTION()
-	void FilterHelmet();
-	UFUNCTION()
-	void FilterGrowth();
-	UFUNCTION()
-	void FilterGoods();
+	void InitItemList();
 
-	// 현재 필터링된 인벤토리 업데이트 함수
-	UFUNCTION()
-	void OnUpdateInventory();
-	// 선택된 캐릭터가 장착한 장비칸 UI업데이트 함수
-	UFUNCTION()
-	void OnUpdateEquipmentForUID(uint64 InCharacterUID);
-	// 인벤토리 아이템 선택 취소 업데이트 함수
-	UFUNCTION()
-	void OnUpdateSelectedCancel();
-	// 인벤토리 타일뷰 클릭 했을 때 실행될 함수
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);
 	// 보유중인 캐릭터 타일뷰 클릭 했을 때 실행될 함수
@@ -70,53 +44,21 @@ protected:
 	void OnClickClose();
 
 private:
-	// UIType에 따라 인벤토리 세팅하기 위한 함수
-	void RefreshUIByMode();
 
 	void SortInventory();
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTileView> InventoryTileView = nullptr;
-
-	// 보유중인 캐릭터 목록
 	//UPROPERTY(meta = (BindWidget))
-	//TObjectPtr<UTileView> OwnedCharacterTileView = nullptr;
+	TObjectPtr<class UItemListWidget> ItemListWidget = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterReset = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterWeapon = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterArmor = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterHelmet = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterGrowth = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> BackButton = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UActionButtonWidget> ActionButtonWidget = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UEquipmentSlotWidget> EquipmentSlotWidget = nullptr;
+	UPROPERTY(EditAnywhere)
+	TMap<EInventoryFilterType, FString> InventoryTabNameData;
 
 private:
-	UPROPERTY()
-	TObjectPtr<UInventorySystem> InventorySystem;
 
 	UPROPERTY()
-	TArray<UItemData*> CachedItemList;
+	TArray<TObjectPtr<UItemData>> OriginItems;
 
-	// 선택된 인벤토리 타입 저장
-	EUIType SelectedInventoryType = EUIType::None;
+	EInventoryFilterType CurrentFilterType = EInventoryFilterType::All;
 
-	// 현재 필터가 적용된 인벤토리 확인용
-	EItemGroup CurrentItemGroup = EItemGroup::None;
-	EEquipGroup CurrentEquipGroup = EEquipGroup::None;
-
-	uint64 TempCharacterUID = 1001001;	// 테스트용 캐릭터UID(케릭터 선택창 구현시 삭제 예정)
 };

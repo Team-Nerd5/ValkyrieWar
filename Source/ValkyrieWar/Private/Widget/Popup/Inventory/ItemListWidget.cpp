@@ -7,12 +7,14 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Widget/Item/Tools/Tab/TabMenuWidget.h"
+
 #include "Components/PanelWidget.h"
+#include "Components/TileView.h"
+#include "Components/Button.h"
 
-void UItemListWidget::SetData(ETabType InTabType, TMap<int32, FString> InMenuNameData)
+void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData)
 {
-	TabType = InTabType;
-
+	TabType = ETabType::Inventory;
 
 	if (TabMenuClass)
 	{
@@ -27,13 +29,48 @@ void UItemListWidget::SetData(ETabType InTabType, TMap<int32, FString> InMenuNam
 
 			for (auto Data : InMenuNameData)
 			{
-				int32 FilterIndex = Data.Key;
+				int32 FilterIndex = static_cast<int32>(Data.Key);
 				FString TabName = Data.Value;
-				TabMenu->AddTab(InTabType, FilterIndex, TabName);
+				TabMenu->AddTab(TabType, FilterIndex, TabName);
 			}
 		}
 	}
-		
+
+	UpdateButton();
+}
+
+void UItemListWidget::SetMenu(TMap<ECharacterInfoFilterType, FString> InMenuNameData)
+{
+	TabType = ETabType::CharacterInfo;
+
+	if (TabMenuClass)
+	{
+		UTabMenuWidget* TabMenu = CreateWidget<UTabMenuWidget>(this, TabMenuClass);
+
+		if (TabMenu)
+		{
+			if (TabMenuContainer)
+			{
+				TabMenuContainer->AddChild(TabMenu);
+			}
+
+			for (auto Data : InMenuNameData)
+			{
+				int32 FilterIndex = static_cast<int32>(Data.Key);
+				FString TabName = Data.Value;
+				TabMenu->AddTab(TabType, FilterIndex, TabName);
+			}
+		}
+	}
+
+	UpdateButton();
+}
+
+void UItemListWidget::SetData(TArray<class UItemData*> InItemList)
+{
+	CachedItemList = InItemList;
+
+	UpdateFilteredItemList();
 }
 
 void UItemListWidget::NativeConstruct()
@@ -55,10 +92,106 @@ void UItemListWidget::NativeDestruct()
 	}
 }
 
-void UItemListWidget::OnTabMenuChanged(ETabType InTabType, int32 InSelectedTab)
+//탭이 눌림
+void UItemListWidget::OnTabMenuChanged(int32 InSelectedTab)
 {
-	if(InTabType == TabType)
+	SelectedFilterIndex = InSelectedTab;
+
+	UpdateFilteredItemList();
+}
+
+void UItemListWidget::OnItemSelected(UObject* InItemData)
+{
+	//아이템 선택 시 버튼 
+}
+
+void UItemListWidget::UpdateFilteredItemList()
+{
+	FilteredItemList.Empty();
+
+	if (TabType == ETabType::Inventory)
 	{
-		//탭 인덱스를 탭 타입에 따라 필터타입으로 컨버팅해서 필터를 처리함		
+		EInventoryFilterType FilterType = static_cast<EInventoryFilterType>(SelectedFilterIndex);
+
+		switch (FilterType)
+		{
+			case EInventoryFilterType::All:
+				FilteredItemList = CachedItemList;
+				break;
+			case EInventoryFilterType::Equipment:
+				for(UItemData* Item : CachedItemList)
+				{
+					if (Item && Item->GetItemGroup() == EItemGroup::Equip)
+					{
+						FilteredItemList.Add(Item);
+					}
+				}
+				break;
+			case EInventoryFilterType::Item:
+				for (UItemData* Item : CachedItemList)
+				{
+					if (Item && Item->GetItemGroup() == EItemGroup::GrowthItem)
+					{
+						FilteredItemList.Add(Item);
+					}
+				}
+				break;
+		}
+	}
+	else
+	{
+		ECharacterInfoFilterType FilterType = static_cast<ECharacterInfoFilterType>(SelectedFilterIndex);
+
+		switch (FilterType)
+		{
+		case ECharacterInfoFilterType::All:
+			FilteredItemList = CachedItemList;
+			break;
+		case ECharacterInfoFilterType::Weapon:
+			for (UItemData* Item : CachedItemList)
+			{
+				if (Item && Item->GetEquipGroup() == EEquipGroup::Weapon)
+				{
+					FilteredItemList.Add(Item);
+				}
+			}
+			break;
+		case ECharacterInfoFilterType::Armor:
+			for (UItemData* Item : CachedItemList)
+			{
+				if (Item && Item->GetEquipGroup() == EEquipGroup::Armor)
+				{
+					FilteredItemList.Add(Item);
+				}
+			}
+			break;
+		case ECharacterInfoFilterType::Helmet:
+			for (UItemData* Item : CachedItemList)
+			{
+				if (Item && Item->GetEquipGroup() == EEquipGroup::Helmet)
+				{
+					FilteredItemList.Add(Item);
+				}
+			}
+			break;
+		}
+	}
+
+	if (InventoryTileView)
+	{
+		InventoryTileView->ClearSelection();
+		InventoryTileView->SetListItems(FilteredItemList);
+	}
+}
+
+void UItemListWidget::UpdateButton()
+{
+	if (SellButton)
+	{
+		SellButton->SetVisibility(TabType == ETabType::Inventory ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (EquipButton)
+	{
+		EquipButton->SetVisibility(TabType == ETabType::CharacterInfo ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

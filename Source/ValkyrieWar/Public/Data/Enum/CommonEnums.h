@@ -119,7 +119,7 @@ enum class EInventoryFilterType : uint8
 };
 
 UENUM(BlueprintType)
-enum class ECharacterINfoFilterType : uint8
+enum class ECharacterInfoFilterType : uint8
 {
 	All,
 	Weapon,

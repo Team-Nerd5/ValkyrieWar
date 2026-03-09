@@ -149,7 +149,7 @@ void UActionButtonWidget::Sell()
 	if (CachedItemData->GetItemGroup() == EItemGroup::Goods ||
 		CachedItemData->GetItemGroup() == EItemGroup::GrowthItem)
 	{
-		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.Broadcast();
+		WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(CachedItemData->GetUID());
 	}
 	// 인벤토리 선택 해제
 	WorldEventSystem->Widget.OnUpdateInventorySelectedCancel.Broadcast();

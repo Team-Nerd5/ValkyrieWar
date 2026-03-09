@@ -11,10 +11,10 @@
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventoryAmountChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemAmountChanged, uint64, InUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateCharacterEquipment, uint64, InCharacterUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHiddenInventoryPopup);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTabMenuSelected, ETabType, InTabType, int32, InSelectedTab);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTabMenuSelected, int32, InSelectedTab);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
@@ -28,7 +28,7 @@ public:
 	// 인벤토리 아이템 선택 취소용
 	FOnUpdateInventorySelectedCancel OnUpdateInventorySelectedCancel;
 	// 인벤토리 Tileview Entry Widget 아이템 양 갱신용
-	FOnUpdateInventoryAmountChanged OnUpdateInventoryAmountChanged;
+	FOnInventoryItemAmountChanged OnInventoryItemAmountChanged;
 	// 장비 장착 및 해제시 캐릭터 정보 장비칸 UI 갱신용
 	FOnUpdateCharacterEquipment OnUpdateCharacterEquipment;
 	// 인벤토리에서 띄운 팝업 숨기기용

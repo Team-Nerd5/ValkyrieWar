@@ -93,7 +93,36 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 	return nullptr;
 }
 
-void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
+TArray<UItemData*> UInventorySystem::GetAllItems()
+{
+	if (UItemModule* ItemData = DataManager->GetItemModule())
+	{
+		return ItemData->GetItems();
+	}
+
+	return TArray<UItemData*>();
+}
+
+TArray<UItemData*> UInventorySystem::GetEquipItems()
+{
+	TArray<UItemData*> EquipItems;
+
+	if (UItemModule* ItemData = DataManager->GetItemModule())
+	{
+		TArray<UItemData*> Items = ItemData->GetItems();
+
+		for(UItemData* Item : Items)
+		{
+			if (Item && Item->GetItemGroup() == EItemGroup::Equip)
+			{
+				EquipItems.Add(Item);
+			}
+		}
+	}
+	return EquipItems;
+}
+
+void UInventorySystem::AddItem(uint64 InUID, int32 InAmount)
 {
 #pragma region 유효성 검사
 	if (!DataManager)
@@ -108,8 +137,6 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 	}
 #pragma endregion
 
-	// 테스트를 위해 UItemData가 아닌 ItemData의 UID와 DataID를 따로 받게 했음
-	// 나중에 필요시 UItemData로 변경
 		 
 	UItemData* Item = DataManager->GetItemModule()->GetItem(InUID);
 
@@ -128,45 +155,44 @@ void UInventorySystem::AddItem(uint64 InUID, int32 InDataId, int32 InAmount)
 			DataManager->GetItemModule()->AddItemAmount(Item->GetUID(), InAmount);				// 장비가 아닐 때
 		}
 		return;
+	}	
+}
+
+void UInventorySystem::AddItem(int32 InDataId, int32 InAmount)
+{
+
+	// 테스트를 위해 UItemData가 아닌 ItemData의 UID와 DataID를 따로 받게 했음
+	// 나중에 필요시 UItemData로 변경
+	// 
+	// 인벤토리에 DataId가 같은 아이템 찾기
+	UItemData* ItemDataById = nullptr;
+	for (UItemData* FoundItemData : DataManager->GetItemModule()->GetItems())
+	{
+		if (FoundItemData && FoundItemData->GetTableData().DataId == InDataId)
+		{
+			ItemDataById = FoundItemData;
+			break;
+		}
 	}
 
-	//아래는 왜 하는건지 모르겠음?
-	// -> UID가 다르더라도 DataID가 같고 장비가 아닐 때 중첩하기 위한 코드(아이템류)
-	
-	// UID로 못찾았을 경우
-	if (!Item)	
+	if (ItemDataById)	// DataID로 찾았을 경우
 	{
-		// 인벤토리에 DataId가 같은 아이템 찾기
-		UItemData* ItemDataById = nullptr;
-		for (UItemData* FoundItemData : DataManager->GetItemModule()->GetItems())
+		if (ItemDataById->GetItemGroup() == EItemGroup::Equip)
 		{
-			if (FoundItemData && FoundItemData->GetTableData().DataId == InDataId)
+			for (int32 i = 0; i < InAmount; ++i)
 			{
-				ItemDataById = FoundItemData;
-				break;
-			}
-		}
-
-		if (ItemDataById)	// DataID로 찾았을 경우
-		{
-			if (ItemDataById->GetItemGroup() == EItemGroup::Equip)
-			{
-				for (int32 i = 0; i < InAmount; ++i)									
-				{
-					DataManager->GetItemModule()->AddItem(InDataId, 1);							// 장비일 때
-				}
-			}
-			else
-			{
-				DataManager->GetItemModule()->AddItemAmount(ItemDataById->GetUID(), InAmount);	// 장비가 아닐 때
+				DataManager->GetItemModule()->AddItem(InDataId, 1);							// 장비일 때
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));		// 아이템을 새로 얻었을 때
-			DataManager->GetItemModule()->AddItem(InDataId, InAmount);
+			DataManager->GetItemModule()->AddItemAmount(ItemDataById->GetUID(), InAmount);	// 장비가 아닐 때
 		}
-		return;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[InventorySystem(AddItem)] 아이템 새로 추가"));		// 아이템을 새로 얻었을 때
+		DataManager->GetItemModule()->AddItem(InDataId, InAmount);
 	}
 }
 
@@ -186,6 +212,7 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 #pragma endregion
 
 	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	//Sell과 동일하게 업데이트 호출
 }
 
 void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
@@ -204,6 +231,9 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 #pragma endregion
 
 	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	//이걸 좀 바꿔서 현재 아이템을 반환하게..
+	//nullptr이면 지워서 없어진거임
+	//아이템 변경되었다고 호출
 }
 
 void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
@@ -266,18 +296,18 @@ void UInventorySystem::UnEquipItem(UItemData* InItem)
 
 void UInventorySystem::TestAddItem()
 {
-	AddItem(1000000001, 1, 1);
-	AddItem(1000000002, 2, 1);
-	AddItem(1000000003, 3, 1);
-	AddItem(1000000004, 4, 1);
-	AddItem(1000000005, 5, 1);
-	AddItem(1000000006, 6, 1);
-	AddItem(1000000007, 7, 1);
-	AddItem(1000000008, 8, 1);
-	AddItem(1000000009, 9, 1);
-	AddItem(1000000010, 10, 1);
+	//AddItem(1000000001, 1, 1);
+	//AddItem(1000000002, 2, 1);
+	//AddItem(1000000003, 3, 1);
+	//AddItem(1000000004, 4, 1);
+	//AddItem(1000000005, 5, 1);
+	//AddItem(1000000006, 6, 1);
+	//AddItem(1000000007, 7, 1);
+	//AddItem(1000000008, 8, 1);
+	//AddItem(1000000009, 9, 1);
+	//AddItem(1000000010, 10, 1);
 
 	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
 	WorldEvent->Widget.OnUpdateInventory.Broadcast();
-	WorldEvent->Widget.OnUpdateInventoryAmountChanged.Broadcast();
+	//WorldEvent->Widget.OnInventoryItemAmountChanged.Broadcast();
 }

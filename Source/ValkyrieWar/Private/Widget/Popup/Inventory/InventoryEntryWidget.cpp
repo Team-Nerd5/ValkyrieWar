@@ -11,12 +11,7 @@ void UInventoryEntryWidget::NativeConstruct()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.AddDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
-	}
-
-	if (SelectImage)
-	{
-		SelectImage->SetVisibility(ESlateVisibility::Hidden);
+		WorldEventSystem->Widget.OnInventoryItemAmountChanged.AddDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
 	}
 }
 
@@ -24,7 +19,7 @@ void UInventoryEntryWidget::NativeDestruct()
 {
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventoryAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
+		WorldEventSystem->Widget.OnInventoryItemAmountChanged.RemoveDynamic(this, &UInventoryEntryWidget::OnAmountChanged);
 	}
 
 	Super::NativeDestruct();
@@ -32,8 +27,8 @@ void UInventoryEntryWidget::NativeDestruct()
 
 void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
-	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
-
+	//??
+	//IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
 	if (SelectImage)
 		SelectImage->SetVisibility(ESlateVisibility::Hidden);
 
@@ -81,11 +76,11 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 	}
 }
 
-void UInventoryEntryWidget::OnAmountChanged()
+void UInventoryEntryWidget::OnAmountChanged(uint64 InUID)
 {
-	if (Amount)
+	if (CachedItemData && CachedItemData->GetUID() == InUID)
 	{
-		if (CachedItemData)
+		if (Amount)
 		{
 			Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
 		}

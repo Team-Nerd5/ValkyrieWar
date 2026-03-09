@@ -8,6 +8,7 @@
 #include "GameSystem/Instance/Game/UIManager.h"
 
 #include "Widget/HUD/TopMenuWidget.h"
+#include "Widget/Popup/Inventory/ItemListWidget.h"
 #include "Algo/Sort.h"
 
 
@@ -15,39 +16,12 @@ void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		InventorySystem = World->GetGameInstance()->GetSubsystem<UInventorySystem>();
-	}
-
-	if (Btn_FilterReset)
-		Btn_FilterReset->OnClicked.AddDynamic(this, &UInventoryWidget::FilterReset);
-	if (Btn_FilterWeapon)
-		Btn_FilterWeapon->OnClicked.AddDynamic(this, &UInventoryWidget::FilterWeapon);
-	if (Btn_FilterArmor)
-		Btn_FilterArmor->OnClicked.AddDynamic(this, &UInventoryWidget::FilterArmor);
-	if (Btn_FilterHelmet)
-		Btn_FilterHelmet->OnClicked.AddDynamic(this, &UInventoryWidget::FilterHelmet);
-	if (Btn_FilterGrowth)
-		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGrowth);
-	if (Btn_FilterGoods)
-		Btn_FilterGoods->OnClicked.AddDynamic(this, &UInventoryWidget::FilterGoods);
-	if (BackButton)
-		BackButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnClickClose);
-
 	if (EventSystem)
 	{
-		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnUpdateInventory);
-		EventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
-		EventSystem->Widget.OnUpdateInventorySelectedCancel.AddDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
+		//TODO : 아이템이 새로 추가되거나 제거된 경우는 이벤트를 받아서 리스트 자체를 갱신
+		//열려있을 때만 갱신해도 될 것 같음
 	}
 
-	InventoryTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnItemClicked);
-	//OwnedCharacterTileView->OnItemClicked().AddUObject(this, &UInventoryWidget::OnCharacterClicked);
-
-	// 처음 생성될 인벤토리 세팅
-	UpdateInventoryType(EUIType::PopupInventory);
 
 }
 
@@ -55,9 +29,9 @@ void UInventoryWidget::NativeDestruct()
 {
 	if (EventSystem)
 	{
-		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
+		/*EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnUpdateInventory);
 		EventSystem->Widget.OnUpdateCharacterEquipment.RemoveDynamic(this, &UInventoryWidget::OnUpdateEquipmentForUID);
-		EventSystem->Widget.OnUpdateInventorySelectedCancel.RemoveDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);
+		EventSystem->Widget.OnUpdateInventorySelectedCancel.RemoveDynamic(this, &UInventoryWidget::OnUpdateSelectedCancel);*/
 	}
 
 	Super::NativeDestruct();
@@ -69,8 +43,13 @@ void UInventoryWidget::OpenUI()
 
 	Super::OpenUI();
 
-	FilterReset();
-	RefreshUIByMode();
+	//인벤토리 시스템에서 아이템 가져와서 기본 데이터 세팅
+	if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+	{
+		OriginItems = Inventory->GetAllItems();
+	}
+
+	InitItemList();
 }
 
 void UInventoryWidget::CloseUI()
@@ -78,150 +57,20 @@ void UInventoryWidget::CloseUI()
 	Super::CloseUI();
 }
 
-void UInventoryWidget::UpdateInventoryType(EUIType InUIType)
+
+void UInventoryWidget::InitItemList()
 {
-#pragma region 유효성 검사
-	if (InUIType != EUIType::PopupInventory &&
-		InUIType != EUIType::PopupCharacterInfo)
+	if (ItemListWidget)
 	{
-		UE_LOG(LogTemp, Error, TEXT("잘못된 인벤토리 타입입니다"));
-		return;
+		ItemListWidget->SetMenu(InventoryTabNameData);
+		ItemListWidget->SetData(OriginItems);
 	}
-#pragma endregion
-
-	SelectedInventoryType = InUIType;
-
-	RefreshUIByMode();
-}
-
-void UInventoryWidget::FilterReset()
-{
-	if (SelectedInventoryType == EUIType::PopupInventory)
-	{
-		CurrentItemGroup = EItemGroup::None;
-		CurrentEquipGroup = EEquipGroup::None;
-
-		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::None);
-		SortInventory();
-	}
-	else if (SelectedInventoryType == EUIType::PopupCharacterInfo)
-	{
-		CurrentItemGroup = EItemGroup::Equip;
-		CurrentEquipGroup = EEquipGroup::None;
-
-		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Equip);
-		SortInventory();
-	}
-	else
-		return;
-}
-
-void UInventoryWidget::FilterWeapon()
-{
-	CurrentItemGroup = EItemGroup::Equip;
-	CurrentEquipGroup = EEquipGroup::Weapon;
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	SortInventory();
-}
-
-void UInventoryWidget::FilterArmor()
-{
-	CurrentItemGroup = EItemGroup::Equip;
-	CurrentEquipGroup = EEquipGroup::Armor;
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	SortInventory();
-}
-
-void UInventoryWidget::FilterHelmet()
-{
-	CurrentItemGroup = EItemGroup::Equip;
-	CurrentEquipGroup = EEquipGroup::Helmet;
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup, CurrentEquipGroup);
-	SortInventory();
-}
-
-void UInventoryWidget::FilterGrowth()
-{
-	CurrentItemGroup = EItemGroup::GrowthItem;
-	CurrentEquipGroup = EEquipGroup::None;
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
-	SortInventory();
-}
-
-void UInventoryWidget::FilterGoods()
-{
-	CurrentItemGroup = EItemGroup::Goods;
-	CurrentEquipGroup = EEquipGroup::None;
-
-	CachedItemList = InventorySystem->GetFilteredInventoryList(CurrentItemGroup);
-	SortInventory();
-}
-
-void UInventoryWidget::OnUpdateInventory()
-{
-	switch (CurrentItemGroup)
-	{
-	case EItemGroup::Goods:
-		FilterGoods();
-		break;
-	case EItemGroup::GrowthItem:
-		FilterGrowth();
-		break;
-	case EItemGroup::Equip:
-		switch (CurrentEquipGroup)
-		{
-		case EEquipGroup::Weapon:
-			FilterWeapon();
-			break;
-		case EEquipGroup::Helmet:
-			FilterHelmet();
-			break;
-		case EEquipGroup::Armor:
-			FilterArmor();
-			break;
-		default:
-			FilterReset();
-			break;
-		}
-		break;
-	default:
-		FilterReset();
-		break;
-	}
-}
-
-void UInventoryWidget::OnUpdateEquipmentForUID(uint64 InCharacterUID)
-{
-	if (EquipmentSlotWidget)
-	{
-		EquipmentSlotWidget->RefreshEquipment(InCharacterUID);
-	}
-}
-
-void UInventoryWidget::OnUpdateSelectedCancel()
-{
-	InventoryTileView->ClearSelection();
 }
 
 void UInventoryWidget::OnItemClicked(UObject* InItemData)
 {
 	UItemData* ItemData = Cast<UItemData>(InItemData);
 
-#pragma region 유효성 검사
-	if (!ItemData)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventoryWidget(EquipmentTileItemClicked)] ItemData가 없습니다"));
-		return;
-	}
-#pragma endregion
-
-	ActionButtonWidget->SetupItem(ItemData);
-	ActionButtonWidget->SetupCharacterUID(TempCharacterUID);		// 현재 캐릭터 목록 미구현으로 인해 임시 사용(선택한 캐릭터 입력)
-	ActionButtonWidget->SetVisibleButton(SelectedInventoryType);
 }
 
 //void UInventoryWidget::OnCharacterClicked(UObject* InCharacterData)
@@ -244,87 +93,33 @@ void UInventoryWidget::OnClickClose()
 	}
 }
 
-void UInventoryWidget::RefreshUIByMode()
-{
-	CurrentEquipGroup = EEquipGroup::None;
-
-	if (SelectedInventoryType == EUIType::PopupInventory)
-	{
-		CurrentItemGroup = EItemGroup::None;
-		
-		Btn_FilterReset->SetVisibility(ESlateVisibility::Visible);
-
-		Btn_FilterWeapon->SetVisibility(ESlateVisibility::Visible);
-		Btn_FilterArmor->SetVisibility(ESlateVisibility::Visible);
-		Btn_FilterHelmet->SetVisibility(ESlateVisibility::Visible);
-
-		Btn_FilterGrowth->SetVisibility(ESlateVisibility::Visible);
-		Btn_FilterGoods->SetVisibility(ESlateVisibility::Visible);
-
-		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Hidden);
-
-		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
-
-		FilterReset();
-	}
-	else if(SelectedInventoryType == EUIType::PopupCharacterInfo)
-	{
-		CurrentItemGroup = EItemGroup::Equip;
-
-		Btn_FilterReset->SetVisibility(ESlateVisibility::Visible);
-
-		Btn_FilterWeapon->SetVisibility(ESlateVisibility::Visible);
-		Btn_FilterArmor->SetVisibility(ESlateVisibility::Visible);
-		Btn_FilterHelmet->SetVisibility(ESlateVisibility::Visible);
-
-		Btn_FilterGrowth->SetVisibility(ESlateVisibility::Hidden);
-		Btn_FilterGoods->SetVisibility(ESlateVisibility::Hidden);
-
-		EquipmentSlotWidget->SetVisibility(ESlateVisibility::Visible);
-		EquipmentSlotWidget->RefreshEquipment(0);
-
-		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
-
-		FilterReset();
-	}
-}
-
 void UInventoryWidget::SortInventory()
 {
-	Algo::Sort(CachedItemList, [](UItemData* ItemA, UItemData* ItemB) {
-			if (!ItemA && !ItemB) return false;
-			if (!ItemA) return false;
-			if (!ItemB) return true;
+	//Algo::Sort(CachedItemList, [](UItemData* ItemA, UItemData* ItemB) {
+	//		if (!ItemA && !ItemB) return false;
+	//		if (!ItemA) return false;
+	//		if (!ItemB) return true;
 
-			if (ItemA->GetItemGroup() != ItemB->GetItemGroup())
-			{
-				if (ItemA->GetItemGroup() == EItemGroup::None) return false;		// A의 ItemGroup이 None이면 뒤로
-				if (ItemB->GetItemGroup() == EItemGroup::None) return true;			// B의 ItemGroup이 None이면 A를 앞으로
+	//		if (ItemA->GetItemGroup() != ItemB->GetItemGroup())
+	//		{
+	//			if (ItemA->GetItemGroup() == EItemGroup::None) return false;		// A의 ItemGroup이 None이면 뒤로
+	//			if (ItemB->GetItemGroup() == EItemGroup::None) return true;			// B의 ItemGroup이 None이면 A를 앞으로
 
-				return ItemA->GetItemGroup() < ItemB->GetItemGroup();				// ItemGroup Enum 순서대로 정렬
-			}
+	//			return ItemA->GetItemGroup() < ItemB->GetItemGroup();				// ItemGroup Enum 순서대로 정렬
+	//		}
 
-			if (ItemA->GetEquipGroup() != ItemB->GetEquipGroup())
-			{
-				if (ItemA->GetEquipGroup() == EEquipGroup::None) return false;		// A의 EquipGroup이 None이면 뒤로
-				if (ItemB->GetEquipGroup() == EEquipGroup::None) return true;		// B의 EquipGroup이 None이면 A를 앞으로
+	//		if (ItemA->GetEquipGroup() != ItemB->GetEquipGroup())
+	//		{
+	//			if (ItemA->GetEquipGroup() == EEquipGroup::None) return false;		// A의 EquipGroup이 None이면 뒤로
+	//			if (ItemB->GetEquipGroup() == EEquipGroup::None) return true;		// B의 EquipGroup이 None이면 A를 앞으로
 
-				return ItemA->GetEquipGroup() < ItemB->GetEquipGroup();				// EquipGroup Enum 순서대로 정렬
-			}
+	//			return ItemA->GetEquipGroup() < ItemB->GetEquipGroup();				// EquipGroup Enum 순서대로 정렬
+	//		}
 
-			const auto TableDataA = ItemA->GetTableData();
-			const auto TableDataB = ItemB->GetTableData();
+	//		const auto TableDataA = ItemA->GetTableData();
+	//		const auto TableDataB = ItemB->GetTableData();
 
-			return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
-		});
+	//		return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
+	//	});
 
-	if (InventoryTileView)
-	{
-		InventoryTileView->ClearSelection();
-		InventoryTileView->SetListItems(CachedItemList);
-	}
-	if (ActionButtonWidget)
-	{
-		ActionButtonWidget->SetVisibility(ESlateVisibility::Hidden);
-	}
 }

@@ -26,7 +26,13 @@ public:
 
 	UItemData* GetEquippedItemByGroup(uint64 InCharacterUID, EEquipGroup InItemGroup);
 
-	void AddItem(uint64 InUID, int32 InDataId, int32 InAmount);
+	TArray<UItemData*> GetAllItems();
+	TArray<UItemData*> GetEquipItems();
+
+	void AddItem(uint64 InUID, int32 InAmount);
+
+	//아이템 UID 없이 테스트할 때 사용
+	void AddItem(int32 InDataId, int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)
 	void UseItem(UItemData* InItem, int32 InAmount);
