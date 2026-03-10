@@ -38,6 +38,10 @@ void UInventoryWidget::NativeOnInitialized()
 {
 	CurrentFilterType = EInventoryFilterType::All;
 
+	if (ItemListWidget)
+	{
+		ItemListWidget->SetMenu(InventoryTabNameData);
+	}
 	InitItemList();
 }
 
@@ -69,7 +73,6 @@ void UInventoryWidget::InitItemList()
 
 	if (ItemListWidget)
 	{
-		ItemListWidget->SetMenu(InventoryTabNameData);
 		ItemListWidget->SetData(OriginItems);
 	}
 }

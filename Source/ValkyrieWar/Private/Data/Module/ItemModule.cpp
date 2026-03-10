@@ -100,12 +100,12 @@ void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 	}	
 }
 
-//장비 판매 시 이 함수 호출
-void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
+//장비 판매 시 이 함수 호출(아이템 이 남아있으면 return true)
+bool UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 {
 	UItemData* TargetItem = GetItem(InUID);
 
-	if (!TargetItem) return;
+	if (!TargetItem) return false;
 
 	TargetItem->AddAmount(InAmount);
 
@@ -113,7 +113,10 @@ void UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 	{
 		OwnItems.Remove(InUID);
 		SetList();
+		return false;
 	}
+
+	return true;
 }
 void UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 {

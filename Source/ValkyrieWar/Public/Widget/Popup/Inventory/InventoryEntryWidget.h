@@ -53,4 +53,6 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<UItemData> CachedItemData = nullptr;
+
+	bool IsSelected = false;
 };

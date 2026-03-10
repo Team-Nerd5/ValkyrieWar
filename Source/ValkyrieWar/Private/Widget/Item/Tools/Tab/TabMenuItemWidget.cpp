@@ -4,6 +4,7 @@
 #include "Widget/Item/Tools/Tab/TabMenuItemWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
@@ -32,17 +33,10 @@ void UTabMenuItemWidget::SetTabSelected(bool bSelected)
 {
 	bIsOn = bSelected;
 
-	if (TabButton && PressedImage && NormalImage)
+	if (ButtonImage && PressedImage && NormalImage)
 	{
-		FButtonStyle NewStyle = TabButton->GetStyle();
-
 		UTexture2D* ButtonTexture = bIsOn ? PressedImage : NormalImage;
-
-		NewStyle.Normal.SetResourceObject(ButtonTexture);
-		NewStyle.Hovered.SetResourceObject(ButtonTexture);
-		NewStyle.Pressed.SetResourceObject(ButtonTexture);
-
-		TabButton->SetStyle(NewStyle);
+		ButtonImage->SetBrushFromTexture(ButtonTexture);
 	}
 }
 

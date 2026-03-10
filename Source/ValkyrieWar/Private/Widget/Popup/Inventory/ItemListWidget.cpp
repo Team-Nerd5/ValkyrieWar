@@ -18,6 +18,9 @@ void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData
 {
 	TabType = ETabType::Inventory;
 
+	if(SellButton)
+		SellButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickSellItem);
+
 	if (TabMenu)
 	{
 		for (auto Data : InMenuNameData)
@@ -34,6 +37,9 @@ void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData
 void UItemListWidget::SetMenu(TMap<ECharacterInfoFilterType, FString> InMenuNameData)
 {
 	TabType = ETabType::CharacterInfo;
+
+	if (EquipButton)
+		EquipButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickEquipItem);
 
 	if (TabMenu)
 	{
@@ -70,17 +76,38 @@ void UItemListWidget::InitFilterIndex(int32 InIndex)
 void UItemListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnInventoryItemSelected.AddDynamic(this, &UItemListWidget::OnItemSelected);
+	}
 }
 
 void UItemListWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnInventoryItemSelected.RemoveDynamic(this, &UItemListWidget::OnItemSelected);
+	}
 }
 
-void UItemListWidget::OnItemSelected(UObject* InItemData)
+void UItemListWidget::OnClickSellItem()
 {
-	//아이템 선택 시 버튼 
+	//판매 게이지 필요...
+	if (SelectedItem)
+	{
+		//판매 확인 팝업
+	}
+}
+
+void UItemListWidget::OnClickEquipItem()
+{
+	if (SelectedItem)
+	{
+		//장착 이벤트 호출
+		//캐릭터 정보 위젯에서 현재 캐릭터 아이디 가져와서 세팅
+		
+	}
 }
 
 void UItemListWidget::UpdateFilteredItemList()
@@ -206,4 +233,13 @@ void UItemListWidget::SortInventory()
 			return TableDataA.DataId < TableDataB.DataId;							// A와 B의 ItemGroup과 EquipGroup이 같을 때 DataId 오름차순으로 정렬
 		});
 
+}
+
+void UItemListWidget::OnItemSelected(UItemData* InItemData)
+{
+	UButton* ActiveButton = (TabType == ETabType::Inventory) ? SellButton : EquipButton;
+
+	SelectedItem = InItemData;
+
+	ActiveButton->SetIsEnabled(InItemData != nullptr);
 }

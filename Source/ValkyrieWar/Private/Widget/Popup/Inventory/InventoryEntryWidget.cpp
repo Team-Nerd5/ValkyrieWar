@@ -43,9 +43,36 @@ void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 
 void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 {
+	if (!CachedItemData)
+		return;
+
 	if (SelectImage)
 	{
 		SelectImage->SetVisibility(bIsSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
+	}
+
+	if (IsSelected && !bIsSelected)
+	{
+		//선택되어 있다가 꺼짐
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Widget.OnInventoryItemSelected.Broadcast(nullptr);
+		}
+
+		IsSelected = bIsSelected;
+
+		return;
+	}
+
+	if (bIsSelected)
+	{
+		//그냥 선택됨
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Widget.OnInventoryItemSelected.Broadcast(CachedItemData);
+		}
+
+		IsSelected = bIsSelected;
 	}
 }
 

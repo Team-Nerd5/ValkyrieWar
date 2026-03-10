@@ -40,7 +40,7 @@ public:
 	/// </summary>
 	/// <param name="InUID"></param>
 	/// <param name="InAmount"></param>
-	void AddItemAmount(uint64 InUID, int32 InAmount);
+	bool AddItemAmount(uint64 InUID, int32 InAmount);
 
 
 	FORCEINLINE TArray<UItemData*> GetItems() { return OwnItemList; }

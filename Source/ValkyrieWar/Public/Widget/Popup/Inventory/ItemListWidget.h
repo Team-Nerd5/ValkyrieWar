@@ -27,17 +27,20 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-
-
-	UFUNCTION()
-	void OnItemSelected(UObject* InItemData);
-
 	void UpdateFilteredItemList();
 
 	void UpdateButton();
 
 	void SortInventory();
 
+	UFUNCTION()
+	void OnItemSelected(UItemData* InItemData);
+
+	UFUNCTION()
+	void OnClickSellItem();
+
+	UFUNCTION()
+	void OnClickEquipItem();
 protected:
 	ETabType TabType;
 	int32 SelectedFilterIndex = 0;
@@ -60,4 +63,7 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<class UItemData>> FilteredItemList;
 
+
+	UPROPERTY()
+	TObjectPtr<class UItemData> SelectedItem = nullptr;
 };

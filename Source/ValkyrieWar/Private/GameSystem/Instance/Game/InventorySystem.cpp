@@ -98,12 +98,22 @@ UItemData* UInventorySystem::GetEquippedItemByGroup(uint64 InCharacterUID, EEqui
 
 TArray<UItemData*> UInventorySystem::GetAllItems()
 {
+	TArray<UItemData*> Items;
+
 	if (UItemModule* ItemData = DataManager->GetItemModule())
 	{
-		return ItemData->GetItems();
+		TArray<UItemData*> AllItem = ItemData->GetItems();
+
+		for (UItemData* Data : AllItem)
+		{
+			if (Data->GetEquipCharacter() > 0)
+				continue;
+
+			Items.Add(Data);
+		}
 	}
 
-	return TArray<UItemData*>();
+	return Items;
 }
 
 TArray<UItemData*> UInventorySystem::GetEquipItems()
@@ -155,10 +165,15 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 	}
 #pragma endregion
 
-	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+		if(ItemExists)
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+		else
+			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
+
 	}
 }
 
@@ -177,12 +192,15 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 	}
 #pragma endregion
 
-	DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
 
 	//인벤토리 업데이트
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+		if (ItemExists)
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+		else
+			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
 	}
 }
 

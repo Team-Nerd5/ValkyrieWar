@@ -31,6 +31,9 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UTextBlock> TabName;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> ButtonImage;
+
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UTexture2D> NormalImage;
 	UPROPERTY(EditAnywhere)
