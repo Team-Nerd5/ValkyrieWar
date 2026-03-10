@@ -57,9 +57,6 @@ void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	StopStuckMonitor();
 	StopCellUpdate();
 
-	// Destroy 되는 예외 대비 안전장치
-	UnregisterFromBattleDirector(true);
-
 	EngagementSlots.Empty();
 
 	if (UWorld* W = GetWorld())
@@ -181,14 +178,7 @@ void AUnitCharacter::HandleDeath()
 		AIC->StopMovement();
 		AIC->ClearFocus(EAIFocusPriority::Gameplay);
 
-		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
-		{
-			AIC->ClearBBKeySafe(BB, TEXT("ReservedTarget"));
-			AIC->ClearBBKeySafe(BB, TEXT("EnemyBase"));
-			AIC->ClearBBKeySafe(BB, TEXT("MoveGoal"));
-			AIC->ClearBBKeySafe(BB, TEXT("TargetLocation"));
-			AIC->ClearBBKeySafe(BB, TEXT("HasTarget"));
-		}
+		ClearRuntimeBlackboardState(AIC);
 
 		if (UPathFollowingComponent* PFC = AIC->GetPathFollowingComponent())
 		{
@@ -271,25 +261,7 @@ void AUnitCharacter::OnGet_Implementation()
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	}
 
-	// 풀에서 꺼내질 때마다(재사용 포함) 초기화 + 서브시스템 등록
 	ResetForReuse();
-
-	// AI 재가동
-	if (!GetController())
-	{
-		// 혹시라도 컨트롤러가 없는 예외 케이스
-		SpawnDefaultController();
-	}
-
-	if (AAIController* AIC = Cast<AAIController>(GetController()))
-	{
-		// BT 사용 중이면 RestartLogic로 충분한 경우가 많음
-		if (UBrainComponent* BrainComp = AIC->BrainComponent)
-		{
-			BrainComp->RestartLogic();
-		}
-	}
-
 	bInPool = false;
 }
 
@@ -330,14 +302,34 @@ void AUnitCharacter::OnRelease_Implementation()
 		OwnerSpawner->NotifyUnitReleased(this);
 	}
 
-	if (Brain) Brain->ResetRuntimeBrainState();
-
-	if (Brain->Team == ETeam::TeamB)
+	if (Brain)
 	{
-		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		Brain->ResetRuntimeBrainState();
+
+		if (Brain->Team == ETeam::TeamB)
 		{
-			// TODO: 처치 시 획득 마나 결정
-			WorldEventSystem->Battle.OnManaAdd.Broadcast(20);
+			if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+			{
+				WorldEventSystem->Battle.OnManaAdd.Broadcast(20);
+			}
+		}
+	}
+
+	if (AUnitAIController* AIC = Cast<AUnitAIController>(GetController()))
+	{
+		AIC->StopMovement();
+		AIC->ClearFocus(EAIFocusPriority::Gameplay);
+
+		ClearRuntimeBlackboardState(AIC);
+
+		if (UPathFollowingComponent* PFC = AIC->GetPathFollowingComponent())
+		{
+			PFC->AbortMove(*this, FPathFollowingResultFlags::OwnerFinished);
+		}
+
+		if (UBrainComponent* BC = AIC->BrainComponent)
+		{
+			BC->StopLogic(TEXT("ReleasedToPool"));
 		}
 	}
 
@@ -485,10 +477,29 @@ void AUnitCharacter::ResetForReuse()
 		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 
-	// 컨트롤러가 UnPossess 되었을 수 있으니 보장
-	if (!GetController())
+	AUnitAIController* AIC = Cast<AUnitAIController>(GetController());
+	if (!AIC)
 	{
 		SpawnDefaultController();
+		AIC = Cast<AUnitAIController>(GetController());
+	}
+
+	if (AIC)
+	{
+		AIC->StopMovement();
+		AIC->ClearFocus(EAIFocusPriority::Gameplay);
+
+		if (UPathFollowingComponent* PFC = AIC->GetPathFollowingComponent())
+		{
+			PFC->AbortMove(*this, FPathFollowingResultFlags::OwnerFinished);
+		}
+
+		ClearRuntimeBlackboardState(AIC);
+		
+		if (UBrainComponent* BC = AIC->BrainComponent)
+		{
+			BC->RestartLogic();
+		}
 	}
 
 	LastAssignedTarget = nullptr;
@@ -619,6 +630,21 @@ void AUnitCharacter::SetNeedToEscapeBB(bool bValue)
 	if (!BB) return;
 
 	BB->SetValueAsBool(BB_NeedToEscapeKey, bValue);
+}
+
+void AUnitCharacter::ClearRuntimeBlackboardState(AUnitAIController* AIC)
+{
+	if (!AIC) return;
+
+	if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
+	{
+		AIC->ClearBBKeySafe(BB, TEXT("ReservedTarget"));
+		AIC->ClearBBKeySafe(BB, TEXT("EnemyBase"));
+		AIC->ClearBBKeySafe(BB, TEXT("MoveGoal"));
+		AIC->ClearBBKeySafe(BB, TEXT("TargetLocation"));
+		AIC->ClearBBKeySafe(BB, TEXT("HasTarget"));
+		AIC->ClearBBKeySafe(BB, TEXT("NeedToEscape"));
+	}
 }
 
 void AUnitCharacter::CellSyncTick()

@@ -12,6 +12,7 @@ class UBattleDirectorSubsystem;
 class UObjectPoolSubsystem;
 class ABaseUnitSpawner;
 class UUnitBrainComponent;
+class AUnitAIController;
 struct FUnitEngagementSlotData;
 
 /**
@@ -96,6 +97,8 @@ private:
 	void StuckMonitorTick();
 
 	void SetNeedToEscapeBB(bool bValue);
+
+	void ClearRuntimeBlackboardState(AUnitAIController* AIC);
 
 	void CellSyncTick();
 	void StopCellUpdate();
