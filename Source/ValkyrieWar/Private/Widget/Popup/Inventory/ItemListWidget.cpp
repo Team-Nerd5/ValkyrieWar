@@ -4,6 +4,7 @@
 #include "Widget/Popup/Inventory/ItemListWidget.h"
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Widget/Item/Tools/Tab/TabMenuWidget.h"
@@ -118,6 +119,12 @@ void UItemListWidget::OnClickSellItem()
 	if (SelectedItem)
 	{
 		//판매 확인 팝업
+		//우선은 판매...
+
+		if (UInventorySystem* InventorySystem = GetGameInstance()->GetSubsystem<UInventorySystem>())
+		{
+			InventorySystem->SellItem(SelectedItem, CurrentAmount);
+		}
 	}
 }
 
@@ -326,13 +333,17 @@ void UItemListWidget::OnItemSelected(UItemData* InItemData)
 	{
 		MaxAmount = SelectedItem ? SelectedItem->GetAmount() : 1;
 
-		if(SellAmountEditBox)
-			SellAmountEditBox->SetText(FText::AsNumber(1));
+		CurrentAmount = SelectedItem ? 1 : 0;
+
+		if (SellAmountEditBox)
+		{
+			SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
+		}
 
 		if (SellPriceText)
 		{
 			int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
-			SellPriceText->SetText(FText::AsNumber(CurrentAmount * 0));
+			SellPriceText->SetText(FText::AsNumber(CurrentAmount * Price));
 		}
 	}
 }

@@ -170,9 +170,9 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		if(ItemExists)
-			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-		else
 			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
+		else
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 
 	}
 }
@@ -198,9 +198,9 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		if (ItemExists)
-			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
-		else
 			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
+		else
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	}
 }
 
