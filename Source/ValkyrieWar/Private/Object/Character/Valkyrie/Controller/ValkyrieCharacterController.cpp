@@ -40,6 +40,8 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 	DragOffset = FVector::ZeroVector;
 	bIsDragging = false;
 	bIsInputActive = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("유닛 생성됨"));
 }
 
 void AValkyrieCharacterController::BeginPlay()
@@ -295,6 +297,11 @@ void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InVa
 }
 
 void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
+{
+	RequestAttack();
+}
+
+void AValkyrieCharacterController::RequestAttack()
 {
 	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
 	{

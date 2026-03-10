@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ArrowProjectile.generated.h"
 
+class USphereComponent;
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
 
@@ -17,6 +18,10 @@ class VALKYRIEWAR_API AArrowProjectile : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AArrowProjectile();
+
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TObjectPtr<USphereComponent> CollisionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
 	TObjectPtr<UStaticMeshComponent> ProjectileMesh;

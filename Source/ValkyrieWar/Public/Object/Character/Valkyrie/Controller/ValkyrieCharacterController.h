@@ -121,7 +121,10 @@ protected:
 	// 입력 함수들
 	void OnMove(const FInputActionValue& InValue);
 	void OnMoveCompleted(const FInputActionValue& InValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
 	void OnAttackTap(const FInputActionValue& InValue);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void RequestAttack();
 	//void OnAttackHold(const FInputActionValue& InValue);
 	void OnInputStarted();
 	void OnTouchTriggered();
