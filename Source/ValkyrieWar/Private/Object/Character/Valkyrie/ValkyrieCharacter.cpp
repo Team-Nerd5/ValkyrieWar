@@ -64,7 +64,8 @@ void AValkyrieCharacter::ResetCombo()
 	bIsInComboWindow = false;
 	if (GetCharacterMovement())
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 600.f; 
+		GetCharacterMovement()->MaxWalkSpeed = 600.f;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
@@ -174,17 +175,27 @@ void AValkyrieCharacter::ExecuteAttack()
 			GetCharacterMovement()->MaxWalkSpeed = 0.f;
 			GetCharacterMovement()->StopMovementImmediately();
 
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AValkyrieCharacter::OnAttackMontageEnded);
-			AnimInst->Montage_Play(AttackMontage);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+				FVector InputDir = GetCharacterMovement()->GetLastInputVector();
 
-			CurrentComboCount = 1;
-			bIsComboActive = true;
-			bCanNextCombo = false;
-			bIsComboInputOn = false;
+				if (!InputDir.IsNearlyZero())
+				{
+					SetActorRotation(InputDir.Rotation());
+				}
+				GetCharacterMovement()->MaxWalkSpeed = 0.f;
+				GetCharacterMovement()->StopMovementImmediately();
+				GetCharacterMovement()->bOrientRotationToMovement = false;
 
-			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage); 
+				FOnMontageEnded EndDelegate;
+				EndDelegate.BindUObject(this, &AValkyrieCharacter::OnAttackMontageEnded);
+				AnimInst->Montage_Play(AttackMontage);
+				AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+
+				CurrentComboCount = 1;
+				bIsComboActive = true;
+				bCanNextCombo = false;
+				bIsComboInputOn = false;
+
+				AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
 		}
 		else
 		{
@@ -198,6 +209,11 @@ void AValkyrieCharacter::OnAttackNotify()
 	if (CurrentWeaponActor)
 	{
 		CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
+	}
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 600.f;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
@@ -243,6 +259,10 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ResetCombo();
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
 }
 void AValkyrieCharacter::BeginComboWindow()
 {
@@ -262,6 +282,15 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 	{
 		bIsComboInputOn = false;
 		CurrentComboCount++;
+
+		FVector InputDir = GetCharacterMovement()->GetLastInputVector();
+		if (!InputDir.IsNearlyZero())
+		{
+			SetActorRotation(InputDir.Rotation());
+		}
+		GetCharacterMovement()->MaxWalkSpeed = 0.f;
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 
 		AnimInst->Montage_JumpToSection(NextSectionName, AttackMontage);
 

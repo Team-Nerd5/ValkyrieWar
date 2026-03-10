@@ -1,6 +1,7 @@
 ﻿#include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "GameFramework/Pawn.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraActor.h"
 
 #include "EnhancedInputComponent.h"
@@ -408,12 +409,10 @@ void AValkyrieCharacterController::Move(FVector2D InMoveDir)
 			{
 				if (AnimInst->IsAnyMontagePlaying())
 				{
-					if (!WorldInputDirection.IsNearlyZero())
+					if (ValkyrieChar->GetCharacterMovement()->MaxWalkSpeed == 0.f)
 					{
-						FRotator TargetRotation = WorldInputDirection.Rotation();
-						ValkyrieChar->SetActorRotation(TargetRotation);
+						return;
 					}
-					return;
 				}
 			}
 		}

@@ -9,6 +9,9 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
+class UNiagaraComponent;
+class UNiagaraSystem;
+class UPointLightComponent;
 
 UCLASS()
 class VALKYRIEWAR_API AArrowProjectile : public AActor
@@ -19,7 +22,9 @@ public:
 	// Sets default values for this actor's properties
 	AArrowProjectile();
 
-	
+	virtual void BeginPlay();
+	virtual void Destroyed();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TObjectPtr<USphereComponent> CollisionComp;
 
@@ -29,10 +34,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	UNiagaraComponent* TrailNiagaraComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visuals")
+	UNiagaraSystem* TrailFXAsset;
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void OnProjectileHit(UPrimitiveComponent* HitComponent,
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse,
-		const FHitResult& Hit);
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 };
