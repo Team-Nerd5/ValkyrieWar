@@ -104,5 +104,7 @@ void UInventoryWidget::OnTabMenuChanged(int32 InSelectedTab)
 	if (ItemListWidget)
 	{
 		ItemListWidget->InitFilterIndex(InSelectedTab);
+		//탭 바뀌면 선택 아이템을 비워줌
+		ItemListWidget->OnItemSelected(nullptr);
 	}
 }

@@ -4,8 +4,6 @@
 #include "Widget/Item/Tools/Tab/TabMenuWidget.h"
 #include "Widget/Item/Tools/Tab/TabMenuItemWidget.h"
 
-
-
 #include "Components/PanelWidget.h"
 
 void UTabMenuWidget::AddTab(ETabType InTabType, int32 InFilterIndex, FString InTabName)

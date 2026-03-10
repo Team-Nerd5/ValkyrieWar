@@ -23,6 +23,9 @@ public:
 
 	void InitFilterIndex(int32 InIndex);
 
+	UFUNCTION()
+	void OnItemSelected(UItemData* InItemData);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -34,13 +37,17 @@ protected:
 	void SortInventory();
 
 	UFUNCTION()
-	void OnItemSelected(UItemData* InItemData);
-
-	UFUNCTION()
 	void OnClickSellItem();
 
 	UFUNCTION()
 	void OnClickEquipItem();
+
+	UFUNCTION()
+	void OnClickAmountMinusButton();
+	UFUNCTION()
+	void OnClickAmountPlusButton();
+	UFUNCTION()
+	void OnSellAmountChanged(const FText& InText);
 protected:
 	ETabType TabType;
 	int32 SelectedFilterIndex = 0;
@@ -63,7 +70,25 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<class UItemData>> FilteredItemList;
 
-
 	UPROPERTY()
 	TObjectPtr<class UItemData> SelectedItem = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPanelWidget> SellAmountPanel = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPanelWidget> GoldPanel = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UTextBlock> SellPriceText = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> AmountMinusButton  = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> AmountPlusButton  = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UEditableTextBox>SellAmountEditBox = nullptr;
+
+	int32 CurrentAmount = 1;
+	int32 MaxAmount = 1;
 };

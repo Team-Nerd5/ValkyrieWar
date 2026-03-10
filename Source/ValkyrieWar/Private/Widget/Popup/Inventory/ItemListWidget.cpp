@@ -11,15 +11,14 @@
 #include "Components/PanelWidget.h"
 #include "Components/TileView.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
+#include "Components/TextBlock.h"
 
 #include "Algo/Sort.h"
 
 void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData)
 {
 	TabType = ETabType::Inventory;
-
-	if(SellButton)
-		SellButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickSellItem);
 
 	if (TabMenu)
 	{
@@ -31,6 +30,25 @@ void UItemListWidget::SetMenu(TMap<EInventoryFilterType, FString> InMenuNameData
 		}
 	}
 
+	if (SellButton)
+	{
+		SellButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickSellItem);
+		SellButton->SetIsEnabled(false);
+	}
+
+	if (AmountMinusButton)
+	{
+		AmountMinusButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickAmountMinusButton);
+	}
+	if (AmountPlusButton)
+	{
+		AmountPlusButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickAmountPlusButton);
+	}
+	if (SellAmountEditBox)
+	{
+		SellAmountEditBox->OnTextChanged.AddDynamic(this, &UItemListWidget::OnSellAmountChanged);
+	}
+
 	UpdateButton();
 }
 
@@ -39,7 +57,10 @@ void UItemListWidget::SetMenu(TMap<ECharacterInfoFilterType, FString> InMenuName
 	TabType = ETabType::CharacterInfo;
 
 	if (EquipButton)
+	{
 		EquipButton->OnClicked.AddDynamic(this, &UItemListWidget::OnClickEquipItem);
+		EquipButton->SetIsEnabled(false);
+	}
 
 	if (TabMenu)
 	{
@@ -108,6 +129,50 @@ void UItemListWidget::OnClickEquipItem()
 		//캐릭터 정보 위젯에서 현재 캐릭터 아이디 가져와서 세팅
 		
 	}
+}
+
+void UItemListWidget::OnClickAmountMinusButton()
+{
+	if (CurrentAmount > 1)
+		CurrentAmount--;
+
+	if (SellPriceText)
+	{
+		int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
+		SellPriceText->SetText(FText::AsNumber(CurrentAmount * Price));
+	}
+
+	if (SellAmountEditBox)
+		SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
+}
+
+void UItemListWidget::OnClickAmountPlusButton()
+{
+	if (CurrentAmount < MaxAmount)
+		CurrentAmount++;
+
+	if (SellPriceText)
+	{
+		int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
+		SellPriceText->SetText(FText::AsNumber(CurrentAmount * Price));
+	}
+
+	if (SellAmountEditBox)
+		SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
+}
+
+void UItemListWidget::OnSellAmountChanged(const FText& InText)
+{
+	int32 InAmount = FCString::Atoi(*InText.ToString());
+
+	if (InAmount < 1)
+		CurrentAmount = 1;
+
+	if (InAmount > MaxAmount)
+		CurrentAmount = MaxAmount;
+
+	if (SellAmountEditBox)
+		SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
 }
 
 void UItemListWidget::UpdateFilteredItemList()
@@ -239,7 +304,35 @@ void UItemListWidget::OnItemSelected(UItemData* InItemData)
 {
 	UButton* ActiveButton = (TabType == ETabType::Inventory) ? SellButton : EquipButton;
 
-	SelectedItem = InItemData;
+	if (SelectedItem == InItemData)
+	{
+		return;
+	}
 
 	ActiveButton->SetIsEnabled(InItemData != nullptr);
+
+	SelectedItem = InItemData;
+
+	if (SellAmountPanel)
+	{
+		SellAmountPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (GoldPanel)
+	{
+		GoldPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+
+	if (TabType == ETabType::Inventory)
+	{
+		MaxAmount = SelectedItem ? SelectedItem->GetAmount() : 1;
+
+		if(SellAmountEditBox)
+			SellAmountEditBox->SetText(FText::AsNumber(1));
+
+		if (SellPriceText)
+		{
+			int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
+			SellPriceText->SetText(FText::AsNumber(CurrentAmount * 0));
+		}
+	}
 }
