@@ -679,6 +679,8 @@ void AUnitCharacter::ExecuteAttack()
 	const float Now = World->GetTimeSeconds();
 	if (!CanAttackNow(Now)) return; // 쿨타임 체크 활성화
 
+	//성현우[TODO] : 쿨타임 테이블 추가 및 어빌리티에 설정하는게 맞을 것 같다.
+	
 	// 2. 애니메이션 재생
 	if (AttackMontage)
 	{
@@ -702,17 +704,17 @@ void AUnitCharacter::ExecuteAttack()
 	ResetStuckCountdown(true);
 }
 
+void AUnitCharacter::ExecuteSkill(int32 InSkillIndex)
+{
+	//스킬 몽타주 실행
+}
+
 void AUnitCharacter::OnAttackNotify()
 {
 	if (CurrentTarget)
 	{
 		ApplyAttack(CurrentTarget);
 	}
-}
-
-void AUnitCharacter::ExecuteSkill()
-{
-	//스킬 몽타주 실행
 }
 
 void AUnitCharacter::OnSkillNotify()

@@ -37,15 +37,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ResetCombo();
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void ExecuteAttack() override;
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void ExecuteSkill() override;
+	
 
 	virtual void OnAttackNotify() override;
 	UFUNCTION(BlueprintCallable, Category = "Combat|Skill")
 	virtual void OnSkillNotify() override;
-	
+	 
 
 	/*
 	virtual void StartAttackSequence() ; // 공격모션실행
@@ -59,14 +56,30 @@ public:
 	*/
 	
 	void SetData(UValkyrieData* InData);
-
-	
+		
 protected:
 	virtual void BeginPlay() override;
 
 	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
 	void UpdateWeaponMesh();
+
+	
+protected: // 스킬 관련
+	UFUNCTION()
+	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void ExecuteAttack() override;
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void ExecuteSkill(int32 InSkillIndex) override;
+
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
+	TObjectPtr<UAnimMontage> ComboMontage;
 
 	UPROPERTY()
 	TObjectPtr<class AValkyrieWeapon> CurrentWeaponActor;
@@ -76,18 +89,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AValkyrieWeapon> WeaponClass;
-protected: // 스킬 관련
-	UPROPERTY()
-	float CachedSkillDamage = 0.0f;
-	UFUNCTION()
-	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	
-protected:
-	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
-	TObjectPtr<UAnimMontage> ComboMontage;
-
-	UFUNCTION()
-	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	UPROPERTY()
 	TObjectPtr<UValkyrieData> Data = nullptr;

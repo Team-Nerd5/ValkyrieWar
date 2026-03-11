@@ -6,6 +6,9 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "BattleWidget.generated.h"
 
+class UImage;
+class UWallHealthBarWidget;
+class UButton;
 /**
  * 
  */
@@ -15,32 +18,45 @@ class VALKYRIEWAR_API UBattleWidget : public UBaseWidget
 	GENERATED_BODY()
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+
 	virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 	virtual FReply NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 	virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 
-public:
 	FORCEINLINE FVector2D const GetJoyPadAxis() { return JoyPadAxis; }
-
 	void SetJoyPadVisibility(bool bIsVisible);
 protected:
+	UFUNCTION()
+	void OnClickAttack();
+	//귀찮아서..우선 번호로
+	UFUNCTION()
+	void OnClickSkill_1();
+
+protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> JoyPadImage;
+	TObjectPtr<UImage> JoyPadImage;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> JoyPadBGImage;
+	TObjectPtr<UImage> JoyPadBGImage;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> Frame;
+	TObjectPtr<UImage> Frame;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UImage> Arrows;
+	TObjectPtr<UImage> Arrows;
 	
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UWallHealthBarWidget> AllyWallHealthBar;
+	TObjectPtr<UWallHealthBarWidget> AllyWallHealthBar;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWallHealthBarWidget> EnemyWallHealthBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> AttackButton = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> SkillButton_1 = nullptr;
 
 private:
 	EInputControlMode CurrentMode = EInputControlMode::Manual;

@@ -35,19 +35,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "input")
 	TObjectPtr<UInputAction> CameraDragAction;
 
-	//일반공격
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> AttackAction;
-	//스킬 공격 일단 하나만
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> SkillAction;
-
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	//TObjectPtr<USpringArmComponent> SpringArm = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
 	float AutoCenterWaitTime = 3.0f; // 복귀 대기 시간
@@ -122,13 +112,7 @@ protected:
 	// 입력 함수들
 	void OnMove(const FInputActionValue& InValue);
 	void OnMoveCompleted(const FInputActionValue& InValue);
-	UFUNCTION(BlueprintCallable, Category = "Input")
-	void OnAttackTap(const FInputActionValue& InValue);
-	void OnSkillTap(const FInputActionValue& InValue);
-	UFUNCTION(BlueprintCallable, Category = "Input")
-	void RequestAttack();
-	void RequestSkill();
-	//void OnAttackHold(const FInputActionValue& InValue);
+
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();

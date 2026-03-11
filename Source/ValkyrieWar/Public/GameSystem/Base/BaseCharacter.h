@@ -32,10 +32,7 @@ public:
 	virtual void OnRelease_Implementation() override;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-	/*공격 자체를 시작*/
-	virtual void ExecuteAttack() {}
-	/*스킬 자체를 시작*/
-	virtual void ExecuteSkill() {}
+
 
 	//공격효과 적용
 	virtual void ApplyAttack(AActor* InTargetActor);
@@ -56,6 +53,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	/*공격 자체를 시작*/
+	virtual void ExecuteAttack() {}
+	/*스킬 자체를 시작*/
+	virtual void ExecuteSkill(int32 InSkillIndex) {}
 
 	void CreateAttackAbility();
 

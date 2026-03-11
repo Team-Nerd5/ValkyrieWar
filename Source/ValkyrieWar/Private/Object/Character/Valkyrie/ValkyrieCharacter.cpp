@@ -2,34 +2,27 @@
 
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
-#include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Weapon/Range/Projectile/ArrowStackComponent.h"
-#include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "AbilitySystemComponent.h"
 
 #include "Components/DecalComponent.h"
-#include "Components/CapsuleComponent.h"
-
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
-#include "GameFramework/SpringArmComponent.h"
 
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+
+#include "GameSystem/Library/GameBaseLibrary.h"
+
 #include "GameSystem/Base/BaseGameplayAbility.h"
 
-#include "Materials/Material.h"
-#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Data/Module/ItemModule.h"
 #include "Data/Module/AttackModule.h"
-#include "Data/Module/SkillModule.h"
-#include "Data/Module/SkillEffectModule.h"
 #include "Data/Game/AttackData.h"
 #include "Data/Game/SkillData.h"
 #include "Data/Attribute/StatAttributeSet.h"
@@ -79,6 +72,14 @@ void AValkyrieCharacter::ResetCombo()
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//EventSystem
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
+		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
+	}
+
 
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
@@ -151,6 +152,7 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 	Params.Owner = this;
 	CurrentWeaponActor = GetWorld()->SpawnActor<AValkyrieWeapon>(WeaponClass, Params);
 
+
 	if (CurrentWeaponActor)
 	{
 		CurrentWeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
@@ -169,7 +171,6 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 
 void AValkyrieCharacter::ExecuteAttack()
 {
-
 	if (!AttackData) return;
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
@@ -211,6 +212,10 @@ void AValkyrieCharacter::ExecuteAttack()
 
 void AValkyrieCharacter::OnAttackNotify()
 {
+	//근접 공격 시 데미지 처리
+	//원거리 공격 시 발사체 생성 위치
+	//무기 동작을 시작하는 지점 아님
+
 	if (CurrentWeaponActor)
 	{
 		//사용 불가
@@ -218,54 +223,30 @@ void AValkyrieCharacter::OnAttackNotify()
 	}
 }
 
-void AValkyrieCharacter::ExecuteSkill()
+void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)
 {
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst && AnimInst->IsAnyMontagePlaying()) return; // 중복실행 막기
 
-	if (!EquippedWeapon) return;
-	TArray<int32> WeaponSkiilIds = EquippedWeapon->GetSkillID();
-
-	if (WeaponSkiilIds.Num() == 0) return;
-
-	int32 ActiveSkillId = WeaponSkiilIds[0];
-
-	//매니저한테서 모듈 뽑기
-	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	if (InSkillIndex >= SkillDataList.Num())
 	{
-		if (USkillModule* SkillModule = DataManager->GetSkillModule())
-		{
-			TArray<int32> TargetIds = { ActiveSkillId };
-			TArray<USkillData*> SkillDataResults = SkillModule->GetSkillData(TargetIds);
+		//스킬데이터에 없는 스킬
+		return;
+	}
 
-			if (SkillDataResults.Num() > 0 && SkillDataResults[0])
-			{
-				USkillData* SkillData = SkillDataResults[0];
-				UAnimMontage* SkillMontage = SkillData->GetMontage().LoadSynchronous();
-				float DamageValue = 0.0f;
-				for (USkillEffectData* Effect : SkillData->GetEffectList())
-				{
-					if (Effect)
-					{
-						// 실제론 Effect->GetValue() 같은 게터 쓰기! 지금은 테스트용 20.0f
-						DamageValue = 20.0f;
-						break;
-					}
-				}
-				CachedSkillDamage = DamageValue;
-				if (SkillMontage && AnimInst)
-				{
-						//GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-						//GetCharacterMovement()->StopMovementImmediately();
+	USkillData* UsingSkill = SkillDataList[InSkillIndex];
+	UAnimMontage* SkillMontage = UsingSkill->GetMontage().LoadSynchronous();
 
-						FOnMontageEnded EndDelegate;
-						EndDelegate.BindUObject(this, &AValkyrieCharacter::OnSkillMontageEnded);
+	if (SkillMontage && AnimInst)
+	{
+		//GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+		//GetCharacterMovement()->StopMovementImmediately();
 
-						AnimInst->Montage_Play(SkillMontage);
-						AnimInst->Montage_SetEndDelegate(EndDelegate, SkillMontage);
-				}
-			}
-		}
+		FOnMontageEnded EndDelegate;
+		EndDelegate.BindUObject(this, &AValkyrieCharacter::OnSkillMontageEnded);
+
+		AnimInst->Montage_Play(SkillMontage);
+		AnimInst->Montage_SetEndDelegate(EndDelegate, SkillMontage);
 	}
 }
 
@@ -282,20 +263,25 @@ void AValkyrieCharacter::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterr
 
 void AValkyrieCharacter::OnSkillNotify()
 {
-	TArray<AActor*> FoundEnemies;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUnitCharacter::StaticClass(), FoundEnemies);
+	//근접 공격 시 데미지 처리
+	//원거리 공격 시 발사체 생성 위치
+	//무기 동작을 시작하는 지점 아님
+	//TODO : 원거리는 발사체 생성해서 어빌리티 넘겨줘야함
 
-	for (AActor* Actor : FoundEnemies)
-	{
-		if (Actor == this) continue;
-		if (UArrowStackComponent* StackComp = Actor->FindComponentByClass<UArrowStackComponent>())
-		{
-			if (StackComp->StackingArrows.Num() > 0)
-			{
-				StackComp->PullIt(CachedSkillDamage);
-			}
-		}
-	}
+	//TArray<AActor*> FoundEnemies;
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUnitCharacter::StaticClass(), FoundEnemies);
+
+	//for (AActor* Actor : FoundEnemies)
+	//{
+	//	if (Actor == this) continue;
+	//	if (UArrowStackComponent* StackComp = Actor->FindComponentByClass<UArrowStackComponent>())
+	//	{
+	//		if (StackComp->StackingArrows.Num() > 0)
+	//		{
+	//			StackComp->PullIt(CachedSkillDamage);
+	//		}
+	//	}
+	//}
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)

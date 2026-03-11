@@ -137,14 +137,6 @@ void AValkyrieCharacterController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Completed, this, &AValkyrieCharacterController::OnTouchReleased);
 			EnhancedInputComponent->BindAction(CameraDragAction, ETriggerEvent::Canceled, this, &AValkyrieCharacterController::OnTouchReleased);
 		}
-
-		if (AttackAction)
-		{
-			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnAttackTap);
-		}if (SkillAction)
-		{
-			EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnSkillTap);
-		}
 	}
 }
 
@@ -304,32 +296,6 @@ void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 void AValkyrieCharacterController::OnMoveCompleted(const FInputActionValue& InValue)
 {
 	bIsInputActive = false;
-}
-
-void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
-{
-	RequestAttack();
-}
-
-void AValkyrieCharacterController::OnSkillTap(const FInputActionValue& InValue)
-{
-	RequestSkill();
-}
-
-void AValkyrieCharacterController::RequestAttack()
-{
-	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
-	{
-		ControlledChar->ExecuteAttack();
-	}
-}
-
-void AValkyrieCharacterController::RequestSkill()
-{
-	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
-	{
-		ControlledChar->ExecuteSkill();
-	}
 }
 
 void AValkyrieCharacterController::RefreshInteractionTime()

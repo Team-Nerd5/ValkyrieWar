@@ -2,11 +2,14 @@
 
 
 #include "GameSystem/Base/BaseCharacter.h"
-#include "AbilitySystemComponent.h"
-#include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Base/BaseGameplayAbility.h"
+
+#include "GameSystem/Instance/Game/DataManager.h"
+
 #include "Data/Attribute/StatAttributeSet.h"
 #include "Components/CapsuleComponent.h"
+
+#include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 
 // Sets default values

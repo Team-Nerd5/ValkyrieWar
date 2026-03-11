@@ -2,16 +2,33 @@
 
 
 #include "Widget/HUD/BattleWidget.h"
-#include "Components/Image.h"
 #include "Widget/Item/Battle/WallHealthBarWidget.h"
+
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+
+#include "Components/Image.h"
+#include "Components/Button.h"
 
 void UBattleWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
+
 	if (AllyWallHealthBar && EnemyWallHealthBar)
 	{
 		AllyWallHealthBar->Init();
 		EnemyWallHealthBar->Init();
 	}
+
+	if (AttackButton)	
+		AttackButton->OnClicked.AddDynamic(this, &UBattleWidget::OnClickAttack);
+	
+	if(SkillButton_1)
+		SkillButton_1->OnClicked.AddDynamic(this, &UBattleWidget::OnClickSkill_1);
+}
+
+void UBattleWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
 }
 
 FReply UBattleWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
@@ -90,5 +107,21 @@ void UBattleWidget::SetJoyPadVisibility(bool bIsVisible)
 		JoyPadAxis = FVector2D::ZeroVector;
 		if (JoyPadImage) JoyPadImage->SetRenderTranslation(FVector2D::ZeroVector);
 		bIsTouching = false;
+	}
+}
+
+void UBattleWidget::OnClickAttack()
+{
+	if (EventSystem)
+	{
+		EventSystem->Valkyrie.OnUseAttack.Broadcast();
+	}
+}
+
+void UBattleWidget::OnClickSkill_1()
+{
+	if (EventSystem)
+	{
+		EventSystem->Valkyrie.OnUseSkill.Broadcast(0);
 	}
 }

@@ -108,7 +108,7 @@ protected:
 
 	virtual void ExecuteAttack() override;
 
-	virtual void ExecuteSkill() override;
+	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
