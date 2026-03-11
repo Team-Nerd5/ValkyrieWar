@@ -7,6 +7,7 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/GameData/SkillDataRow.h"
 #include "Data/Game/SkillEffectData.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "SkillData.generated.h"
 
 /**
@@ -22,6 +23,7 @@ public:
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
 	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetMontage() { return TableData.Montage; }
+	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
 
 private:
 	UPROPERTY()

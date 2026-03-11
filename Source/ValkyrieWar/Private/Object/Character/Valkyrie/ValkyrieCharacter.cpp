@@ -212,13 +212,26 @@ void AValkyrieCharacter::ExecuteAttack()
 
 void AValkyrieCharacter::OnAttackNotify()
 {
-	//근접 공격 시 데미지 처리
+	if (!AttackData)
+		return;
+
+	//근접 공격 시 데미지 처리 시점
 	//원거리 공격 시 발사체 생성 위치
-	//무기 동작을 시작하는 지점 아님
+	//무기 동작을 시작하는 지점 아님 -> 필요하면 별개로 만들어야함
+	if (AttackData->GetAttackType() == EAttackType::Melee)
+	{
+		//타겟에게 데미지
+		ApplyAttack(nullptr);
+	}
+	else
+	{
+		//Projectile 생성 및 현재 Ability 주입
+	}
+	
 
 	if (CurrentWeaponActor)
 	{
-		//사용 불가
+		//사용 불가(오류나는 형태임)
 		//CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
 	}
 }
@@ -228,13 +241,15 @@ void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst && AnimInst->IsAnyMontagePlaying()) return; // 중복실행 막기
 
-	if (InSkillIndex >= SkillDataList.Num())
+	if (InSkillIndex >= SkillDataList.Num() || InSkillIndex < 0)
 	{
 		//스킬데이터에 없는 스킬
 		return;
 	}
 
-	USkillData* UsingSkill = SkillDataList[InSkillIndex];
+	UsingSkillIndex = InSkillIndex;
+
+	USkillData* UsingSkill = SkillDataList[UsingSkillIndex];
 	UAnimMontage* SkillMontage = UsingSkill->GetMontage().LoadSynchronous();
 
 	if (SkillMontage && AnimInst)
@@ -262,11 +277,21 @@ void AValkyrieCharacter::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterr
 }
 
 void AValkyrieCharacter::OnSkillNotify()
-{
+{	
 	//근접 공격 시 데미지 처리
 	//원거리 공격 시 발사체 생성 위치
 	//무기 동작을 시작하는 지점 아님
 	//TODO : 원거리는 발사체 생성해서 어빌리티 넘겨줘야함
+	if (SkillDataList[UsingSkillIndex]->GetAttackType() == EAttackType::Melee)
+	{
+		ApplySkill(UsingSkillIndex, nullptr);
+
+		UsingSkillIndex = 0;
+	}
+	else
+	{
+
+	}
 
 	//TArray<AActor*> FoundEnemies;
 	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUnitCharacter::StaticClass(), FoundEnemies);

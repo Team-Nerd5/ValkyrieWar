@@ -77,8 +77,7 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
     Payload.Target = InTargetActor;
 
     for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
-    {
-        // Spec에 우리가 부여했던 태그가 있는지 확인
+    {        
         if (Spec.GetDynamicSpecSourceTags().HasTagExact(AttackData->GetAbilityTag()))
         {
             AbilitySystemComponent->TriggerAbilityFromGameplayEvent(

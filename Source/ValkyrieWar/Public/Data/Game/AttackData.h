@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Data/Table/GameData/AttackDataRow.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "Data/Game/SkillEffectData.h"
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "AttackData.generated.h"
@@ -25,6 +26,7 @@ public:
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
 	FORCEINLINE FVector GetLocationOffset() { return TableData.PositionOffset; }
 	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData.RotateOffset); }
+	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
 private:
 	UPROPERTY()
 	FAttackDataRow TableData;

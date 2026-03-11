@@ -87,4 +87,6 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentTarget = nullptr;
+
+	int32 UsingSkillIndex = 0;
 };

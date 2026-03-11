@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/DataEnums.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "GameplayTagContainer.h"
 #include "SkillDataRow.generated.h"
 
@@ -29,4 +30,6 @@ public:
 	ETargetType TargetType = ETargetType::None;
 	UPROPERTY(EditAnywhere)
 	int32 TargetAmount = 1;
+	UPROPERTY(EditAnywhere)
+	EAttackType AttackType = EAttackType::Melee;
 };

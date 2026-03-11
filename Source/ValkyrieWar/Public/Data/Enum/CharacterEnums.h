@@ -18,10 +18,8 @@ enum class EWeaponAnimType : uint8
 UENUM(BlueprintType)
 enum class EAttackType : uint8
 {
-	//발사체인지?
-	InRange,
+	Melee,
 	Projectile,
-	TargetRange,
 };
 
 UENUM(BlueprintType)
