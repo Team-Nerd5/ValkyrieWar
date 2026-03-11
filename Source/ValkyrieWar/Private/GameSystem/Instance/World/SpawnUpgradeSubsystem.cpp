@@ -22,22 +22,60 @@ void USpawnUpgradeSubsystem::Deinitialize()
 
 void USpawnUpgradeSubsystem::InitUnitDataIds()
 {
-	if (UUnitModule* UnitModule = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>()->GetUnitModule())
+	UnitDataIdList.Reset();
+	AllyUnitIdList.Reset();
+	EnemyUnitIdList.Reset();
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	UGameInstance* GI = World->GetGameInstance();
+	if (!GI) return;
+
+	UDataManager* DataManager = GI->GetSubsystem<UDataManager>();
+	if (!DataManager) return;
+
+	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	if (!UnitModule) return;
+
+	UnitModule->GetOwnedUnitIds(UnitDataIdList);
+
+	if (UnitDataIdList.IsEmpty()) return;
+
+	for (int32 SingleId : UnitDataIdList)
 	{
-		UnitModule->GetOwnedUnitIds(UnitDataIdList);
-	}
-	if (!UnitDataIdList.IsEmpty())
-	{
-		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		if (true)
 		{
-			WorldEventSystem->Battle.OnSpawnUnitDataReady.Broadcast();
+			AllyUnitIdList.AddUnique(SingleId);
 		}
+		else
+		{
+			EnemyUnitIdList.AddUnique(SingleId);
+		}
+	}
+
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Battle.OnSpawnUnitDataReady.Broadcast();
 	}
 }
 
 void USpawnUpgradeSubsystem::RequestDataId(ABaseUnitSpawner* InSpawner)
 {
-	InSpawner->SetSpawnUnitDataId(UnitDataIdList[InSpawner->GetSpawnerId()]);
+	if (!InSpawner) return;
+
+	const TArray<int32>& TargetList =
+		(InSpawner->GetTeam() == ETeam::TeamA) ? AllyUnitIdList : EnemyUnitIdList;
+
+	const int32 SpawnerId = InSpawner->GetSpawnerId();
+	if (!TargetList.IsValidIndex(SpawnerId))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SpawnUpgradeSubsystem] Invalid SpawnerId=%d, ListNum=%d"),
+			SpawnerId, TargetList.Num());
+		return;
+	}
+
+	InSpawner->SetSpawnUnitData(TargetList[SpawnerId]);
 }
 
 void USpawnUpgradeSubsystem::BindUpgradeDelegates()
@@ -135,11 +173,10 @@ int32 USpawnUpgradeSubsystem::CalcCost(int32 InFamilyId, int32 InCurrentLevel) c
 
 bool USpawnUpgradeSubsystem::SpendMana(int32 Cost)
 {
-	if (Cost <= 0) return true; // 무료 업그레이드(테스트용)
+	if (Cost <= 0) return true;
 	if (!CanAfford(Cost)) return false;
 
-	CurrentMana -= Cost;
-	CurrentMana = FMath::Max(0, CurrentMana);
+	SetCurrentMana(CurrentMana - Cost, false);
 	return true;
 }
 

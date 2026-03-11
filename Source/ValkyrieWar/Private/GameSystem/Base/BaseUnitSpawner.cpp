@@ -4,6 +4,7 @@
 #include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "Data/Module/UnitModule.h"
 #include "Object/Character/Unit/UnitCharacter.h"
 
 ABaseUnitSpawner::ABaseUnitSpawner()
@@ -11,13 +12,13 @@ ABaseUnitSpawner::ABaseUnitSpawner()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ABaseUnitSpawner::SetSpawnUnitDataId(int32 InDataId)
+void ABaseUnitSpawner::SetSpawnUnitData(int32 InDataId)
 {
 	PoolEntry.UnitDataId = InDataId;
 
-	if (UUnitData* UnitData = ResolveUnitDataObject(InDataId))
+	if (UUnitModule* UnitModule = GetGameInstance()->GetSubsystem<UDataManager>()->GetUnitModule())
 	{
-		PoolEntry.UnitClass = UnitData->GetSpawnUnitClass();
+		PoolEntry.UnitClass = UnitModule->GetSpawnUnitClass(InDataId);
 	}
 	else
 	{
@@ -41,27 +42,20 @@ void ABaseUnitSpawner::BeginPlay()
 		);
 	}
 
-	// SpawnUpgradeSubsystem에 바인딩 (승인된 업그레이드만 받음)
-	if (Team == ETeam::TeamA)
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		if (UWorld* World = GetWorld())
+		WorldEventSystem->Battle.OnSpawnUnitDataReady.AddUniqueDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
+		if (Team == ETeam::TeamA)
 		{
-			if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-			{
-				WorldEventSystem->Battle.OnSpawnUnitDataReady.AddUniqueDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
-				WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
-			}
+			// SpawnUpgradeSubsystem에 바인딩 (승인된 업그레이드만 받음)
+			WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 		}
-	}
-	else if (Team == ETeam::TeamB)
-	{
-		// 현재 테스트용으로 구현
-		// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정
-		SetSpawnCount(2);
-
-		if (bAutoStart)
+		else if (Team == ETeam::TeamB)
 		{
-			StartSpawning();
+			// 현재 테스트용으로 구현
+			// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정
+			SetSpawnCount(2);
+
 		}
 	}
 }

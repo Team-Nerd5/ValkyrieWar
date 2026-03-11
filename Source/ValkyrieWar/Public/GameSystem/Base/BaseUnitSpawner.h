@@ -38,7 +38,7 @@ class VALKYRIEWAR_API ABaseUnitSpawner : public ABaseActor
 public:
 	ABaseUnitSpawner();
 
-	void SetSpawnUnitDataId(int32 InDataId);
+	void SetSpawnUnitData(int32 InDataId);
 
 	inline int32 GetSpawnerId() { return SpawnerId; };
 

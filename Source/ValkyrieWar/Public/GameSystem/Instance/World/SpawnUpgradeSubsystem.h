@@ -65,6 +65,8 @@ public:
 
 private:
 	TArray<int32> UnitDataIdList;
+	TArray<int32> AllyUnitIdList;
+	TArray<int32> EnemyUnitIdList;
 
 	UPROPERTY()
 	TMap<int32, int32> SpawnLevels;
