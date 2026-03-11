@@ -213,7 +213,8 @@ void AValkyrieCharacter::OnAttackNotify()
 {
 	if (CurrentWeaponActor)
 	{
-		CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
+		//사용 불가
+		//CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
 	}
 }
 
