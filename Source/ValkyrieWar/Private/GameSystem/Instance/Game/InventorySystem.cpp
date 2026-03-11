@@ -3,6 +3,7 @@
 
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
@@ -192,7 +193,14 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 	}
 #pragma endregion
 
+	int32 Price = InItem->GetTableData().SellPrice;
+
 	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+
+	if (USaveManager* Save = GetGameInstance()->GetSubsystem<USaveManager>())
+	{
+		Save->AddGoods(EGoodsType::Gold, Price * InAmount);
+	}
 
 	//인벤토리 업데이트
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))

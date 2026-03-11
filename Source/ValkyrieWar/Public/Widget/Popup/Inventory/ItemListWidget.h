@@ -48,6 +48,8 @@ protected:
 	void OnClickAmountPlusButton();
 	UFUNCTION()
 	void OnSellAmountChanged(const FText& InText);
+
+	void RefreshInventory();
 protected:
 	ETabType TabType;
 	int32 SelectedFilterIndex = 0;

@@ -124,6 +124,8 @@ void UItemListWidget::OnClickSellItem()
 		if (UInventorySystem* InventorySystem = GetGameInstance()->GetSubsystem<UInventorySystem>())
 		{
 			InventorySystem->SellItem(SelectedItem, CurrentAmount);
+
+			RefreshInventory();
 		}
 	}
 }
@@ -180,6 +182,31 @@ void UItemListWidget::OnSellAmountChanged(const FText& InText)
 
 	if (SellAmountEditBox)
 		SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
+}
+
+void UItemListWidget::RefreshInventory()
+{
+	bool IsSelectedItemExist = SelectedItem && SelectedItem->GetAmount() > 0;
+
+	MaxAmount = IsSelectedItemExist ? SelectedItem->GetAmount() : 0;
+
+	CurrentAmount = IsSelectedItemExist ? 1 : 0;
+
+	if (SellAmountEditBox)
+	{
+		SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
+	}
+
+	if (SellPriceText)
+	{
+		int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
+		SellPriceText->SetText(FText::AsNumber(CurrentAmount * Price));
+	}
+
+	if (SellButton)
+	{
+		SellButton->SetIsEnabled(IsSelectedItemExist);
+	}
 }
 
 void UItemListWidget::UpdateFilteredItemList()
@@ -331,19 +358,6 @@ void UItemListWidget::OnItemSelected(UItemData* InItemData)
 
 	if (TabType == ETabType::Inventory)
 	{
-		MaxAmount = SelectedItem ? SelectedItem->GetAmount() : 1;
-
-		CurrentAmount = SelectedItem ? 1 : 0;
-
-		if (SellAmountEditBox)
-		{
-			SellAmountEditBox->SetText(FText::AsNumber(CurrentAmount));
-		}
-
-		if (SellPriceText)
-		{
-			int32 Price = SelectedItem ? SelectedItem->GetTableData().SellPrice : 0;
-			SellPriceText->SetText(FText::AsNumber(CurrentAmount * Price));
-		}
+		RefreshInventory();
 	}
 }
