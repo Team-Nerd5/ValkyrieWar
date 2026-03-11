@@ -39,12 +39,12 @@ public:
     void RegisterUnit(AUnitCharacter* Unit);
     void UnregisterUnit(AUnitCharacter* Unit);
 
-    void RegisterWallAnchor(ETeam Team, AActor* AnchorActor);
-    void UnregisterWallAnchor(ETeam Team, AActor* AnchorActor);
+    void RegisterWallAnchor(ETeamType Team, AActor* AnchorActor);
+    void UnregisterWallAnchor(ETeamType Team, AActor* AnchorActor);
 
-    void RegisterWallCore(ETeam Team, ACoreWallActor* Core);
-    void UnregisterWallCore(ETeam Team, ACoreWallActor* Core);
-    ACoreWallActor* GetWallCore(ETeam Team) const;
+    void RegisterWallCore(ETeamType Team, ACoreWallActor* Core);
+    void UnregisterWallCore(ETeamType Team, ACoreWallActor* Core);
+    ACoreWallActor* GetWallCore(ETeamType Team) const;
 
     void UpdateReservationFor(AUnitCharacter* Unit);
 
@@ -57,21 +57,21 @@ private:
     // ===============================
     // 팀 관리
     // ===============================
-    TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArray(ETeam Team);
-    const TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArrayConst(ETeam Team) const;
+    TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArray(ETeamType Team);
+    const TArray<TWeakObjectPtr<AUnitCharacter>>& GetTeamArrayConst(ETeamType Team) const;
 
     AActor* GetEnemyBaseFor(const AUnitCharacter* Unit) const;
 
-    const TArray<TWeakObjectPtr<AActor>>& GetTeamWallAnchorsConst(ETeam Team) const;
-    float DistanceToNearestWallAnchorSq(const FVector& P, ETeam WallTeam) const;
+    const TArray<TWeakObjectPtr<AActor>>& GetTeamWallAnchorsConst(ETeamType Team) const;
+    float DistanceToNearestWallAnchorSq(const FVector& P, ETeamType WallTeam) const;
 
     // ===============================
     // Grid (공간 분할)
     // ===============================
     FIntPoint WorldToCell2D(const FVector& P) const;
 
-    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGrid(ETeam Team);
-    const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGridConst(ETeam Team) const;
+    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGrid(ETeamType Team);
+    const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& GetGridConst(ETeamType Team) const;
 
     void UpdateUnitCell(AUnitCharacter* Unit);
     void RemoveUnitFromGrid(AUnitCharacter* Unit);
@@ -81,7 +81,7 @@ private:
         TArray<AUnitCharacter*>& OutCandidates
     ) const;
 
-    AActor* GetNearestWallAnchorTo(const FVector& From, ETeam Team) const;
+    AActor* GetNearestWallAnchorTo(const FVector& From, ETeamType Team) const;
 
     AUnitCharacter* FindBestTargetWithFreeSlot_Grid(
         AUnitCharacter* Attacker,
@@ -166,31 +166,31 @@ private:
     // 팀 데이터
     // ===============================
     UPROPERTY()
-    TArray<TWeakObjectPtr<AUnitCharacter>> TeamAUnits;
+    TArray<TWeakObjectPtr<AUnitCharacter>> AllyUnits;
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<AUnitCharacter>> TeamBUnits;
+    TArray<TWeakObjectPtr<AUnitCharacter>> EnemyUnits;
 
     UPROPERTY()
-    TWeakObjectPtr<AActor> TeamABase;
+    TWeakObjectPtr<AActor> AllyTeamBase;
 
     UPROPERTY()
-    TWeakObjectPtr<AActor> TeamBBase;
+    TWeakObjectPtr<AActor> EnemyTeamBase;
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<AActor>> TeamAWallAnchors;
+    TArray<TWeakObjectPtr<AActor>> AllyWallAnchors;
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<AActor>> TeamBWallAnchors;
+    TArray<TWeakObjectPtr<AActor>> EnemyWallAnchors;
 
     UPROPERTY()
-    TMap<ETeam, TWeakObjectPtr<ACoreWallActor>> TeamWallCores;
+    TMap<ETeamType, TWeakObjectPtr<ACoreWallActor>> TeamWallCores;
 
     // ===============================
     // Grid 데이터
     // ===============================
-    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridA;
-    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridB;
+    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridAlly;
+    TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>> GridEnemy;
 
     UPROPERTY()
     TMap<TWeakObjectPtr<AUnitCharacter>, FIntPoint> UnitToCell;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/CommonEnums.h"
 #include "UnitDataRow.generated.h"
 
 /**
@@ -25,4 +26,6 @@ public:
 	int32 BaseWeaponId = 0;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AUnitCharacter> SpawnClass = nullptr;
+	UPROPERTY(EditAnywhere)
+	ETeamType TeamType = ETeamType::None;
 };

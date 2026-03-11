@@ -39,7 +39,7 @@ protected:
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Team")
-    ETeam Team = ETeam::TeamA;
+    ETeamType Team = ETeamType::Ally;
 
     // 타깃 선택 룰셋(서브시스템은 슬롯/attacker 제한을 유지하고,
     // 여기서는 "어떤 후보를 우선할지"만 결정)

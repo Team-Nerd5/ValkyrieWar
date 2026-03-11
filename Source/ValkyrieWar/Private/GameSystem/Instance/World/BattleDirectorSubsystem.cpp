@@ -7,7 +7,7 @@
 #include "Interface/Unit/TargetReservationInterface.h"
 #include "Kismet/GameplayStatics.h"
 
-static FORCEINLINE int32 TeamIndex(ETeam T) { return (T == ETeam::TeamA) ? 0 : 1; }
+static FORCEINLINE int32 TeamIndex(ETeamType T) { return (T == ETeamType::Ally) ? 0 : 1; }
 
 void UBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -44,15 +44,15 @@ void UBattleDirectorSubsystem::Deinitialize()
         }
     }
 
-    TeamAUnits.Empty();
-    TeamBUnits.Empty();
-    TeamABase.Reset();
-    TeamBBase.Reset();
-    TeamAWallAnchors.Empty();
-    TeamBWallAnchors.Empty();
+    AllyUnits.Empty();
+    EnemyUnits.Empty();
+    AllyTeamBase.Reset();
+    EnemyTeamBase.Reset();
+    AllyWallAnchors.Empty();
+    EnemyWallAnchors.Empty();
 
-    GridA.Empty();
-    GridB.Empty();
+    GridAlly.Empty();
+    GridEnemy.Empty();
     UnitToCell.Empty();
 
     Valkyrie.Reset();
@@ -74,24 +74,24 @@ void UBattleDirectorSubsystem::RequestCleanupFromTimer()
     bCleanupDirty = true;
 }
 
-TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamArray(ETeam Team)
+TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamArray(ETeamType Team)
 {
-    return (Team == ETeam::TeamA) ? TeamAUnits : TeamBUnits;
+    return (Team == ETeamType::Ally) ? AllyUnits : EnemyUnits;
 }
 
-const TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamArrayConst(ETeam Team) const
+const TArray<TWeakObjectPtr<AUnitCharacter>>& UBattleDirectorSubsystem::GetTeamArrayConst(ETeamType Team) const
 {
-    return (Team == ETeam::TeamA) ? TeamAUnits : TeamBUnits;
+    return (Team == ETeamType::Ally) ? AllyUnits : EnemyUnits;
 }
 
-TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& UBattleDirectorSubsystem::GetGrid(ETeam Team)
+TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& UBattleDirectorSubsystem::GetGrid(ETeamType Team)
 {
-    return (Team == ETeam::TeamA) ? GridA : GridB;
+    return (Team == ETeamType::Ally) ? GridAlly : GridEnemy;
 }
 
-const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& UBattleDirectorSubsystem::GetGridConst(ETeam Team) const
+const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& UBattleDirectorSubsystem::GetGridConst(ETeamType Team) const
 {
-    return (Team == ETeam::TeamA) ? GridA : GridB;
+    return (Team == ETeamType::Ally) ? GridAlly : GridEnemy;
 }
 
 FIntPoint UBattleDirectorSubsystem::WorldToCell2D(const FVector& P) const
@@ -164,33 +164,33 @@ void UBattleDirectorSubsystem::UnregisterUnit(AUnitCharacter* Unit)
     MarkCleanupDirty();
 }
 
-void UBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActor)
+void UBattleDirectorSubsystem::RegisterWallAnchor(ETeamType Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
 
-    if (Team == ETeam::TeamA) TeamAWallAnchors.AddUnique(AnchorActor);
-    else TeamBWallAnchors.AddUnique(AnchorActor);
+    if (Team == ETeamType::Ally) AllyWallAnchors.AddUnique(AnchorActor);
+    else EnemyWallAnchors.AddUnique(AnchorActor);
 
     MarkCleanupDirty();
 }
 
-void UBattleDirectorSubsystem::UnregisterWallAnchor(ETeam Team, AActor* AnchorActor)
+void UBattleDirectorSubsystem::UnregisterWallAnchor(ETeamType Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
 
-    if (Team == ETeam::TeamA) TeamAWallAnchors.Remove(AnchorActor);
-    else TeamBWallAnchors.Remove(AnchorActor);
+    if (Team == ETeamType::Ally) AllyWallAnchors.Remove(AnchorActor);
+    else EnemyWallAnchors.Remove(AnchorActor);
 
     MarkCleanupDirty();
 }
 
-void UBattleDirectorSubsystem::RegisterWallCore(ETeam Team, ACoreWallActor* Core)
+void UBattleDirectorSubsystem::RegisterWallCore(ETeamType Team, ACoreWallActor* Core)
 {
     if (!Core) return;
     TeamWallCores.Add(Team, Core);
 }
 
-void UBattleDirectorSubsystem::UnregisterWallCore(ETeam Team, ACoreWallActor* Core)
+void UBattleDirectorSubsystem::UnregisterWallCore(ETeamType Team, ACoreWallActor* Core)
 {
     if (TWeakObjectPtr<ACoreWallActor>* Found = TeamWallCores.Find(Team))
     {
@@ -201,7 +201,7 @@ void UBattleDirectorSubsystem::UnregisterWallCore(ETeam Team, ACoreWallActor* Co
     }
 }
 
-ACoreWallActor* UBattleDirectorSubsystem::GetWallCore(ETeam Team) const
+ACoreWallActor* UBattleDirectorSubsystem::GetWallCore(ETeamType Team) const
 {
     if (const TWeakObjectPtr<ACoreWallActor>* Found = TeamWallCores.Find(Team))
     {
@@ -213,12 +213,12 @@ ACoreWallActor* UBattleDirectorSubsystem::GetWallCore(ETeam Team) const
     return nullptr;
 }
 
-const TArray<TWeakObjectPtr<AActor>>& UBattleDirectorSubsystem::GetTeamWallAnchorsConst(ETeam Team) const
+const TArray<TWeakObjectPtr<AActor>>& UBattleDirectorSubsystem::GetTeamWallAnchorsConst(ETeamType Team) const
 {
-    return (Team == ETeam::TeamA) ? TeamAWallAnchors : TeamBWallAnchors;
+    return (Team == ETeamType::Ally) ? AllyWallAnchors : EnemyWallAnchors;
 }
 
-float UBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, ETeam WallTeam) const
+float UBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, ETeamType WallTeam) const
 {
     const TArray<TWeakObjectPtr<AActor>>& Anchors = GetTeamWallAnchorsConst(WallTeam);
     float BestSq = FLT_MAX;
@@ -234,7 +234,7 @@ float UBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, 
     return BestSq;
 }
 
-AActor* UBattleDirectorSubsystem::GetNearestWallAnchorTo(const FVector& From, ETeam Team) const
+AActor* UBattleDirectorSubsystem::GetNearestWallAnchorTo(const FVector& From, ETeamType Team) const
 {
     const auto& Anchors = GetTeamWallAnchorsConst(Team);
     AActor* Best = nullptr;
@@ -259,8 +259,8 @@ AActor* UBattleDirectorSubsystem::GetEnemyBaseFor(const AUnitCharacter* Unit) co
 {
     if (!Unit || !Unit->GetBrain()) return nullptr;
 
-    const ETeam MyTeam = Unit->GetBrain()->Team;
-    const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
+    const ETeamType MyTeam = Unit->GetBrain()->Team;
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
 
     // 1) 적 팀의 WallAnchor 중 가장 가까운 앵커
     const auto& Anchors = GetTeamWallAnchorsConst(EnemyTeam);
@@ -283,7 +283,7 @@ AActor* UBattleDirectorSubsystem::GetEnemyBaseFor(const AUnitCharacter* Unit) co
     }
     if (Best) return Best;
 
-    return (EnemyTeam == ETeam::TeamA) ? TeamABase.Get() : TeamBBase.Get();
+    return (EnemyTeam == ETeamType::Ally) ? AllyTeamBase.Get() : EnemyTeamBase.Get();
 }
 
 void UBattleDirectorSubsystem::CleanupInvalidReferences()
@@ -304,10 +304,10 @@ void UBattleDirectorSubsystem::CleanupInvalidReferences()
                 });
         };
 
-    CleanupTeam(TeamAUnits);
-    CleanupTeam(TeamBUnits);
-    CleanupAnchors(TeamAWallAnchors);
-    CleanupAnchors(TeamBWallAnchors);
+    CleanupTeam(AllyUnits);
+    CleanupTeam(EnemyUnits);
+    CleanupAnchors(AllyWallAnchors);
+    CleanupAnchors(EnemyWallAnchors);
 
     // 그리드도 무효 참조 제거 + 빈 셀 제거
     auto CleanupGrid = [](TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& Grid)
@@ -327,8 +327,8 @@ void UBattleDirectorSubsystem::CleanupInvalidReferences()
             }
         };
 
-    CleanupGrid(GridA);
-    CleanupGrid(GridB);
+    CleanupGrid(GridAlly);
+    CleanupGrid(GridEnemy);
 
     // UnitToCell도 정리
     TArray<TWeakObjectPtr<AUnitCharacter>> DeadKeys;
@@ -388,11 +388,11 @@ void UBattleDirectorSubsystem::DrawCellDebug(const FIntPoint& Cell, FColor Color
 void UBattleDirectorSubsystem::DrawAllGridDebug()
 {
     const float Duration = 0.f; // 0이면 한 프레임
-    for (auto& Pair : GridA)
+    for (auto& Pair : GridAlly)
     {
         DrawCellDebug(Pair.Key, FColor::Red, Duration);
     }
-    for (auto& Pair : GridB)
+    for (auto& Pair : GridEnemy)
     {
         DrawCellDebug(Pair.Key, FColor::Blue, Duration);
     }
@@ -480,8 +480,8 @@ void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, T
 
     if (!Attacker || !Attacker->GetBrain()) return;
 
-    const ETeam MyTeam = Attacker->GetBrain()->Team;
-    const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
+    const ETeamType MyTeam = Attacker->GetBrain()->Team;
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
 
     const FIntPoint Center = WorldToCell2D(Attacker->GetActorLocation());
 
@@ -528,7 +528,7 @@ AUnitCharacter* UBattleDirectorSubsystem::FindBestTargetWithFreeSlot_Grid(
     const float AttackRangeSq = Attacker->GetAttackRange() * Attacker->GetAttackRange();
     const float NearWallDistSq = NearWallDistance * NearWallDistance;
 
-    const ETeam MyTeam = Attacker->GetBrain()->Team;
+    const ETeamType MyTeam = Attacker->GetBrain()->Team;
     const ETargetingPolicy Policy = Attacker->GetBrain()->TargetingPolicy;
 
     // 0~1 기반(스케일 독립) 가중치
@@ -716,7 +716,7 @@ bool UBattleDirectorSubsystem::IsValkyrieTargetableBy(const AUnitCharacter* Atta
     if (Attacker->IsDead()) return false;
 
     // 발키리는 TeamA(플레이어)이고, TeamB 유닛만 발키리를 타겟팅 가능
-    if (Attacker->GetBrain()->Team != ETeam::TeamB) return false;
+    if (Attacker->GetBrain()->Team != ETeamType::Enemy) return false;
 
     if (!Valkyrie.IsValid()) return false;
 

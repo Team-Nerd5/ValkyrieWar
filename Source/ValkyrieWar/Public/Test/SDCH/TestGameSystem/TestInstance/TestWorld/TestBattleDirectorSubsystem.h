@@ -42,8 +42,8 @@ public:
     void UnregisterUnit(ATestBaseUnit* Unit);
 
     // 성벽(또는 성벽 라인) 앵커 등록
-    void RegisterWallAnchor(ETeam Team, AActor* AnchorActor);
-    void UnregisterWallAnchor(ETeam Team, AActor* AnchorActor);
+    void RegisterWallAnchor(ETeamType Team, AActor* AnchorActor);
+    void UnregisterWallAnchor(ETeamType Team, AActor* AnchorActor);
 
     // BT 서비스에서 호출: 해당 유닛의 예약을 업데이트
     void UpdateReservationFor(ATestBaseUnit* Unit);
@@ -55,35 +55,35 @@ public:
 private:
     // 팀별 유닛 목록
     UPROPERTY()
-    TArray<TWeakObjectPtr<ATestBaseUnit>> TeamAUnits;
+    TArray<TWeakObjectPtr<ATestBaseUnit>> AllyUnits;
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<ATestBaseUnit>> TeamBUnits;
+    TArray<TWeakObjectPtr<ATestBaseUnit>> EnemyUnits;
 
     UPROPERTY()
-    TWeakObjectPtr<AActor> TeamABase;
+    TWeakObjectPtr<AActor> AllyTeamBase;
 
     UPROPERTY()
-    TWeakObjectPtr<AActor> TeamBBase;
+    TWeakObjectPtr<AActor> EnemyTeamBase;
 
     // 팀별 성벽 앵커(Weak로 안전)
     UPROPERTY()
-    TArray<TWeakObjectPtr<AActor>> TeamAWallAnchors;
+    TArray<TWeakObjectPtr<AActor>> AllyWallAnchors;
 
     UPROPERTY()
-    TArray<TWeakObjectPtr<AActor>> TeamBWallAnchors;
+    TArray<TWeakObjectPtr<AActor>> EnemyWallAnchors;
 
 private:
-    TArray<TWeakObjectPtr<ATestBaseUnit>>& GetTeamArray(ETeam Team);
-    const TArray<TWeakObjectPtr<ATestBaseUnit>>& GetTeamArrayConst(ETeam Team) const;
+    TArray<TWeakObjectPtr<ATestBaseUnit>>& GetTeamArray(ETeamType Team);
+    const TArray<TWeakObjectPtr<ATestBaseUnit>>& GetTeamArrayConst(ETeamType Team) const;
 
     // '적 기지' 개념: 이제 스포너와 분리.
     // 기본은 '적 성벽(Enemy Team WallAnchor 중 가장 가까운 앵커)'을 목표로 삼는다.
     // 성벽 앵커가 없으면(테스트/예외) 등록된 TeamBase(옵션)로 폴백.
     AActor* GetEnemyBaseFor(const ATestBaseUnit* Unit) const;
 
-    const TArray<TWeakObjectPtr<AActor>>& GetTeamWallAnchorsConst(ETeam Team) const;
-    float DistanceToNearestWallAnchorSq(const FVector& P, ETeam WallTeam) const;
+    const TArray<TWeakObjectPtr<AActor>>& GetTeamWallAnchorsConst(ETeamType Team) const;
+    float DistanceToNearestWallAnchorSq(const FVector& P, ETeamType WallTeam) const;
 
     // 후보 선택 (TargetingPolicy 반영)
     ATestBaseUnit* FindBestTargetWithFreeSlot(ATestBaseUnit* Attacker, float Now) const;

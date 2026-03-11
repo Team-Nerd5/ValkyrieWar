@@ -32,7 +32,7 @@ void UWallHealthBarWidget::BindDelegates()
 
     if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
     {
-        if (Team == ETeam::TeamA)
+        if (Team == ETeamType::Ally)
         {
             WorldEventSystem->Battle.OnAllyWallHealthChanged.AddDynamic(
                 this, &UWallHealthBarWidget::HandleAllyWallHealthChanged);
@@ -65,14 +65,14 @@ void UWallHealthBarWidget::UnbindDelegates()
 
 void UWallHealthBarWidget::HandleAllyWallHealthChanged(float InCur, float InMax)
 {
-    if (Team != ETeam::TeamA) return;
+    if (Team != ETeamType::Ally) return;
     MaxHealth = FMath::Max(1.f, InMax);
     ApplyHealth(InCur);
 }
 
 void UWallHealthBarWidget::HandleEnemyWallHealthChanged(float InCur, float InMax)
 {
-    if (Team != ETeam::TeamB) return;
+    if (Team != ETeamType::Enemy) return;
     MaxHealth = FMath::Max(1.f, InMax);
     ApplyHealth(InCur);
 }

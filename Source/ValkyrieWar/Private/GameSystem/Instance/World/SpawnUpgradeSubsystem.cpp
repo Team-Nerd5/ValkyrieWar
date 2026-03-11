@@ -65,7 +65,7 @@ void USpawnUpgradeSubsystem::RequestDataId(ABaseUnitSpawner* InSpawner)
 	if (!InSpawner) return;
 
 	const TArray<int32>& TargetList =
-		(InSpawner->GetTeam() == ETeam::TeamA) ? AllyUnitIdList : EnemyUnitIdList;
+		(InSpawner->GetTeam() == ETeamType::Ally) ? AllyUnitIdList : EnemyUnitIdList;
 
 	const int32 SpawnerId = InSpawner->GetSpawnerId();
 	if (!TargetList.IsValidIndex(SpawnerId))

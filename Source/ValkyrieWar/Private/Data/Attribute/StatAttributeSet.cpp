@@ -43,7 +43,7 @@ void UStatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 			{
 				if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 				{
-					if (Wall->GetTeam() == ETeam::TeamA)
+					if (Wall->GetTeam() == ETeamType::Ally)
 					{
 						EventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::Defeat);
 					}

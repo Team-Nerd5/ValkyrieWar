@@ -21,13 +21,13 @@ public:
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	inline ETeam GetTeam() const { return Team; }
+	inline ETeamType GetTeam() const { return Team; }
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Team")
-	ETeam Team = ETeam::TeamA;
+	ETeamType Team = ETeamType::Ally;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UAbilitySystemComponent> ASC = nullptr;

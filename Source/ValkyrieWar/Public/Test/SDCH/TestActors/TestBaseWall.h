@@ -16,7 +16,7 @@ public:
     ATestBaseWall();
 
     UPROPERTY(EditAnywhere, Category = "Sample05")
-    ETeam Team = ETeam::TeamA;
+    ETeamType Team = ETeamType::Ally;
 
 protected:
     virtual void BeginPlay() override;

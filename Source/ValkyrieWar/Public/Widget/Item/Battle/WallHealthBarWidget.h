@@ -30,7 +30,7 @@ protected:
     TObjectPtr<UTextBlock> PercentText;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "WallHP")
-    ETeam Team = ETeam::TeamA;
+    ETeamType Team = ETeamType::Ally;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "WallHP")
     float MaxHealth = 100.f;

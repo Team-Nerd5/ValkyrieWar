@@ -18,7 +18,7 @@ public:
 	ABaseWall();
 
 	UPROPERTY(EditAnywhere, Category = "Team")
-	ETeam Team = ETeam::TeamA;
+	ETeamType Team = ETeamType::Ally;
 
 	// GAS가 이 액터에서 ASC를 물어보면 "코어의 ASC"를 내준다
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;

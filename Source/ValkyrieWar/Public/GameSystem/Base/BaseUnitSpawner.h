@@ -42,7 +42,7 @@ public:
 
 	inline int32 GetSpawnerId() { return SpawnerId; };
 
-	inline ETeam GetTeam() { return Team; }
+	inline ETeamType GetTeam() { return Team; }
 
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void StartSpawning();
@@ -143,7 +143,7 @@ protected:
 	//int32 UnitId = 0;
 
 	UPROPERTY(EditDefaultsOnly)
-	ETeam Team = ETeam::TeamA;
+	ETeamType Team = ETeamType::Ally;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Spawn")

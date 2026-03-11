@@ -14,23 +14,23 @@ void UTestBattleDirectorSubsystem::Initialize(FSubsystemCollectionBase& Collecti
 
 void UTestBattleDirectorSubsystem::Deinitialize()
 {
-    TeamAUnits.Empty();
-    TeamBUnits.Empty();
-    TeamABase.Reset();
-    TeamBBase.Reset();
-    TeamAWallAnchors.Empty();
-    TeamBWallAnchors.Empty();
+    AllyUnits.Empty();
+    EnemyUnits.Empty();
+    AllyTeamBase.Reset();
+    EnemyTeamBase.Reset();
+    AllyWallAnchors.Empty();
+    EnemyWallAnchors.Empty();
     Super::Deinitialize();
 }
 
-TArray<TWeakObjectPtr<ATestBaseUnit>>& UTestBattleDirectorSubsystem::GetTeamArray(ETeam Team)
+TArray<TWeakObjectPtr<ATestBaseUnit>>& UTestBattleDirectorSubsystem::GetTeamArray(ETeamType Team)
 {
-    return (Team == ETeam::TeamA) ? TeamAUnits : TeamBUnits;
+    return (Team == ETeamType::Ally) ? AllyUnits : EnemyUnits;
 }
 
-const TArray<TWeakObjectPtr<ATestBaseUnit>>& UTestBattleDirectorSubsystem::GetTeamArrayConst(ETeam Team) const
+const TArray<TWeakObjectPtr<ATestBaseUnit>>& UTestBattleDirectorSubsystem::GetTeamArrayConst(ETeamType Team) const
 {
-    return (Team == ETeam::TeamA) ? TeamAUnits : TeamBUnits;
+    return (Team == ETeamType::Ally) ? AllyUnits : EnemyUnits;
 }
 
 void UTestBattleDirectorSubsystem::RegisterUnit(ATestBaseUnit* Unit)
@@ -55,26 +55,26 @@ void UTestBattleDirectorSubsystem::UnregisterUnit(ATestBaseUnit* Unit)
     GetTeamArray(Unit->Brain->Team).Remove(Unit);
 }
 
-void UTestBattleDirectorSubsystem::RegisterWallAnchor(ETeam Team, AActor* AnchorActor)
+void UTestBattleDirectorSubsystem::RegisterWallAnchor(ETeamType Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
-    if (Team == ETeam::TeamA) TeamAWallAnchors.AddUnique(AnchorActor);
-    else TeamBWallAnchors.AddUnique(AnchorActor);
+    if (Team == ETeamType::Ally) AllyWallAnchors.AddUnique(AnchorActor);
+    else EnemyWallAnchors.AddUnique(AnchorActor);
 }
 
-void UTestBattleDirectorSubsystem::UnregisterWallAnchor(ETeam Team, AActor* AnchorActor)
+void UTestBattleDirectorSubsystem::UnregisterWallAnchor(ETeamType Team, AActor* AnchorActor)
 {
     if (!AnchorActor) return;
-    if (Team == ETeam::TeamA) TeamAWallAnchors.Remove(AnchorActor);
-    else TeamBWallAnchors.Remove(AnchorActor);
+    if (Team == ETeamType::Ally) AllyWallAnchors.Remove(AnchorActor);
+    else EnemyWallAnchors.Remove(AnchorActor);
 }
 
-const TArray<TWeakObjectPtr<AActor>>& UTestBattleDirectorSubsystem::GetTeamWallAnchorsConst(ETeam Team) const
+const TArray<TWeakObjectPtr<AActor>>& UTestBattleDirectorSubsystem::GetTeamWallAnchorsConst(ETeamType Team) const
 {
-    return (Team == ETeam::TeamA) ? TeamAWallAnchors : TeamBWallAnchors;
+    return (Team == ETeamType::Ally) ? AllyWallAnchors : EnemyWallAnchors;
 }
 
-float UTestBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, ETeam WallTeam) const
+float UTestBattleDirectorSubsystem::DistanceToNearestWallAnchorSq(const FVector& P, ETeamType WallTeam) const
 {
     const TArray<TWeakObjectPtr<AActor>>& Anchors = GetTeamWallAnchorsConst(WallTeam);
     float BestSq = FLT_MAX;
@@ -95,8 +95,8 @@ AActor* UTestBattleDirectorSubsystem::GetEnemyBaseFor(const ATestBaseUnit* Unit)
 {
     if (!Unit || !Unit->Brain) return nullptr;
 
-    const ETeam MyTeam = Unit->Brain->Team;
-    const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
+    const ETeamType MyTeam = Unit->Brain->Team;
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
 
     // 1) 성벽을 적 기지로 취급: 적 팀의 WallAnchor 중 가장 가까운 앵커를 반환
     const TArray<TWeakObjectPtr<AActor>>& Anchors = GetTeamWallAnchorsConst(EnemyTeam);
@@ -120,7 +120,7 @@ AActor* UTestBattleDirectorSubsystem::GetEnemyBaseFor(const ATestBaseUnit* Unit)
     if (Best) return Best;
 
     // 2) 폴백: 등록된 TeamBase(옵션). (테스트/임시용)
-    return (EnemyTeam == ETeam::TeamA) ? TeamABase.Get() : TeamBBase.Get();
+    return (EnemyTeam == ETeamType::Ally) ? AllyTeamBase.Get() : EnemyTeamBase.Get();
 }
 
 void UTestBattleDirectorSubsystem::CleanupInvalidReferences()
@@ -141,10 +141,10 @@ void UTestBattleDirectorSubsystem::CleanupInvalidReferences()
                 });
         };
 
-    CleanupTeam(TeamAUnits);
-    CleanupTeam(TeamBUnits);
-    CleanupAnchors(TeamAWallAnchors);
-    CleanupAnchors(TeamBWallAnchors);
+    CleanupTeam(AllyUnits);
+    CleanupTeam(EnemyUnits);
+    CleanupAnchors(AllyWallAnchors);
+    CleanupAnchors(EnemyWallAnchors);
 }
 
 void UTestBattleDirectorSubsystem::NotifyTargetAssigned(ATestBaseUnit* Unit, AActor* NewTarget)
@@ -162,8 +162,8 @@ ATestBaseUnit* UTestBattleDirectorSubsystem::FindBestTargetWithFreeSlot(ATestBas
 
     if (!Attacker || !Attacker->Brain) return nullptr;
 
-    const ETeam MyTeam = Attacker->Brain->Team;
-    const ETeam EnemyTeam = (MyTeam == ETeam::TeamA) ? ETeam::TeamB : ETeam::TeamA;
+    const ETeamType MyTeam = Attacker->Brain->Team;
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
 
     const TArray<TWeakObjectPtr<ATestBaseUnit>>& Enemies = GetTeamArrayConst(EnemyTeam);
 

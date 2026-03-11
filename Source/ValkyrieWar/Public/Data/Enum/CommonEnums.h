@@ -84,10 +84,11 @@ enum class EUnitCombatType : uint8
 };
 
 UENUM(BlueprintType)
-enum class ETeam : uint8
+enum class ETeamType : uint8
 {
-	TeamA,
-	TeamB
+	None,
+	Ally,
+	Enemy
 };
 
 // 타깃 선택 룰셋(서브시스템은 attacker 제한/슬롯 정책을 유지하고,

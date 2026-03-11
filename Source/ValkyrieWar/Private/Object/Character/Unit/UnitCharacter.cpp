@@ -306,7 +306,7 @@ void AUnitCharacter::OnRelease_Implementation()
 	{
 		Brain->ResetRuntimeBrainState();
 
-		if (Brain->Team == ETeam::TeamB)
+		if (Brain->Team == ETeamType::Enemy)
 		{
 			if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 			{

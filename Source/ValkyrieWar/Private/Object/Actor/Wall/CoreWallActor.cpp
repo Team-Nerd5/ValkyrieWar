@@ -52,7 +52,7 @@ void ACoreWallActor::BeginPlay()
 				const float CurHP = WallSet->GetHealth();
 				const float MaxHP = FMath::Max(1.f, WallSet->GetMaxHealth());
 
-				if (Team == ETeam::TeamA)
+				if (Team == ETeamType::Ally)
 				{
 					EventSystem->Battle.OnAllyWallHealthChanged.Broadcast(CurHP, MaxHP);
 				}
@@ -85,7 +85,7 @@ void ACoreWallActor::BeginPlay()
 					// WorldEventSystem 이벤트 브로드캐스트
 					if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 					{
-						if (Team == ETeam::TeamA)
+						if (Team == ETeamType::Ally)
 						{
 							EventSystem->Battle.OnAllyWallHealthChanged.Broadcast(CurHP, MaxHP);
 						}
