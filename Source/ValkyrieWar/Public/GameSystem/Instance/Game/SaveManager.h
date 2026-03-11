@@ -66,34 +66,24 @@ protected:
 	void InitSaveDataAction();
 
 	void InitDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
-
 	void SetDataInternal(ESaveType InSaveType, USaveGame* InLoadedData);
-	/// <summary>
-	/// 실제 Save파일로 암호화 저장
-	/// </summary>
-	/// <param name="InSaveType"></param>
 	void SaveInternal(ESaveType InSaveType);
 
-	UFUNCTION()
-	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
-
+protected:
 	void SetAccountData();
 	void SetValkyrieData();
 	void SetItemData();
 
-protected:
 	//데이터 생성 후 저장용 Delgate 처리부분
+	UFUNCTION()
+	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
 	UFUNCTION()
 	void OnValkyrieGenerated(int64 InUID, UValkyrieData* InData);
 public:
 	void InitAllData();
 	int32 LoadAllData();
 
-	//게임 로드 1순위 계정 체크
 	bool IsAcountExist();
-
-	//게임로드 2순위 id 있으면 가져오고, 음..
-	uint64 GetUserId();
 
 	void UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter);
 
@@ -102,4 +92,14 @@ public:
 
 	void LoadData(ESaveType InSaveType);
 	void SaveData(ESaveType InSaveType);
+
+
+
+
+	uint64 GetNextItemUID();
+	uint64 GetNextValkyrieUID();
+
+	bool IsGoodsEnough(EGoodsType InGoodsType, uint64 InPrice);
+	uint64 GetGoodsValue(EGoodsType InGoodsType);
+	void AddGoods(EGoodsType InGoodsType, uint64 InAmount);
 };

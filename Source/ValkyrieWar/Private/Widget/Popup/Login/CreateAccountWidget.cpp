@@ -36,7 +36,6 @@ void UCreateAccountWidget::OnClickConfirm()
 {
 	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
 	{
-		SaveManager->GetUserId();
 		SaveManager->CreateAccount(Nickname);
 
 		if (EventSystem)

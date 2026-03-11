@@ -83,7 +83,7 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 	
 	if (Amount)
 	{
-		if (InData->GetItemGroup() == EItemGroup::Goods || InData->GetItemGroup() == EItemGroup::GrowthItem)
+		if (InData->GetItemGroup() == EItemGroup::GrowthItem)
 		{
 			Amount->SetText(FText::AsNumber(InData->GetAmount()));
 			Amount->SetVisibility(ESlateVisibility::Visible);

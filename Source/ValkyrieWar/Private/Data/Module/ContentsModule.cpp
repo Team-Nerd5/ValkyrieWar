@@ -25,13 +25,13 @@ TArray<FContentsDataRow> UContentsModule::GetAllDataSorted()
 	return MenuContents;
 }
 
-int32 UContentsModule::GetGoodsId(EUIType InUIType)
+int32 UContentsModule::GetTopMenuId(EUIType InUIType)
 {
 	for (auto data : TableDataByDataId)
 	{
 		if (data.Value.MenuType == InUIType)
 		{
-			return data.Value.GoodsId;
+			return data.Value.TopMenuId;
 		}
 	}
 

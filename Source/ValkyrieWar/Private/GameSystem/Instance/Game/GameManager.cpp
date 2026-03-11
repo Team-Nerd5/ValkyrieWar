@@ -2,9 +2,12 @@
 
 
 #include "GameSystem/Instance/Game/GameManager.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
+
 #include "Data/Table/Widget/WidgetClassTableData.h"
 #include "Data/Table/Map/MapLinkTableData.h"
-#include "GameSystem/Instance/Game/DataManager.h"
+
 #include <Kismet/GameplayStatics.h>
 
 TSubclassOf<UBaseWidget> UGameManager::GetUIClass(EUIType InUIType)
@@ -47,7 +50,32 @@ TSoftObjectPtr<UWorld> UGameManager::GetMapObject(EMapType InMapType)
 
 UDataTable* UGameManager::GetGameData(ETableDataType InType)
 {
-    return *GameDataTables.Find(InType);
+    if (GameDataTables.Contains(InType))
+    {
+        return GameDataTables.FindChecked(InType);
+    }
+
+    return nullptr;
+}
+
+uint64 UGameManager::GetItemUID()
+{
+    if (USaveManager* Save = GetSubsystem<USaveManager>())
+    {
+        return Save->GetNextItemUID();
+    }
+
+    return 0;
+}
+
+uint64 UGameManager::GetValkyrieUID()
+{
+    if (USaveManager* Save = GetSubsystem<USaveManager>())
+    {
+        return Save->GetNextValkyrieUID();
+    }
+
+    return 0;
 }
 
 UValkyrieData* const UGameManager::GetSelectedValkyrie()
@@ -68,12 +96,6 @@ UValkyrieData* const UGameManager::GetSelectedValkyrie()
     }
     
     return nullptr;
-}
-
-void UGameManager::UpdateCurrentUID(int64 InItemUID, int64 InCharacterUID)
-{
-    ItemUID = InItemUID;
-    CharacterUID = InCharacterUID;
 }
 
 void UGameManager::Init()

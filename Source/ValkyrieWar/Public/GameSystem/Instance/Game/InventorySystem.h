@@ -46,10 +46,4 @@ public:
 private:
 	UPROPERTY()
 	TObjectPtr<class UDataManager> DataManager;
-
-// 테스트용(삭제 가능)
-public:
-	// 아이템 추가 테스트용 함수
-	UFUNCTION(BlueprintCallable)
-	void TestAddItem();
 };

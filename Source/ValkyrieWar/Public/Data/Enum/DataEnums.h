@@ -27,9 +27,6 @@ UENUM(BlueprintType)
 enum class EItemType : uint8
 {
 	None,
-	Gold,
-	Gem,
-	Ticket,
 
 	//무기
 	OneHandSword,
@@ -72,7 +69,6 @@ UENUM(BlueprintType)
 enum class EItemGroup : uint8
 {
 	None,
-	Goods,
 	Equip,
 	GrowthItem,
 };
@@ -128,6 +124,7 @@ enum class ETableDataType : uint8
 	StageReward,
 	StatGroup,
 	Unit,
+	TopMenu,
 };
 
 UENUM(BlueprintType)

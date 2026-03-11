@@ -50,7 +50,7 @@ void UValkyrieData::UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameMan
 
 void UValkyrieData::Initialize(const FValkyrieDataRow InTableData, UGameManager* InGameManager)
 {
-	 UID = InGameManager->GetCharacterUID();
+	 UID = InGameManager->GetValkyrieUID();
 
 	 MakeData(InTableData, InGameManager);
 }

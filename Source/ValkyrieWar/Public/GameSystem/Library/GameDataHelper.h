@@ -6,7 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Data/Enum/DataEnums.h"
 #include "Data/Enum/CommonEnums.h"
-#include "Data/Table/GameData/GoodsDataRow.h"
+#include "Data/Table/GameData/TopMenuDataRow.h"
 #include "GameDataHelper.generated.h"
 
 /**
@@ -24,5 +24,5 @@ public:
 	UFUNCTION()
 	static EEquipGroup GetEquipGroup(EItemType InItemType);
 
-	static bool GetGoodsData(EUIType InUIType, UGameInstance* GameInstance, FGoodsDataRow& OutGoodsData);
+	static bool GetTopMenuData(EUIType InUIType, UGameInstance* GameInstance, FTopMenuDataRow& OutTopMenuData);
 };

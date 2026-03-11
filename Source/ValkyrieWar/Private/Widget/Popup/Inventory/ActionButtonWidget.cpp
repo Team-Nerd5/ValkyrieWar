@@ -146,8 +146,7 @@ void UActionButtonWidget::Sell()
 	}
 
 	// 양의 변화가 필요한 아이템인 경우 개수 갱신
-	if (CachedItemData->GetItemGroup() == EItemGroup::Goods ||
-		CachedItemData->GetItemGroup() == EItemGroup::GrowthItem)
+	if (CachedItemData->GetItemGroup() == EItemGroup::GrowthItem)
 	{
 		WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(CachedItemData->GetUID());
 	}

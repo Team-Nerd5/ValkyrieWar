@@ -8,11 +8,6 @@ EItemGroup UGameDataHelper::GetItemGroup(EItemType InItemType)
 {
 	switch (InItemType)
 	{
-	case EItemType::Gold:
-	case EItemType::Gem:
-	case EItemType::Ticket:
-		return EItemGroup::Goods;
-
 	case EItemType::ShieldMasteryPiece:
 	case EItemType::AxeMasteryPiece:
 	case EItemType::BowMasteryPiece:
@@ -49,17 +44,17 @@ EEquipGroup UGameDataHelper::GetEquipGroup(EItemType InItemType)
 	}
 }
 
-bool UGameDataHelper::GetGoodsData(EUIType InUIType, UGameInstance* GameInstance, FGoodsDataRow& OutGoodsData)
+bool UGameDataHelper::GetTopMenuData(EUIType InUIType, UGameInstance* GameInstance, FTopMenuDataRow& OutTopMenuData)
 {
 	if (UDataManager* DataManager = GameInstance->GetSubsystem<UDataManager>())
 	{
-		int32 GoodsId = DataManager->GetContentsModule()->GetGoodsId(InUIType);
-		if (GoodsId > 0)
+		int32 TopMenuId = DataManager->GetContentsModule()->GetTopMenuId(InUIType);
+		if (TopMenuId > 0)
 		{
-			FGoodsDataRow Goods = DataManager->GetGoodsModule()->GetGoodsTable(GoodsId);
-			if (Goods.DataId > 0)
+			FTopMenuDataRow TopMenu = DataManager->GetTopMenuModule()->GetTopMenuTable(TopMenuId);
+			if (TopMenu.DataId > 0)
 			{
-				OutGoodsData = Goods;
+				OutTopMenuData = TopMenu;
 				return true;
 			}
 		}

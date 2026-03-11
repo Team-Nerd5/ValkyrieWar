@@ -13,15 +13,14 @@ USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FGoodsDataRow : public FTableRowBase
 {
 	GENERATED_BODY()
+
 public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
+
 	UPROPERTY(EditAnywhere)
-	bool bIsBackButton = true;				//false이면 계정정보
+	EGoodsType GoodsType = EGoodsType::None;
+
 	UPROPERTY(EditAnywhere)
-	EGoodsType Type_1 = EGoodsType::None;
-	UPROPERTY(EditAnywhere)
-	EGoodsType Type_2 = EGoodsType::None;
-	UPROPERTY(EditAnywhere)
-	EGoodsType Type_3 = EGoodsType::None;
+	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 };

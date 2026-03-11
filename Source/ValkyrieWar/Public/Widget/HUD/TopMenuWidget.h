@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
-#include "Data/Table/GameData/GoodsDataRow.h"
+#include "Data/Table/GameData/TopMenuDataRow.h"
 #include "TopMenuWidget.generated.h"
 
 class UGoodsItemWidget;
@@ -19,7 +19,7 @@ public:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
-	void SetData(FGoodsDataRow* InData);
+	void SetData(FTopMenuDataRow InData);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

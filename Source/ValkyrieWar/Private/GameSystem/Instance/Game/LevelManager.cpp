@@ -91,8 +91,6 @@ void ULevelManager::StartDataLoading()
 	USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>();
 	if (SaveManager)
 	{
-		SaveManager->InitAllData();
-
 		DataLoadTask += SaveManager->LoadAllData();
 	}
 

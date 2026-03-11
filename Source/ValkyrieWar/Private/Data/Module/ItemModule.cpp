@@ -30,9 +30,6 @@ void UItemModule::MakeData()
 			TableDataByDataId.Add(Item->DataId, *Item);
 		}
 	}
-	if (DataTable == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("❌ [ItemModule] 데이터 테이블 에셋이 연결되지 않았습니다!!!"));
-	}
 }
 
 void UItemModule::SetList()

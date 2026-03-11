@@ -20,7 +20,7 @@ public:
 
 	TArray<FContentsDataRow> GetAllDataSorted();
 
-	int32 GetGoodsId(EUIType InUIType);
+	int32 GetTopMenuId(EUIType InUIType);
 
 protected:
 	virtual void MakeData() override;

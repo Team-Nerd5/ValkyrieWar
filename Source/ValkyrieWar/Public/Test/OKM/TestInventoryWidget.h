@@ -50,8 +50,6 @@ public:
 	void FilterHelmet();
 	UFUNCTION()
 	void FIlterGrowth();
-	UFUNCTION()
-	void FIlterGoods();
 
 	UFUNCTION()
 	void ItemClicked(UObject* InItemData);
@@ -91,8 +89,6 @@ protected:
 	TObjectPtr<UButton> Btn_FilterHelmet = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_FilterGrowth = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Btn_FilterGoods = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTestPopupWidget> PopupWidget = nullptr;

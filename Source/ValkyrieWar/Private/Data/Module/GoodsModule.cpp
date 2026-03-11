@@ -16,11 +16,10 @@ void UGoodsModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-FGoodsDataRow UGoodsModule::GetGoodsTable(int32 InKey)
+FGoodsDataRow UGoodsModule::GetTableData(EGoodsType InKey)
 {
-	return *TableDataByDataId.Find(InKey);
+	return TableDataByType.FindChecked(InKey);
 }
-
 void UGoodsModule::MakeData()
 {
 	if (DataTable)
@@ -32,7 +31,7 @@ void UGoodsModule::MakeData()
 		{
 			if (!Item) continue;
 
-			TableDataByDataId.Add(Item->DataId, *Item);
+			TableDataByType.Add(Item->GoodsType, *Item);
 		}
 	}
 }

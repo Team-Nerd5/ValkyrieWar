@@ -36,113 +36,9 @@ void USaveManager::Deinitialize()
 	Super::Deinitialize();
 }
 
-void USaveManager::OnValkyrieGenerated(int64 InUID, UValkyrieData* InData)
-{
-	if (Valkyrie)
-	{
-		FValkyrieSaveData ValkyrieSave;
-		ValkyrieSave.DataId = InData->GetDataID();
-
-		Valkyrie->ValkyrieData.Add(InUID, ValkyrieSave);
-
-		if (bIsNewAccount)
-		{
-			//캐릭터가 새로 생성되었는데, 신규계정 상태이면 계정 생성임
-			if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
-			{
-				GameManager->SelectVakyrie(InUID);
-			}
-
-			Account->SelectedValkyrie = InUID;
-			SaveInternal(ESaveType::Account);
-		}
-
-		SaveInternal(ESaveType::Valkyrie);
-	}
-}
-
-void USaveManager::InitAllData()
-{
-	const UEnum* EnumPtr = StaticEnum<ESaveType>();
-
-	int32 AmountToLoad = EnumPtr->NumEnums() - 1;
-
-	if (EnumPtr)
-	{
-		for (int32 i = 1; i < EnumPtr->NumEnums(); ++i)
-		{
-			ESaveType Type = static_cast<ESaveType>(EnumPtr->GetValueByIndex(i));
-
-			USaveGame* Data = UGameSaveHelper::MakeSaveGame(Type);
-			InitDataInternal(Type, Data);
-		}
-	}
-
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Module.OnValkyrieGenerated.AddDynamic(this, &USaveManager::OnValkyrieGenerated);
-	}
-}
-
-int32 USaveManager::LoadAllData()
-{
-	const UEnum* EnumPtr = StaticEnum<ESaveType>();
-
-	int32 AmountToLoad = EnumPtr->NumEnums() - 1;
-
-	if (EnumPtr)
-	{
-		for (int32 i = 1; i < EnumPtr->NumEnums(); ++i)
-		{
-			// 이름(FString) 가져오기
-			FString EnumName = EnumPtr->GetNameStringByIndex(i);
-
-			FOnSaveGameLoaded OnLoadedDelegate;
-			OnLoadedDelegate.BindDynamic(this, &USaveManager::OnDataLoaded);
-
-			LoadTask++;
-			//데이터 암호화 로드 비동기...
-			UDataEncryptHelper::LoadGameEncryptedAsync(OnLoadedDelegate, static_cast<ESaveType>(EnumPtr->GetValueByIndex(i)));
-		}
-	}
-	return LoadTask;
-}
-
-uint64 USaveManager::GetUserId()
-{
-	if (CheckAccount)
-		return CheckAccount->UserId;
-
-	//로드를 하고 없으면 UserID를 증가시켜서 새로 만들어줌
-	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(ESaveType::CheckAccount);
-	if (!LoadData)
-	{
-		LoadData = UGameSaveHelper::MakeSaveGame(ESaveType::CheckAccount);
-	}
-	CheckAccount = Cast<UCheckAccountSaveGame>(LoadData);
-
-	CheckAccount->UserId++;
-
-	SaveInternal(ESaveType::CheckAccount);
-
-	return CheckAccount->UserId;
-}
-
-bool USaveManager::IsAcountExist()
-{
-	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(ESaveType::CheckAccount);
-
-	if (!LoadData)
-		return false;
-
-	CheckAccount = Cast<UCheckAccountSaveGame>(LoadData);
-
-	return CheckAccount && CheckAccount->UserId > 0;
-}
-
 void USaveManager::InitSetDataAction()
 {
-	//ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Account, [this](USaveGame* InData)
 		{
 			Account = Cast<UAccountSaveGame>(InData);
@@ -166,7 +62,7 @@ void USaveManager::InitSetDataAction()
 
 void USaveManager::InitInitDataAction()
 {
-	//ActionInitData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::CheckAccount, [this](USaveGame* InData) { CheckAccount = Cast<UCheckAccountSaveGame>(InData); });
 	ActionInitData.Add(ESaveType::Account, [this](USaveGame* InData) { Account = Cast<UAccountSaveGame>(InData); });
 	ActionInitData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
 	ActionInitData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
@@ -237,6 +133,53 @@ void USaveManager::SaveInternal(ESaveType InSaveType)
 	}
 }
 
+void USaveManager::InitAllData()
+{
+	const UEnum* EnumPtr = StaticEnum<ESaveType>();
+
+	int32 AmountToLoad = EnumPtr->NumEnums() - 1;
+
+	if (EnumPtr)
+	{
+		for (int32 i = 0; i < EnumPtr->NumEnums(); ++i)
+		{
+			ESaveType Type = static_cast<ESaveType>(EnumPtr->GetValueByIndex(i));
+
+			USaveGame* Data = UGameSaveHelper::MakeSaveGame(Type);
+			InitDataInternal(Type, Data);
+		}
+	}
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Module.OnValkyrieGenerated.AddDynamic(this, &USaveManager::OnValkyrieGenerated);
+	}
+}
+
+int32 USaveManager::LoadAllData()
+{
+	const UEnum* EnumPtr = StaticEnum<ESaveType>();
+
+	int32 AmountToLoad = EnumPtr->NumEnums() - 1;
+
+	if (EnumPtr)
+	{
+		for (int32 i = 1; i < EnumPtr->NumEnums(); ++i)
+		{
+			// 이름(FString) 가져오기
+			FString EnumName = EnumPtr->GetNameStringByIndex(i);
+
+			FOnSaveGameLoaded OnLoadedDelegate;
+			OnLoadedDelegate.BindDynamic(this, &USaveManager::OnDataLoaded);
+
+			LoadTask++;
+			//데이터 암호화 로드 비동기...
+			UDataEncryptHelper::LoadGameEncryptedAsync(OnLoadedDelegate, static_cast<ESaveType>(EnumPtr->GetValueByIndex(i)));
+		}
+	}
+	return LoadTask;
+}
+
 void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType)
 {
 	//데이터 캐싱
@@ -245,20 +188,36 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 		SetDataInternal(InSaveType, LoadedSaveGame);
 	}
 
-	//else
-	//{
-	//	//저장된 데이터가 없으면 새로 만들어준다.
-	//	USaveGame* Data = UGameSaveHelper::MakeSaveGame(InSaveType);
-	//	if (Data)
-	//	{
-	//		SetDataInternal(InSaveType, Data);
-	//	}		
-	//}
-
 	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 	if (EventSystem)
 	{
 		EventSystem->Login.OnDataLoadComplete.Broadcast();
+	}
+}
+
+
+void USaveManager::OnValkyrieGenerated(int64 InUID, UValkyrieData* InData)
+{
+	if (Valkyrie)
+	{
+		FValkyrieSaveData ValkyrieSave;
+		ValkyrieSave.DataId = InData->GetDataID();
+
+		Valkyrie->ValkyrieData.Add(InUID, ValkyrieSave);
+
+		if (bIsNewAccount)
+		{
+			//캐릭터가 새로 생성되었는데, 신규계정 상태이면 계정 생성임
+			if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
+			{
+				GameManager->SelectVakyrie(InUID);
+			}
+
+			Account->SelectedValkyrie = InUID;
+			SaveInternal(ESaveType::Account);
+		}
+
+		SaveInternal(ESaveType::Valkyrie);
 	}
 }
 
@@ -322,25 +281,32 @@ void USaveManager::SetValkyrieData()
 
 #pragma endregion
 
-//기본 함수
+bool USaveManager::IsAcountExist()
+{
+	USaveGame* LoadData = UDataEncryptHelper::LoadGameEncrypted(ESaveType::CheckAccount);
+
+	if (!LoadData)
+		return false;
+
+	SetDataInternal(ESaveType::CheckAccount, LoadData);
+
+	return CheckAccount && CheckAccount->GetUserID() > 0;
+}
+
 void USaveManager::CreateAccount(FString& InNickname)
 {
+	if (!CheckAccount)
+	{
+		UE_LOG(LogTemp, Error, TEXT("계정생성 오류 : CheckAccount가 없으면 안됨"));
+	}
+
+	//임시로 고정 id 제공
+	CheckAccount->SetUserID(10001);
+	SaveInternal(ESaveType::CheckAccount);
+
 	if (Account)
 	{
 		Account->Nickname = InNickname;
-
-		//여기서 넣어주면... 발키리 저장이 안됨..
-		//만약에 Load 완료 후 bIsNewAccount이면 그때 새로 생성해서..?
-
-		//계정생성
-		//초기 캐릭터를 넣어줌
-		//if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
-		//{
-		//	uint64 UID = DataManager->GetValkyrieModule()->CreateValkyrie(110001);
-		//				
-		//	Account->SelectedValkyrie = UID;						
-
-		//}
 
 		bIsNewAccount = true;
 
@@ -360,4 +326,63 @@ void USaveManager::LoadData(ESaveType InSaveType)
 void USaveManager::SaveData(ESaveType InSaveType)
 {
 	SaveInternal(InSaveType);
+}
+
+uint64 USaveManager::GetNextItemUID()
+{
+	if (CheckAccount)
+	{
+		CheckAccount->GetItemUID();
+
+		SaveInternal(ESaveType::CheckAccount);
+	}
+
+	return 0;
+}
+
+uint64 USaveManager::GetNextValkyrieUID()
+{
+	if (CheckAccount)
+	{
+		CheckAccount->GetValkyrieUID();
+
+		SaveInternal(ESaveType::CheckAccount);
+	}
+
+	return 0;
+}
+
+bool USaveManager::IsGoodsEnough(EGoodsType InGoodsType, uint64 InPrice)
+{
+	if (Goods)
+	{
+		return GetGoodsValue(InGoodsType) >= InPrice;
+	}
+
+	return false;
+}
+
+uint64 USaveManager::GetGoodsValue(EGoodsType InGoodsType)
+{
+	if (Goods)
+	{
+		return Goods->GetGoods(InGoodsType);
+	}
+
+	return 0;
+}
+
+void USaveManager::AddGoods(EGoodsType InGoodsType, uint64 InAmount)
+{
+	if (Goods)
+	{
+		Goods->AddGoods(InGoodsType, InAmount);
+
+		SaveInternal(ESaveType::Goods);
+
+		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			EventSystem->Widget.OnGoodsUpdate.Broadcast(InGoodsType, Goods->GetGoods(InGoodsType));
+		}
+	}
 }

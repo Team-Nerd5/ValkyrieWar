@@ -4,24 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseModule.h"
-#include "Data/Table/GameData/GoodsDataRow.h"
-#include "GoodsModule.generated.h"
+#include "Data/Table/GameData/TopMenuDataRow.h"
+#include "TopMenuModule.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UGoodsModule : public UBaseModule
+class VALKYRIEWAR_API UTopMenuModule : public UBaseModule
 {
 	GENERATED_BODY()
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	FGoodsDataRow GetTableData(EGoodsType InKey);
+	FTopMenuDataRow GetTopMenuTable(int32 InKey);
 protected:
 	virtual void MakeData() override;
 
 private:
 	UPROPERTY()
-	TMap<EGoodsType, FGoodsDataRow> TableDataByType;
+	TMap<int32, FTopMenuDataRow> TableDataByDataId;
 };

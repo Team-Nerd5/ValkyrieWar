@@ -29,6 +29,12 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 		{
 			UIManager->OpenUI<ULoginWidget>(EUIType::Login);
 
+			//저장 데이터를 초기화는 먼저 해줌(생성만)
+			if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+			{
+				SaveManager->InitAllData();
+			}
+
 			ChangeGameState(ELoginState::CheckAccount);
 		}
 		break;	
@@ -58,11 +64,8 @@ void ALoginGameState::ChangeGameState(ELoginState InState)
 	case ELoginState::CheckNickname:
 		if (bIsAccountExist)
 		{
-			if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
-			{
-				SaveManager->GetUserId();
-				ChangeGameState(ELoginState::MoveToLobby);
-			}
+			//계정 정보가 있으니까 로비로 넘어가면서 데이터 로드하면됨
+			ChangeGameState(ELoginState::MoveToLobby);			
 		}
 		else
 		{

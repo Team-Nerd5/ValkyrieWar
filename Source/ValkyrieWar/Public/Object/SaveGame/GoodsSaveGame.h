@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "Data/Enum/DataEnums.h"
 #include "GoodsSaveGame.generated.h"
 
 /**
@@ -15,12 +16,21 @@ class VALKYRIEWAR_API UGoodsSaveGame : public USaveGame
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
-	uint64 Ticket;
+	FORCEINLINE uint64 GetGoods(EGoodsType InGoodsType)
+	{
+		if (Goods.Contains(InGoodsType))
+		{
+			return Goods.FindChecked(InGoodsType);
+		}
 
-	UPROPERTY()
-	uint64 Gem;
+		return 0;
+	}
+	FORCEINLINE void AddGoods(EGoodsType InGoodsType, uint64 InAmount)
+	{
+		Goods.FindOrAdd(InGoodsType) += InAmount;
+	}
 
+protected:
 	UPROPERTY()
-	uint64 Gold;
+	TMap<EGoodsType, uint64> Goods;
 };

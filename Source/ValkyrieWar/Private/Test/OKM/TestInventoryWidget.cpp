@@ -33,8 +33,6 @@ void UTestInventoryWidget::NativeConstruct()
 		Btn_FilterHelmet->OnClicked.AddDynamic(this, &UTestInventoryWidget::FilterHelmet);
 	if(Btn_FilterGrowth)
 		Btn_FilterGrowth->OnClicked.AddDynamic(this, &UTestInventoryWidget::FIlterGrowth);
-	if (Btn_FilterGoods)
-		Btn_FilterGoods->OnClicked.AddDynamic(this, &UTestInventoryWidget::FIlterGoods);
 
 	EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UTestInventoryWidget::FilterReset);
 	EventSystem->Widget.OnUpdateCharacterEquipment.AddDynamic(this, &UTestInventoryWidget::UpdateEquipmentUi);
@@ -141,22 +139,6 @@ void UTestInventoryWidget::FIlterGrowth()
 		TileView->SetListItems(CachedItemList);
 		TileView->RegenerateAllEntries();
 	}	
-}
-
-void UTestInventoryWidget::FIlterGoods()
-{
-	if (UIType == EUIType::PopupInventory)
-	{
-		CachedItemList.Empty();
-		CachedItemList = InventorySystem->GetFilteredInventoryList(EItemGroup::Goods);
-		SortInventory();
-	}
-	else
-	{
-		CachedItemList.Empty();
-		TileView->SetListItems(CachedItemList);
-		TileView->RegenerateAllEntries();
-	}
 }
 
 void UTestInventoryWidget::ItemClicked(UObject* InItemData)

@@ -14,6 +14,7 @@
 #include "Data/Module/GoodsModule.h"
 #include "Data/Module/UnitModule.h"
 #include "Data/Module/StatGroupModule.h"
+#include "Data/Module/TopMenuModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -40,6 +41,7 @@ public:
 	FORCEINLINE UGoodsModule* GetGoodsModule() const { return GoodsModule; }
 	FORCEINLINE UUnitModule* GetUnitModule() const { return UnitModule; }
 	FORCEINLINE UStatGroupModule* GetStatGroupModule() const { return StatGroupModule; }
+	FORCEINLINE UTopMenuModule* GetTopMenuModule() const { return TopMenuModule; }
 
 private:
 	template<typename T>
@@ -63,6 +65,8 @@ private:
 	TObjectPtr<UUnitModule> UnitModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UStatGroupModule> StatGroupModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UTopMenuModule> TopMenuModule = nullptr;
 
 
 	UPROPERTY()

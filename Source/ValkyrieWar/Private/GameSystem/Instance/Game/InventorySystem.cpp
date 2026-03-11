@@ -261,21 +261,3 @@ void UInventorySystem::UnEquipItem(UItemData* InItem)
 
 	InItem->Equip(0);
 }
-
-void UInventorySystem::TestAddItem()
-{
-	//AddItem(1000000001, 1, 1);
-	//AddItem(1000000002, 2, 1);
-	//AddItem(1000000003, 3, 1);
-	//AddItem(1000000004, 4, 1);
-	//AddItem(1000000005, 5, 1);
-	//AddItem(1000000006, 6, 1);
-	//AddItem(1000000007, 7, 1);
-	//AddItem(1000000008, 8, 1);
-	//AddItem(1000000009, 9, 1);
-	//AddItem(1000000010, 10, 1);
-
-	UWorldEventSystem* WorldEvent = GetWorld()->GetSubsystem<UWorldEventSystem>();
-	WorldEvent->Widget.OnUpdateInventory.Broadcast();
-	//WorldEvent->Widget.OnInventoryItemAmountChanged.Broadcast();
-}

@@ -53,9 +53,9 @@ void UBaseWidget::CreateTopMenu()
 {
     if (TopMenuClass)
     {
-        FGoodsDataRow Data;
+        FTopMenuDataRow Data;
 
-        if (UGameDataHelper::GetGoodsData(UIType, GetGameInstance(), Data))
+        if (UGameDataHelper::GetTopMenuData(UIType, GetGameInstance(), Data))
         {
             UTopMenuWidget* TopMenu = CreateWidget<UTopMenuWidget>(this, TopMenuClass);
 
@@ -68,7 +68,7 @@ void UBaseWidget::CreateTopMenu()
                     CanvasSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 0.0f));
                     CanvasSlot->SetOffsets(FMargin(0.0f, 0.0f, 0.0f, 80.0f));
                 }
-                TopMenu->SetData(&Data);
+                TopMenu->SetData(Data);
             }
         }
     }

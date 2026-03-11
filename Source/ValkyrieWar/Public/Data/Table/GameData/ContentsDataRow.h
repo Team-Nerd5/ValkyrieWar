@@ -28,5 +28,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 Order = 0;
 	UPROPERTY(EditAnywhere)
-	int32 GoodsId = 0;
+	int32 TopMenuId = 0;
 };

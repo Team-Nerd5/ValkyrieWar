@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemAmountChanged, uint6
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateCharacterEquipment, uint64, InCharacterUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTabMenuSelected, int32, InSelectedTab);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSelected, UItemData*, InItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGoodsUpdate, EGoodsType, InGoodsType, uint64, InAmount);
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
@@ -36,6 +37,7 @@ public:
 	FOnTabMenuSelected OnTabMenuSelected;
 	FOnInventoryItemSelected OnInventoryItemSelected;
 
+	FOnGoodsUpdate OnGoodsUpdate;
 
 
 	//-----------------------------삭제 예정---------------------------
