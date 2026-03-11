@@ -38,8 +38,9 @@ public:
 	//일반공격
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> AttackAction;
-
-
+	//스킬 공격 일단 하나만
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> SkillAction;
 
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
@@ -123,8 +124,10 @@ protected:
 	void OnMoveCompleted(const FInputActionValue& InValue);
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void OnAttackTap(const FInputActionValue& InValue);
+	void OnSkillTap(const FInputActionValue& InValue);
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void RequestAttack();
+	void RequestSkill();
 	//void OnAttackHold(const FInputActionValue& InValue);
 	void OnInputStarted();
 	void OnTouchTriggered();

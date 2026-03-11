@@ -20,12 +20,40 @@ void UArrowStackComponent::PullIt(float DamagePerArrow)
 {
 	if (StackingArrows.Num() <= 0) return;
 	float TotalDamage = StackingArrows.Num() * DamagePerArrow;
+	for (AActor* Arrow : StackingArrows)
+	{
+		if (Arrow)
+		{
+			Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // 화살분리
+			UPrimitiveComponent* RootPrim = Cast<UPrimitiveComponent>(Arrow->GetRootComponent());
+			if (RootPrim)
+			{
+				RootPrim->SetCollisionProfileName(TEXT("PhysicsActor"));
 
-	UGameplayStatics::ApplyDamage(GetOwner(), TotalDamage, nullptr, nullptr, UDamageType::StaticClass());
+				RootPrim->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				RootPrim->SetSimulatePhysics(true);
 
-	ClearAllArrows();
+				RootPrim->SetCollisionResponseToAllChannels(ECR_Ignore);
+				RootPrim->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 
-	UE_LOG(LogTemp, Warning, TEXT("[%s] 유닛에게 민트 화살 폭발! 대미지: %f"), *GetOwner()->GetName(), TotalDamage);
+				RootPrim->WakeAllRigidBodies();
+
+				FVector PullDirection = (Arrow->GetActorForwardVector() * -1.0f) + FVector(0.0f, 0.0f, 0.5f);
+				PullDirection.Normalize();
+
+				RootPrim->AddImpulse(PullDirection * PullForce, NAME_None, true);
+			}
+			Arrow->SetLifeSpan(0.2f);
+		}
+	}
+	StackingArrows.Empty();
+
+	AActor* Owner = GetOwner();
+	if (Owner)
+	{
+		UGameplayStatics::ApplyDamage(Owner, TotalDamage, nullptr, this->GetOwner(), nullptr);
+		UE_LOG(LogTemp, Warning, TEXT("촥! 화살 %d개 뽑힘! 후드득 떨어짐!"), StackingArrows.Num());
+	}
 }
 
 void UArrowStackComponent::ClearAllArrows()

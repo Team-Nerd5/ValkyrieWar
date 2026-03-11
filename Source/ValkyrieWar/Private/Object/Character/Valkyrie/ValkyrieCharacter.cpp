@@ -2,6 +2,8 @@
 
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+#include "Object/Character/Unit/UnitCharacter.h"
+#include "Object/Weapon/Range/Projectile/ArrowStackComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "AbilitySystemComponent.h"
@@ -22,11 +24,16 @@
 
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Data/Module/ItemModule.h"
 #include "Data/Module/AttackModule.h"
+#include "Data/Module/SkillModule.h"
+#include "Data/Module/SkillEffectModule.h"
 #include "Data/Game/AttackData.h"
+#include "Data/Game/SkillData.h"
 #include "Data/Attribute/StatAttributeSet.h"
+
 
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
@@ -45,7 +52,7 @@ AValkyrieCharacter::AValkyrieCharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
-
+	CurrentComboCount = 0;
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -168,36 +175,34 @@ void AValkyrieCharacter::ExecuteAttack()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	UAnimMontage* AttackMontage = AttackData->GetAnimMontage();
 
-	if (AnimInst && AttackMontage)
+	if (AnimInst && AttackMontage && !AnimInst->Montage_IsPlaying(AttackMontage))
 	{
 		if (!AnimInst->Montage_IsPlaying(AttackMontage))
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 0.f;
 			GetCharacterMovement()->StopMovementImmediately();
+			GetCharacterMovement()->bOrientRotationToMovement = false;
 
-				FVector InputDir = GetCharacterMovement()->GetLastInputVector();
+			// 마우스/입력 방향으로 고개는 돌려주기
+			FVector InputDir = GetCharacterMovement()->GetLastInputVector();
+			if (!InputDir.IsNearlyZero()) { SetActorRotation(InputDir.Rotation()); }
 
-				if (!InputDir.IsNearlyZero())
-				{
-					SetActorRotation(InputDir.Rotation());
-				}
-				GetCharacterMovement()->MaxWalkSpeed = 0.f;
-				GetCharacterMovement()->StopMovementImmediately();
-				GetCharacterMovement()->bOrientRotationToMovement = false;
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AValkyrieCharacter::OnAttackMontageEnded);
+			AnimInst->Montage_Play(AttackMontage);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 
-				FOnMontageEnded EndDelegate;
-				EndDelegate.BindUObject(this, &AValkyrieCharacter::OnAttackMontageEnded);
-				AnimInst->Montage_Play(AttackMontage);
-				AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
 
-				CurrentComboCount = 1;
-				bIsComboActive = true;
-				bCanNextCombo = false;
-				bIsComboInputOn = false;
-
-				AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
+			CurrentComboCount = 1;
+			bIsComboActive = true;
+			bCanNextCombo = false;
+			bIsComboInputOn = false;
 		}
-		else
+	}
+	else
+	{
+		if (bIsComboActive && bCanNextCombo)
 		{
 			bIsComboInputOn = true;
 		}
@@ -210,19 +215,86 @@ void AValkyrieCharacter::OnAttackNotify()
 	{
 		CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
 	}
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 600.f;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-	}
 }
 
 void AValkyrieCharacter::ExecuteSkill()
 {
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst && AnimInst->IsAnyMontagePlaying()) return; // 중복실행 막기
+
+	if (!EquippedWeapon) return;
+	TArray<int32> WeaponSkiilIds = EquippedWeapon->GetSkillID();
+
+	if (WeaponSkiilIds.Num() == 0) return;
+
+	int32 ActiveSkillId = WeaponSkiilIds[0];
+
+	//매니저한테서 모듈 뽑기
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	{
+		if (USkillModule* SkillModule = DataManager->GetSkillModule())
+		{
+			TArray<int32> TargetIds = { ActiveSkillId };
+			TArray<USkillData*> SkillDataResults = SkillModule->GetSkillData(TargetIds);
+
+			if (SkillDataResults.Num() > 0 && SkillDataResults[0])
+			{
+				USkillData* SkillData = SkillDataResults[0];
+				UAnimMontage* SkillMontage = SkillData->GetMontage().LoadSynchronous();
+				float DamageValue = 0.0f;
+				for (USkillEffectData* Effect : SkillData->GetEffectList())
+				{
+					if (Effect)
+					{
+						// 실제론 Effect->GetValue() 같은 게터 쓰기! 지금은 테스트용 20.0f
+						DamageValue = 20.0f;
+						break;
+					}
+				}
+				CachedSkillDamage = DamageValue;
+				if (SkillMontage && AnimInst)
+				{
+						//GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+						//GetCharacterMovement()->StopMovementImmediately();
+
+						FOnMontageEnded EndDelegate;
+						EndDelegate.BindUObject(this, &AValkyrieCharacter::OnSkillMontageEnded);
+
+						AnimInst->Montage_Play(SkillMontage);
+						AnimInst->Montage_SetEndDelegate(EndDelegate, SkillMontage);
+				}
+			}
+		}
+	}
+}
+
+void AValkyrieCharacter::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
+	ResetCombo();
+	UE_LOG(LogTemp, Warning, TEXT("스킬 종료! 이제 다시 움직일 수 있음."));
 }
 
 void AValkyrieCharacter::OnSkillNotify()
 {
+	TArray<AActor*> FoundEnemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUnitCharacter::StaticClass(), FoundEnemies);
+
+	for (AActor* Actor : FoundEnemies)
+	{
+		if (Actor == this) continue;
+		if (UArrowStackComponent* StackComp = Actor->FindComponentByClass<UArrowStackComponent>())
+		{
+			if (StackComp->StackingArrows.Num() > 0)
+			{
+				StackComp->PullIt(CachedSkillDamage);
+			}
+		}
+	}
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)
@@ -282,15 +354,17 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 	{
 		bIsComboInputOn = false;
 		CurrentComboCount++;
-
 		FVector InputDir = GetCharacterMovement()->GetLastInputVector();
 		if (!InputDir.IsNearlyZero())
 		{
 			SetActorRotation(InputDir.Rotation());
 		}
-		GetCharacterMovement()->MaxWalkSpeed = 0.f;
-		GetCharacterMovement()->StopMovementImmediately();
-		GetCharacterMovement()->bOrientRotationToMovement = false;
+		if (CurrentComboCount > 1)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 0.f;
+			GetCharacterMovement()->StopMovementImmediately();
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+		}
 
 		AnimInst->Montage_JumpToSection(NextSectionName, AttackMontage);
 

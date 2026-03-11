@@ -2,6 +2,8 @@
 
 
 #include "Object/Weapon/Range/Projectile/ArrowProjectile.h"
+#include "Object/Character/Unit/UnitCharacter.h"
+#include "Object/Weapon/Range/Projectile/ArrowStackComponent.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
@@ -67,32 +69,48 @@ void AArrowProjectile::Destroyed()
 
 void AArrowProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	FString ActorName = OtherActor ? OtherActor->GetName() : TEXT("Unknown");
-	if (!OtherActor || OtherActor == this || OtherActor == GetOwner()) return;
+	AUnitCharacter* TargetUnit = Cast<AUnitCharacter>(OtherActor);
+	if (!TargetUnit || TargetUnit->IsDead()) return;
+	UArrowStackComponent* StackComp = TargetUnit->FindComponentByClass<UArrowStackComponent>();
 
-	ProjectileMovement->StopMovementImmediately();
-	ProjectileMovement->Deactivate();
-
-	CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	FName TargetBone = SweepResult.BoneName;
-	if (TargetBone == NAME_None && OtherComp)
+	if (!StackComp)
 	{
-		FVector OutClosestPoint;
-		// 뼈 이름이 없으면 메쉬의 소켓이나 기본 위치라도 잡기 위해 시도
-		OtherComp->GetClosestPointOnCollision(GetActorLocation(), OutClosestPoint, NAME_None);
+		StackComp = NewObject<UArrowStackComponent>(TargetUnit, UArrowStackComponent::StaticClass());
+		if (StackComp)
+		{
+			StackComp->RegisterComponent();
+			UE_LOG(LogTemp, Warning, TEXT("%s에게 화살 주머니 강제 이식 완료!"), *TargetUnit->GetName());
+		}
 	}
-
-	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, true);
-	AttachToComponent(OtherComp, AttachRules, TargetBone);
-
-	ProjectileMesh->SetHiddenInGame(false);
-	if (UMaterialInstanceDynamic* DynMeaterial = ProjectileMesh->CreateAndSetMaterialInstanceDynamic(0))
+	if (StackComp)
 	{
-		DynMeaterial->SetScalarParameterValue(TEXT("EmissivePower"), 50.0f);
-	}
+		StackComp->StackingArrows.Add(this);
+		UE_LOG(LogTemp, Warning, TEXT("🎯 %s 몸에 화살 박힘! 현재 스택: %d개"), *TargetUnit->GetName(), StackComp->StackingArrows.Num());
 
-	SetLifeSpan(8.0f);// 화살을 맞았을떈 수명 을 조금 더 늘려서 스킬발동에 원할함을 줌
+		ProjectileMovement->StopMovementImmediately();
+		ProjectileMovement->Deactivate();
+		CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		FName TargetBone = SweepResult.BoneName;
+		if (TargetBone == NAME_None && OtherComp)
+		{
+			FVector OutClosestPoint;
+			// 뼈 이름이 없으면 메쉬의 소켓이나 기본 위치라도 잡기 위해 시도
+			OtherComp->GetClosestPointOnCollision(GetActorLocation(), OutClosestPoint, NAME_None);
+		}
+
+		FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, true);
+		AttachToComponent(OtherComp, AttachRules, TargetBone);
+
+		ProjectileMesh->SetHiddenInGame(false);
+		if (UMaterialInstanceDynamic* DynMaterial = ProjectileMesh->CreateAndSetMaterialInstanceDynamic(0))
+		{
+			DynMaterial->SetScalarParameterValue(TEXT("EmissivePower"), 50.0f);
+		}
+
+		SetLifeSpan(8.0f);// 화살을 맞았을떈 수명 을 조금 더 늘려서 스킬발동에 원할함을 줌
+	}
+	
 }
 
 

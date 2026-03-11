@@ -16,6 +16,9 @@ public:
 	// Sets default values for this component's properties
 	UArrowStackComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect|Physics")
+	float PullForce = 300.0f;
+
 	UPROPERTY()
 	TArray<class AArrowProjectile*> StackingArrows;
 

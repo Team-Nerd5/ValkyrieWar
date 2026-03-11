@@ -21,6 +21,8 @@ public:
 
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
+	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetMontage() { return TableData.Montage; }
+
 private:
 	UPROPERTY()
 	FSkillDataRow TableData;

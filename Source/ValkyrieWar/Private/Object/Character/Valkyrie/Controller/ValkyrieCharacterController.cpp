@@ -141,6 +141,9 @@ void AValkyrieCharacterController::SetupInputComponent()
 		if (AttackAction)
 		{
 			EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnAttackTap);
+		}if (SkillAction)
+		{
+			EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Started, this, &AValkyrieCharacterController::OnSkillTap);
 		}
 	}
 }
@@ -229,9 +232,15 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 	if (CurrentControlMode == EInputControlMode::Manual)
 	{
 		// 절대 월드 좌표로 적용
-		FollowCamera->SetActorRotation(CameraRotate);
-		FollowCamera->SetActorLocation(TargetCamLoc);
+		//FollowCamera->SetActorRotation(CameraRotate);
+		//FollowCamera->SetActorLocation(TargetCamLoc);
 
+		FVector CurrentCamLoc = FollowCamera->GetActorLocation();
+		FVector SmoothedLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, ManualLagSpeed);
+
+		FollowCamera->SetActorRotation(CameraRotate);
+		FollowCamera->SetActorLocation(SmoothedLoc);
+		
 		return;
 	}
 
@@ -302,11 +311,24 @@ void AValkyrieCharacterController::OnAttackTap(const FInputActionValue& InValue)
 	RequestAttack();
 }
 
+void AValkyrieCharacterController::OnSkillTap(const FInputActionValue& InValue)
+{
+	RequestSkill();
+}
+
 void AValkyrieCharacterController::RequestAttack()
 {
 	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
 	{
 		ControlledChar->ExecuteAttack();
+	}
+}
+
+void AValkyrieCharacterController::RequestSkill()
+{
+	if (AValkyrieCharacter* ControlledChar = Cast<AValkyrieCharacter>(GetPawn()))
+	{
+		ControlledChar->ExecuteSkill();
 	}
 }
 
@@ -403,19 +425,6 @@ void AValkyrieCharacterController::Move(FVector2D InMoveDir)
 
 	if (ControlledPawn)
 	{
-		if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(ControlledPawn))
-		{
-			if (UAnimInstance* AnimInst = ValkyrieChar->GetMesh()->GetAnimInstance())
-			{
-				if (AnimInst->IsAnyMontagePlaying())
-				{
-					if (ValkyrieChar->GetCharacterMovement()->MaxWalkSpeed == 0.f)
-					{
-						return;
-					}
-				}
-			}
-		}
 		ControlledPawn->AddMovementInput(ForwardDirection, -InMoveDir.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InMoveDir.X);
 	}

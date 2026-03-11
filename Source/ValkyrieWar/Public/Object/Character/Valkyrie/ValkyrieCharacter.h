@@ -39,12 +39,13 @@ public:
 	void ResetCombo();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteAttack() override;
-
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteSkill() override;
 
 	virtual void OnAttackNotify() override;
-
+	UFUNCTION(BlueprintCallable, Category = "Combat|Skill")
 	virtual void OnSkillNotify() override;
+	
 
 	/*
 	virtual void StartAttackSequence() ; // 공격모션실행
@@ -75,10 +76,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AValkyrieWeapon> WeaponClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintReadWrite, Category = "Combat")
-	float DetectionRange = 1200.0f; // 색적 범위
-
+protected: // 스킬 관련
+	UPROPERTY()
+	float CachedSkillDamage = 0.0f;
+	UFUNCTION()
+	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;
@@ -100,10 +103,10 @@ public:
 
 	
 private:
-	int32 CurrentComboCount = 0; // 현 콤보수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	int32 CurrentComboCount; // 현 콤보수
 	bool bCanNextCombo = false; // 콤보 이어지나
 	bool bIsComboActive = false;
 	bool bIsComboInputOn = false; // 타이머안에 클릭은 했냐
 	bool bIsInComboWindow = false;
-	bool bIsAutoChasing; // 색적중임?
 };
