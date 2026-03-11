@@ -12,6 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAllyWallHealthChanged, float, In
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyWallHealthChanged, float, InCurrentHealth, float, InMaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInGameTimeChanged, float, InCurrentTime);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpawnUnitDataReady);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpgradeClicked, int32, FamilyId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBattleModeChanged, EInputControlMode, InCurrentMode);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
@@ -41,6 +42,7 @@ public:
 	FOnInGameTimeChanged OnInGameTimeChanged;
 	FOnBattleModeChanged OnBattleModeChanged;
 
+	FOnSpawnUnitDataReady OnSpawnUnitDataReady;
 	FOnUpgradeClicked OnUpgradeClicked;
 	FOnUpgradeStateChanged OnUpgradeStateChanged;
 	FOnSpawnLevelUpgraded OnSpawnLevelUpgraded;

@@ -135,6 +135,7 @@ void ABattleGameState::PlayGame()
 
 	if (USpawnUpgradeSubsystem* Sub = GetWorld()->GetSubsystem<USpawnUpgradeSubsystem>())
 	{
+		Sub->InitUnitDataIds();
 		Sub->BindUpgradeDelegates();
 	}
 }

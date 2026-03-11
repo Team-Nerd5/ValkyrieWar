@@ -2,10 +2,12 @@
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Base/BaseUnitSpawner.h"
+#include "Data/Module/UnitModule.h"
 
 void USpawnUpgradeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Initialize"));
 	Super::Initialize(Collection);
 }
 
@@ -18,13 +20,30 @@ void USpawnUpgradeSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+void USpawnUpgradeSubsystem::InitUnitDataIds()
+{
+	if (UUnitModule* UnitModule = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>()->GetUnitModule())
+	{
+		UnitModule->GetOwnedUnitIds(UnitDataIdList);
+	}
+	if (!UnitDataIdList.IsEmpty())
+	{
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Battle.OnSpawnUnitDataReady.Broadcast();
+		}
+	}
+}
+
+void USpawnUpgradeSubsystem::RequestDataId(ABaseUnitSpawner* InSpawner)
+{
+	InSpawner->SetSpawnUnitDataId(UnitDataIdList[InSpawner->GetSpawnerId()]);
+}
+
 void USpawnUpgradeSubsystem::BindUpgradeDelegates()
 {
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Bind] Sub=%p World=%s ES=%p"),
-			this, *GetWorld()->GetName(), WorldEventSystem);
-
 		WorldEventSystem->Battle.OnUpgradeClicked.AddUniqueDynamic(
 			this, &USpawnUpgradeSubsystem::HandleUpgradeClicked);
 
@@ -126,8 +145,6 @@ bool USpawnUpgradeSubsystem::SpendMana(int32 Cost)
 
 void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 {
-	UE_LOG(LogTemp, Warning, TEXT("USpawnUpgradeSubsystem::HandleUpgradeClicked! : %d"), InFamilyId);
-
 	if (InFamilyId <= 0) return;
 
 	InitFamilyIfNeeded(InFamilyId, 1);
@@ -142,7 +159,6 @@ void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 	if (!SpendMana(Cost))
 	{
 		BroadcastState(InFamilyId);
-		UE_LOG(LogTemp, Warning, TEXT("비용부족!"));
 		return;
 	}
 

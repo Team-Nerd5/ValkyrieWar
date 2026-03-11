@@ -23,6 +23,11 @@ public:
 		return OwnUnits.FindRef(InDataId);
 	}
 
+	FORCEINLINE void GetOwnedUnitIds(TArray<int32>& OutIds) const
+	{
+		OwnUnits.GenerateKeyArray(OutIds);
+	}
+
 protected:
 	virtual void MakeData() override;
 private:

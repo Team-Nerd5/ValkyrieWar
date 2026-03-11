@@ -11,6 +11,20 @@ ABaseUnitSpawner::ABaseUnitSpawner()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+void ABaseUnitSpawner::SetSpawnUnitDataId(int32 InDataId)
+{
+	PoolEntry.UnitDataId = InDataId;
+
+	if (UUnitData* UnitData = ResolveUnitDataObject(InDataId))
+	{
+		PoolEntry.UnitClass = UnitData->GetSpawnUnitClass();
+	}
+	else
+	{
+		PoolEntry.UnitClass = nullptr;
+	}
+}
+
 void ABaseUnitSpawner::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,18 +46,10 @@ void ABaseUnitSpawner::BeginPlay()
 	{
 		if (UWorld* World = GetWorld())
 		{
-			if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
+			if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 			{
-				if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-				{
-					WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
-				}
-
-				// 현재 레벨을 즉시 반영(레벨 로드/전환/초기화 대응)
-				if (UnitId > 0)
-				{
-					SetSpawnCount(Sub->GetSpawnLevel(UnitId));
-				}
+				WorldEventSystem->Battle.OnSpawnUnitDataReady.AddUniqueDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
+				WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 			}
 		}
 	}
@@ -52,11 +58,11 @@ void ABaseUnitSpawner::BeginPlay()
 		// 현재 테스트용으로 구현
 		// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정
 		SetSpawnCount(2);
-	}
 
-	if (bAutoStart)
-	{
-		StartSpawning();
+		if (bAutoStart)
+		{
+			StartSpawning();
+		}
 	}
 }
 
@@ -69,6 +75,7 @@ void ABaseUnitSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 		{
+			WorldEventSystem->Battle.OnSpawnUnitDataReady.RemoveDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
 			WorldEventSystem->Battle.OnSpawnLevelUpgraded.RemoveDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 		}
 	}
@@ -125,8 +132,6 @@ void ABaseUnitSpawner::StopSpawning()
 void ABaseUnitSpawner::SetSpawnCount(int32 InSpawnCount)
 {
 	SpawnCount = FMath::Max(0, InSpawnCount);
-	UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Current Spawn Count = %d"), InSpawnCount);
-
 }
 
 void ABaseUnitSpawner::NotifyUnitReleased(AUnitCharacter* Unit)
@@ -256,10 +261,30 @@ UObjectPoolSubsystem* ABaseUnitSpawner::GetPool() const
 	return nullptr;
 }
 
+void ABaseUnitSpawner::RequestUnitDataToSpawn()
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (USpawnUpgradeSubsystem* SpawnUpgradeSubsystem = World->GetSubsystem<USpawnUpgradeSubsystem>())
+		{
+			SpawnUpgradeSubsystem->RequestDataId(this);
+
+			if (PoolEntry.UnitDataId <= 0 || !PoolEntry.UnitClass)
+			{
+				return;
+			}
+
+			if (bAutoStart)
+			{
+				StartSpawning();
+			}
+		}
+	}
+}
+
 void ABaseUnitSpawner::HandleSpawnLevelUpgraded(int32 InFamilyId, int32 OldLevel, int32 NewLevel)
 {
-	UE_LOG(LogTemp, Log, TEXT("HandleSpawnLevelUpgraded : %d - %d"), InFamilyId, NewLevel);
-	if (InFamilyId != UnitId) return;
+	if (InFamilyId != PoolEntry.UnitDataId) return;
 
 	// 규칙: Lv == SpawnCount
 	SetSpawnCount(NewLevel);

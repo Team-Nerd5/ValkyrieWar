@@ -60,7 +60,6 @@ void UUnitUpgradeCardWidget::NativeDestruct()
 
 void UUnitUpgradeCardWidget::HandleUpgradeButton()
 {
-	UE_LOG(LogTemp, Log, TEXT("HandleUpgradeButton : %d"), UnitId);
 	if (UnitId <= 0) return;
 
 	// 비용 부족이면 클릭 무시(버튼 비활성화가 되어있어도 안전)
@@ -68,10 +67,7 @@ void UUnitUpgradeCardWidget::HandleUpgradeButton()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Broadcast] Sub=%p World=%s ES=%p"),
-			this, *GetWorld()->GetName(), WorldEventSystem);
-
-		// "UnitId == FamilyId" 키로 사용 중 (요구사항 그대로)
+		// "UnitId == FamilyId" 키로 사용 중
 		WorldEventSystem->Battle.OnUpgradeClicked.Broadcast(UnitId);
 	}
 }

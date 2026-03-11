@@ -38,6 +38,12 @@ class VALKYRIEWAR_API ABaseUnitSpawner : public ABaseActor
 public:
 	ABaseUnitSpawner();
 
+	void SetSpawnUnitDataId(int32 InDataId);
+
+	inline int32 GetSpawnerId() { return SpawnerId; };
+
+	inline ETeam GetTeam() { return Team; }
+
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void StartSpawning();
 
@@ -87,6 +93,9 @@ private:
 	bool TryInitPool();
 	UObjectPoolSubsystem* GetPool() const;
 
+	UFUNCTION()
+	void RequestUnitDataToSpawn();
+
 	// SpawnUpgradeSubsystem 이벤트 수신 (승인된 업그레이드)
 	UFUNCTION()
 	void HandleSpawnLevelUpgraded(int32 InFamilyId, int32 OldLevel, int32 NewLevel);
@@ -100,7 +109,10 @@ private:
 	void UnregisterAlive(AActor* UnitActor);
 	void CompactAliveUnits();
 
-public:
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
+	int32 SpawnerId = 0;
+
 	// ===== Pool =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool")
 	FSinglePoolEntry PoolEntry;
@@ -127,8 +139,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	int32 MaxSpawnPerTick = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Spawn")
-	int32 UnitId = 0;
+	//UPROPERTY(EditAnywhere, Category = "Spawn")
+	//int32 UnitId = 0;
 
 	UPROPERTY(EditDefaultsOnly)
 	ETeam Team = ETeam::TeamA;

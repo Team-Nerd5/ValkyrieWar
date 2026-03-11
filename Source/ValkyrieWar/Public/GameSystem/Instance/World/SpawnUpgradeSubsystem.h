@@ -16,6 +16,8 @@ struct FUpgradeCostRule
 	int32 CostStep = 10;
 };
 
+class ABaseUnitSpawner;
+
 /**
  * 업그레이드 권위(마나/레벨/룰) + UI상태 브로드캐스트 + 스포너에 승인 통지(Delegate)
  */
@@ -27,6 +29,9 @@ class VALKYRIEWAR_API USpawnUpgradeSubsystem : public UWorldSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+
+	void InitUnitDataIds();
+	void RequestDataId(ABaseUnitSpawner* InSpawner);
 
 	void BindUpgradeDelegates();
 	void UnbindUpgradeDelegates();
@@ -59,6 +64,8 @@ public:
 	void SyncAll();
 
 private:
+	TArray<int32> UnitDataIdList;
+
 	UPROPERTY()
 	TMap<int32, int32> SpawnLevels;
 
