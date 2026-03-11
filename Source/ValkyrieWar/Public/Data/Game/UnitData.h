@@ -45,5 +45,4 @@ public:
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
-	FORCEINLINE TSubclassOf<class AUnitCharacter> GetSpawnUnitClass() { return TableData.SpawnClass; }
 };

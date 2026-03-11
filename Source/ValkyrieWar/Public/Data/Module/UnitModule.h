@@ -28,6 +28,11 @@ public:
 		OwnUnits.GenerateKeyArray(OutIds);
 	}
 
+	FORCEINLINE TSubclassOf<class AUnitCharacter> GetSpawnUnitClass(int32 InDataId)
+	{
+		return TableDataByDataId.FindRef(InDataId).SpawnClass;
+	}
+
 protected:
 	virtual void MakeData() override;
 private:
