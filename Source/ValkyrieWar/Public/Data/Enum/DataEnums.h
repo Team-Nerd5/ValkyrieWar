@@ -125,6 +125,7 @@ enum class ETableDataType : uint8
 	StatGroup,
 	Unit,
 	TopMenu,
+	Projectile,
 };
 
 UENUM(BlueprintType)

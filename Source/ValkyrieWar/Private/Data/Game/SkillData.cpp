@@ -17,6 +17,10 @@ void USkillData::MakeData(const FSkillDataRow InTableData, UGameManager* InGameM
 		if (DataManager)
 		{
 			EffectList = DataManager->GetSkillEffectModule()->GetEffects(TableData.EffectGroupId);
+			if (TableData.ProjectileId > 0)
+			{
+				ProjectileData = DataManager->GetProjectileModule()->GetProjectile(TableData.ProjectileId);
+			}
 		}
 	}
 }

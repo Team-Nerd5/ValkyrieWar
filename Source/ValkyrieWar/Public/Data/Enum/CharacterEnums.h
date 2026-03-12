@@ -20,6 +20,7 @@ enum class EAttackType : uint8
 {
 	Melee,
 	Projectile,
+	OnTarget,		//타겟에 즉발성(번개 마법 등)
 };
 
 UENUM(BlueprintType)
@@ -47,3 +48,11 @@ enum class EValkyrieModeType : uint8
 	Auto,
 	Manual,
 };
+
+UENUM(BlueprintType)
+enum class EProjectileShootType : uint8
+{
+	None, // 일직선 발사
+	Multiple,	//기본 발사체 기준으로 개수만큼 추가
+};
+

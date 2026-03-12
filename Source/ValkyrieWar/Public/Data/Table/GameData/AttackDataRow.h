@@ -29,8 +29,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector PositionOffset = FVector::ZeroVector;		//무기 포지션 오프셋
 	UPROPERTY(EditAnywhere)
-	FVector RotatationOffset = FVector::ZeroVector;		//벡터 말고 다른걸로 해야할 지 확인 필요
-	UPROPERTY(EditAnywhere)
 	FRotator RotateOffset = FRotator::ZeroRotator;
 	UPROPERTY(EditAnywhere)
 	ETargetType TargetType = ETargetType::None;
@@ -38,4 +36,6 @@ public:
 	int32 TargetAmount = 1;
 	UPROPERTY(EditAnywhere)
 	EAttackType AttackType = EAttackType::Melee;
+	UPROPERTY(EditAnywhere)
+	int32 ProjectileId = 0;
 };

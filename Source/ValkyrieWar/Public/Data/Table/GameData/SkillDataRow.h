@@ -32,4 +32,6 @@ public:
 	int32 TargetAmount = 1;
 	UPROPERTY(EditAnywhere)
 	EAttackType AttackType = EAttackType::Melee;
+	UPROPERTY(EditAnywhere)
+	int32 ProjectileId = 0;
 };

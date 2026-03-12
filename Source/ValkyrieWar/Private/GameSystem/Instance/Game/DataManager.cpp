@@ -19,6 +19,7 @@ int32 UDataManager::CreateData()
 	InitializeData(GoodsModule);
 	InitializeData(ContentsModule);
 	InitializeData(StatGroupModule);
+	InitializeData(ProjectileModule);
 
 	//Skill, Attack 에서 사용중이라 먼저 해야함.
 	InitializeData(SkillEffectModule);

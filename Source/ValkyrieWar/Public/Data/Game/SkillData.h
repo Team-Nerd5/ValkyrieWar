@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/GameData/SkillDataRow.h"
+#include "Data/Table/GameData/ProjectileDataRow.h"
 #include "Data/Game/SkillEffectData.h"
 #include "Data/Enum/CharacterEnums.h"
 #include "SkillData.generated.h"
@@ -24,10 +25,18 @@ public:
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
 	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetMontage() { return TableData.Montage; }
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
+	FORCEINLINE FProjectileDataRow* const GetProjectileData()
+	{
+		if (TableData.ProjectileId <= 0) return nullptr;
+
+		return &ProjectileData;
+	}
 
 private:
 	UPROPERTY()
 	FSkillDataRow TableData;
 	UPROPERTY()
 	TArray<TObjectPtr<USkillEffectData>> EffectList;
+	UPROPERTY()
+	FProjectileDataRow ProjectileData;
 };

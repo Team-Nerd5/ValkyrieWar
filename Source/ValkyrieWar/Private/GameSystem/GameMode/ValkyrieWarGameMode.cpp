@@ -39,8 +39,9 @@ void AValkyrieWarGameMode::RestartPlayer(AController* NewPlayer)
 
         if (Selected)
         {
-            if (auto SpawnClass = Selected->GetSpawnClass())
+            if (auto SpawnDataClass = Selected->GetSpawnClass())
             {
+                UClass* SpawnClass = SpawnDataClass.LoadSynchronous();
                 AValkyrieCharacter* Valkyrie = SpawnValkyrie(NewPlayer, SpawnClass);
                 if (Valkyrie)
                 {

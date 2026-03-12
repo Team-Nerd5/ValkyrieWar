@@ -30,5 +30,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	FString SocketName = TEXT("");
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AValkyrieCharacter> SpawnClass = nullptr;
+	TSoftClassPtr<class AValkyrieCharacter> SpawnClass = nullptr;
 };

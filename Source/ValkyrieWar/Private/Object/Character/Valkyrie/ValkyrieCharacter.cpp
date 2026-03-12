@@ -106,10 +106,15 @@ void AValkyrieCharacter::ChangeCombatWeapon(uint64 InEquipUID)
 
 					if (IsValid(AttackData))
 					{
-						if (UClass* NewAnimClass = AttackData->GetAnimInstance())
+						TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
+						if (AnimClass.IsValid())
 						{
+							UClass* NewAnimClass = AnimClass.LoadSynchronous();
 							GetMesh()->SetAnimInstanceClass(NewAnimClass);
+							UE_LOG(LogTemp, Error, TEXT("삐빅! 장착 시도한 무기ID: %llu / 찾으려는 AttackID: %d / 근데 AttackData가 없습니다!!"),
+								EquippedWeapon->GetUID(), EquippedWeapon->GetAttackID());
 						}
+						
 					}
 				}
 			}
@@ -230,7 +235,11 @@ void AValkyrieCharacter::ExecuteAttack()
 	if (!AttackData) return;
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	UAnimMontage* AttackMontage = AttackData->GetAnimMontage();
+	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
+	if (!MontageData.IsValid())
+		return;
+
+	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
 
 	if (AnimInst && AttackMontage)
 	{
@@ -403,7 +412,12 @@ void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
 	if (!AttackData) return;
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	UAnimMontage* AttackMontage = AttackData->GetAnimMontage();
+	auto MotageData = AttackData->GetAnimMontage();
+
+	if (!MotageData.IsValid())
+		return;
+
+	UAnimMontage* AttackMontage = MotageData.LoadSynchronous();
 
 	if (!AnimInst || !AttackMontage) return;
 	if (bIsComboInputOn)

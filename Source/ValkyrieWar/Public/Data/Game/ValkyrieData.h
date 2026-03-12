@@ -56,6 +56,6 @@ public:
 	FORCEINLINE const int32 GetDataID() { return TableData.DataId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
-	FORCEINLINE TSubclassOf<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
+	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 };
