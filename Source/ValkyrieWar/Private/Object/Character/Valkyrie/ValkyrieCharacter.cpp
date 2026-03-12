@@ -26,6 +26,7 @@
 #include "Data/Game/AttackData.h"
 #include "Data/Game/SkillData.h"
 #include "Data/Attribute/StatAttributeSet.h"
+#include "Data/Table/GameData/ItemDataRow.h"
 
 
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
@@ -76,10 +77,70 @@ void AValkyrieCharacter::ResetCombo()
 	}
 }
 
+void AValkyrieCharacter::EquipSelectedWeapon()
+{
+	FItemDataRow* RowData = SelectedWeaponRow.GetRow<FItemDataRow>(TEXT("EquipWeaponContext"));
+	if (!RowData) return;
+
+	if (GetWorld() && (GetWorld()->IsPlayInEditor() || GetWorld()->HasBegunPlay()))
+	{
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			if (UItemModule* ItemModule = DataManager->GetItemModule())
+			{
+				uint64 GeneratedItemUID = FMath::RandHelper(99999) + 1000;
+				ItemModule->LoadItem(GeneratedItemUID, RowData->DataId, 1);
+
+				ChangeCombatWeapon(GeneratedItemUID);
+			}
+		}
+	}
+}
+
+void AValkyrieCharacter::ChangeCombatWeapon(uint64 InEquipUID)
+{
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	{
+		if (UItemModule* ItemModule = DataManager->GetItemModule())
+		{
+			EquippedWeapon = ItemModule->GetItem(InEquipUID);
+
+			if (EquippedWeapon && EquippedWeapon->GetItemGroup() == EItemGroup::Equip)
+			{
+				if (UAttackModule* AttackModule = DataManager->GetAttackModule())
+				{
+					AttackData = AttackModule->GetAttackData(EquippedWeapon->GetAttackID());
+
+					if (IsValid(AttackData))
+					{
+						if (UClass* NewAnimClass = AttackData->GetAnimInstance())
+						{
+							GetMesh()->SetAnimInstanceClass(NewAnimClass);
+						}
+						UE_LOG(LogTemp, Error, TEXT("삐빅! 장착 시도한 무기ID: %llu / 찾으려는 AttackID: %d / 근데 AttackData가 없습니다!!"),
+							EquippedWeapon->GetUID(), EquippedWeapon->GetAttackID());
+					}
+				}
+			}
+			else
+			{
+				EquippedWeapon = nullptr;
+			}
+		}
+	}
+	UpdateWeaponMesh();
+}
+
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//EventSystem
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
+		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
+	}
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
 		if (UItemModule* ItemModule = DataManager->GetItemModule())
@@ -106,7 +167,6 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
-
 
 //이거는 캐릭터 정보창에서 장비를 장착해서 변경되었을때, 해당 캐릭터가 로비 캐릭터일 때만 사용
 //데이터 업데이트 및 로비에배치된 캐릭터 무기 변경
@@ -142,29 +202,57 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
-	if (!WeaponClass) return;
+	UItemData* WeaponDataPtr = EquippedWeapon.Get();
+	UAttackData* AttackDataPtr = AttackData.Get();
 
-	if (CurrentWeaponActor) { CurrentWeaponActor->Destroy(); }
+	if (!WeaponDataPtr||!AttackDataPtr) return;
 
-	FActorSpawnParameters Params;
-	Params.Owner = this;
-	CurrentWeaponActor = GetWorld()->SpawnActor<AValkyrieWeapon>(WeaponClass, Params);
-
-
-	if (CurrentWeaponActor)
+	TArray<USceneComponent*> AttachedComponents;
+	GetMesh()->GetChildrenComponents(true, AttachedComponents);
+	for (USceneComponent* Child : AttachedComponents)
 	{
-		CurrentWeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
-
-		UItemData* WeaponDataPtr = EquippedWeapon.Get();
-		UAttackData* AttackDataPtr = AttackData.Get();
-
-		if (WeaponDataPtr && AttackDataPtr)
+		if (Child->ComponentHasTag(TEXT("EquippedWeaponMesh")))
 		{
-			CurrentWeaponActor->SetWeaponMesh(WeaponDataPtr, AttackDataPtr);
-			CurrentWeaponActor->SetActorRelativeLocation(AttackDataPtr->GetLocationOffset());
-			CurrentWeaponActor->SetActorRelativeRotation(AttackDataPtr->GetRotatinOffset());
+			Child->DestroyComponent();
 		}
 	}
+	if (WeaponDataPtr->IsSkeletalWeapon()) // 스켈레탈 메시
+	{
+		if (USkeletalMesh* SkelMesh = WeaponDataPtr->GetSkeletalMesh().LoadSynchronous())
+		{
+			USkeletalMeshComponent* NewComp = NewObject<USkeletalMeshComponent>(this);
+			NewComp->RegisterComponent();
+			NewComp->SetSkeletalMesh(SkelMesh);
+			NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh")); 
+			NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+
+			NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+			NewComp->RegisterComponent();
+
+			// 데이터 테이블 오프셋 적용
+			NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
+			NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
+		}
+	}
+	else // 스테틱
+	{
+		if (UStaticMesh* StaticMesh = WeaponDataPtr->GetStaticMesh().LoadSynchronous())
+		{
+			UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>(this);
+			NewComp->RegisterComponent();
+			NewComp->SetStaticMesh(StaticMesh);
+			NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh"));
+			NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+
+			NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+			NewComp->RegisterComponent();
+
+			// 데이터 테이블 오프셋 적용
+			NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
+			NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
+		}
+	}
+	
 }
 
 void AValkyrieCharacter::ExecuteAttack()
@@ -174,7 +262,7 @@ void AValkyrieCharacter::ExecuteAttack()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	UAnimMontage* AttackMontage = AttackData->GetAnimMontage();
 
-	if (AnimInst && AttackMontage && !AnimInst->Montage_IsPlaying(AttackMontage))
+	if (AnimInst && AttackMontage)
 	{
 		if (!AnimInst->Montage_IsPlaying(AttackMontage))
 		{
@@ -325,18 +413,6 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	//캐릭터 블루프린트 생성 후 무기 세팅
 	//장비 음..
-	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
-	{
-		if (UItemModule* ItemModule = DataManager->GetItemModule())
-		{
-			uint64 TestItemUID = 777;
-			int32 TestWeaponDataID = 411101; // 활 ID
-			ItemModule->LoadItem(TestItemUID, TestWeaponDataID, 1);
-			EquipWeapon(Data->GetUID(), TestItemUID);
-		}
-	}
-	UpdateWeaponMesh();
-
 }
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {

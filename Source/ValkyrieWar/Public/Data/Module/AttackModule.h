@@ -30,6 +30,6 @@ protected:
 	virtual void MakeData() override;
 	
 private:
-
+	UPROPERTY()
 	TMap<int32, TObjectPtr<UAttackData>> AttackData;
 };

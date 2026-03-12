@@ -74,3 +74,5 @@ Plugins/**/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 Content/Object/Character/Test
+Content/Data/Table/GameData/DT_Attack.uasset
+Content/Data/Table/GameData/DT_Item.uasset

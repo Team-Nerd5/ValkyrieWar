@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseCharacter.h"
 #include "Data/Enum/CharacterEnums.h"
 #include "Data/Game/ValkyrieData.h"
+#include "Engine/DataTable.h"
 #include "ValkyrieCharacter.generated.h"
 
 /**
@@ -21,11 +22,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
-
-	UPROPERTY(EditAnywhere, Category = "Combat") // 에디터에서 추가함
-	TMap<EWeaponAnimType, TObjectPtr<UAnimMontage>> WeaponMontageMap;
-
-
 public:
 
 	// Called to bind functionality to input
@@ -56,7 +52,17 @@ public:
 	*/
 	
 	void SetData(UValkyrieData* InData);
-		
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Equip")
+	FDataTableRowHandle SelectedWeaponRow;
+
+	UFUNCTION(CallInEditor, BlueprintCallable, Category = "Weapon|Equip")
+	void EquipSelectedWeapon();
+
+	void ChangeCombatWeapon(uint64 InEquipUID);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -95,7 +101,7 @@ protected:
 
 	EValkyrieModeType ValkyrieMode = EValkyrieModeType::None;
 
-public:
+public:// 나중에 삭제할것들
 	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
 	void BeginComboWindow();
 
@@ -103,7 +109,7 @@ public:
 	void EndComboWindow(FName NextSectionName);
 
 	
-private:
+private: // 나중에 삭제할것들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	int32 CurrentComboCount; // 현 콤보수
 	bool bCanNextCombo = false; // 콤보 이어지나
