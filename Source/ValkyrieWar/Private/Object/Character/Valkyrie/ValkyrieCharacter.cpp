@@ -145,7 +145,6 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 {
 	if (!WeaponClass) return;
 
-	// 1. 일단 무기 액터부터 만든다! (데이터 없어도 일단 껍데기라도 소환)
 	if (CurrentWeaponActor) { CurrentWeaponActor->Destroy(); }
 
 	FActorSpawnParameters Params;

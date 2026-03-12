@@ -52,7 +52,6 @@ void UArrowStackComponent::PullIt(float DamagePerArrow)
 	if (Owner)
 	{
 		UGameplayStatics::ApplyDamage(Owner, TotalDamage, nullptr, this->GetOwner(), nullptr);
-		UE_LOG(LogTemp, Warning, TEXT("촥! 화살 %d개 뽑힘! 후드득 떨어짐!"), StackingArrows.Num());
 	}
 }
 

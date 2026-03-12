@@ -79,13 +79,11 @@ void AArrowProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		if (StackComp)
 		{
 			StackComp->RegisterComponent();
-			UE_LOG(LogTemp, Warning, TEXT("%s에게 화살 주머니 강제 이식 완료!"), *TargetUnit->GetName());
 		}
 	}
 	if (StackComp)
 	{
 		StackComp->StackingArrows.Add(this);
-		UE_LOG(LogTemp, Warning, TEXT("🎯 %s 몸에 화살 박힘! 현재 스택: %d개"), *TargetUnit->GetName(), StackComp->StackingArrows.Num());
 
 		ProjectileMovement->StopMovementImmediately();
 		ProjectileMovement->Deactivate();
