@@ -19,6 +19,7 @@ void ABaseUnitSpawner::SetSpawnUnitData(int32 InDataId)
 	if (UUnitModule* UnitModule = GetGameInstance()->GetSubsystem<UDataManager>()->GetUnitModule())
 	{
 		PoolEntry.UnitClass = UnitModule->GetSpawnUnitClass(InDataId);
+		PoolEntry.PoolType = UnitModule->GetUnitPoolType(InDataId);
 	}
 	else
 	{
