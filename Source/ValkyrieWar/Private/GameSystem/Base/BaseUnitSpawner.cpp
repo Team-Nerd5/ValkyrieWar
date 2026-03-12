@@ -3,35 +3,19 @@
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 #include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "Data/Module/UnitModule.h"
-#include "Object/Character/Unit/UnitCharacter.h"
 
 ABaseUnitSpawner::ABaseUnitSpawner()
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ABaseUnitSpawner::SetSpawnUnitData(int32 InDataId)
-{
-	PoolEntry.UnitDataId = InDataId;
-
-	if (UUnitModule* UnitModule = GetGameInstance()->GetSubsystem<UDataManager>()->GetUnitModule())
-	{
-		PoolEntry.UnitClass = UnitModule->GetSpawnUnitClass(InDataId);
-		PoolEntry.PoolType = UnitModule->GetUnitPoolType(InDataId);
-	}
-	else
-	{
-		PoolEntry.UnitClass = nullptr;
-	}
-}
-
 void ABaseUnitSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 보험용 Cleanup
 	if (CleanupInterval > 0.f)
 	{
 		GetWorldTimerManager().SetTimer(
@@ -45,18 +29,13 @@ void ABaseUnitSpawner::BeginPlay()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Battle.OnSpawnUnitDataReady.AddUniqueDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
+		WorldEventSystem->Battle.OnSpawnUnitDataReady.AddUniqueDynamic(
+			this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
+
 		if (Team == ETeamType::Ally)
 		{
-			// SpawnUpgradeSubsystem에 바인딩 (승인된 업그레이드만 받음)
-			WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
-		}
-		else
-		{
-			// 현재 테스트용으로 구현
-			// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정
-			SetSpawnCount(2);
-
+			WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(
+				this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 		}
 	}
 }
@@ -66,23 +45,53 @@ void ABaseUnitSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	StopSpawning();
 	GetWorldTimerManager().ClearTimer(CleanupHandle);
 
-	if (Team == ETeamType::Ally)
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-		{
-			WorldEventSystem->Battle.OnSpawnUnitDataReady.RemoveDynamic(this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
-			WorldEventSystem->Battle.OnSpawnLevelUpgraded.RemoveDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
-		}
+		WorldEventSystem->Battle.OnSpawnUnitDataReady.RemoveDynamic(
+			this, &ABaseUnitSpawner::RequestUnitDataToSpawn);
+
+		WorldEventSystem->Battle.OnSpawnLevelUpgraded.RemoveDynamic(
+			this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 	}
 
 	Super::EndPlay(EndPlayReason);
 }
 
+void ABaseUnitSpawner::SetSpawnEntries(const TArray<FSpawnUnitEntry>& InEntries)
+{
+	SpawnEntries = InEntries;
+	InitedPools.Reset();
+}
+
+void ABaseUnitSpawner::ClearSpawnEntries()
+{
+	StopSpawning();
+	SpawnEntries.Reset();
+	InitedPools.Reset();
+}
+
+void ABaseUnitSpawner::UpdateEntrySpawnCount(int32 InFamilyId, int32 InSpawnCount)
+{
+	const int32 Index = FindEntryIndexByFamilyId(InFamilyId);
+	if (!SpawnEntries.IsValidIndex(Index)) return;
+
+	SpawnEntries[Index].SpawnCount = FMath::Max(0, InSpawnCount);
+}
+
 void ABaseUnitSpawner::StartSpawning()
 {
+	UE_LOG(LogTemp, Warning, TEXT("[Spawner] StartSpawning called. Team=%d SpawnerId=%d Entries=%d"),
+		(int32)Team, SpawnerId, SpawnEntries.Num());
+
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
 
-	if (!TryInitPool()) return;
+	if (!TryInitPools())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Spawner] TryInitPools failed."));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[Spawner] StartSpawning success. Interval=%.2f"), SpawnInterval);
 
 	BP_OnSpawningStarted();
 
@@ -100,43 +109,55 @@ void ABaseUnitSpawner::StopSpawning()
 {
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
 
-	// 전투 종료 시 모두 회수
 	if (UObjectPoolSubsystem* Pool = GetPool())
 	{
-		for (TWeakObjectPtr<AUnitCharacter>& W : AliveUnits)
+		for (TWeakObjectPtr<AUnitCharacter>& W : SpawnedUnits)
 		{
-			if (AUnitCharacter* U = W.Get())
+			if (AUnitCharacter* Unit = W.Get())
 			{
-				if (U->IsInPool()) continue;
+				if (Unit->IsInPool()) continue;
 
-				if (U->GetMyPoolType() != EPoolTypes::None)
+				if (Unit->GetMyPoolType() != EPoolTypes::None)
 				{
-					Pool->Release<AUnitCharacter>(U->GetMyPoolType(), U);
+					Pool->Release<AUnitCharacter>(Unit->GetMyPoolType(), Unit);
 				}
 				else
 				{
-					U->Destroy();
+					Unit->Destroy();
 				}
 			}
 		}
 	}
 
-	AliveUnits.Reset();
-}
-
-void ABaseUnitSpawner::SetSpawnCount(int32 InSpawnCount)
-{
-	SpawnCount = FMath::Max(0, InSpawnCount);
+	SpawnedUnits.Reset();
 }
 
 void ABaseUnitSpawner::NotifyUnitReleased(AUnitCharacter* Unit)
 {
-	UnregisterAlive(Unit);
+	UnregisterSpawnedUnit(Unit);
 }
 
-bool ABaseUnitSpawner::TryInitPool()
+bool ABaseUnitSpawner::TryInitPools()
 {
-	if (bPoolInited) return true;
+	for (const FSpawnUnitEntry& Entry : SpawnEntries)
+	{
+		if (!TryInitPoolForEntry(Entry))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool ABaseUnitSpawner::TryInitPoolForEntry(const FSpawnUnitEntry& Entry)
+{
+	if (Entry.PoolType == EPoolTypes::None || !Entry.UnitClass)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[UnitSpawner] Invalid entry. FamilyId=%d UnitDataId=%d"),
+			Entry.FamilyId, Entry.UnitDataId);
+		return false;
+	}
 
 	UObjectPoolSubsystem* Pool = GetPool();
 	if (!Pool)
@@ -145,50 +166,59 @@ bool ABaseUnitSpawner::TryInitPool()
 		return false;
 	}
 
-	if (PoolEntry.PoolType == EPoolTypes::None || !PoolEntry.UnitClass)
+	if (const TSubclassOf<AUnitCharacter>* FoundClass = InitedPools.Find(Entry.PoolType))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[UnitSpawner] Invalid PoolEntry (PoolType/UnitClass)"));
-		return false;
+		if (*FoundClass != Entry.UnitClass)
+		{
+			UE_LOG(LogTemp, Error,
+				TEXT("[UnitSpawner] PoolType conflict. PoolType=%d already initialized with different class."),
+				static_cast<int32>(Entry.PoolType));
+			return false;
+		}
+		return true;
 	}
 
-	Pool->InitPool<AUnitCharacter>(PoolEntry.PoolType, PoolEntry.UnitClass, PoolEntry.ReserveSize);
-	bPoolInited = true;
+	Pool->InitPool<AUnitCharacter>(Entry.PoolType, Entry.UnitClass, Entry.ReserveSize);
+	InitedPools.Add(Entry.PoolType, Entry.UnitClass);
 	return true;
 }
 
 void ABaseUnitSpawner::HandleSpawnTick()
 {
-	if (SpawnCount <= 0) return;
-	if (!TryInitPool()) return;
+	if (SpawnEntries.IsEmpty()) return;
+	if (!TryInitPools()) return;
 
-	CompactAliveUnits();
+	CompactSpawnedUnits();
 
-	int32 Budget = FMath::Min(SpawnCount, MaxSpawnPerTick);
-	while (Budget-- > 0)
+	int32 Budget = FMath::Max(0, MaxSpawnPerTick);
+	if (Budget <= 0) return;
+
+	for (const FSpawnUnitEntry& Entry : SpawnEntries)
 	{
-		SpawnOne();
+		if (Budget <= 0) break;
+		if (Entry.SpawnCount <= 0) continue;
+
+		const int32 SpawnNum = FMath::Min(Entry.SpawnCount, Budget);
+
+		for (int32 i = 0; i < SpawnNum; ++i)
+		{
+			SpawnOne(Entry);
+		}
+
+		Budget -= SpawnNum;
 	}
 }
 
-void ABaseUnitSpawner::SpawnOne()
+void ABaseUnitSpawner::SpawnOne(const FSpawnUnitEntry& Entry)
 {
 	UObjectPoolSubsystem* Pool = GetPool();
 	if (!Pool) return;
 
-	// 확장 포인트: 나중에 Subsystem 붙이면 여기 결과만 바뀌게 만들기
-	const int32 DataId = ResolveSpawnDataId();
-	const TSubclassOf<AUnitCharacter> SpawnCls = ResolveSpawnClass(DataId);
-	if (!SpawnCls)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] SpawnClass is null (DataId=%d)"), DataId);
-		return;
-	}
-
 	const FTransform SpawnTM = MakeSpawnTransform();
 
 	AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
-		PoolEntry.PoolType,
-		SpawnCls,
+		Entry.PoolType,
+		Entry.UnitClass,
 		SpawnTM.GetLocation(),
 		SpawnTM.Rotator()
 	);
@@ -196,16 +226,15 @@ void ABaseUnitSpawner::SpawnOne()
 	if (!Unit) return;
 
 	Unit->SetOwnerSpawner(this);
-	Unit->SetPoolType(PoolEntry.PoolType);
+	Unit->SetPoolType(Entry.PoolType);
 
-	// 테스트용: UnitDataId에 해당하는 데이터 주입
-	if (UUnitData* Data = ResolveUnitDataObject(DataId))
+	if (UUnitData* Data = ResolveUnitDataObject(Entry.UnitDataId))
 	{
 		Unit->SetData(Data);
 	}
 
-	RegisterAlive(Unit);
-	BP_OnUnitSpawned(Unit, PoolEntry.PoolType);
+	RegisterSpawnedUnit(Unit);
+	BP_OnUnitSpawned(Unit, Entry.FamilyId, Entry.UnitDataId, Entry.PoolType);
 }
 
 UUnitData* ABaseUnitSpawner::ResolveUnitDataObject(int32 DataId) const
@@ -216,35 +245,23 @@ UUnitData* ABaseUnitSpawner::ResolveUnitDataObject(int32 DataId) const
 	{
 		if (UDataManager* DataManager = GI->GetSubsystem<UDataManager>())
 		{
-			if (DataManager->GetUnitModule())
+			if (UUnitModule* UnitModule = DataManager->GetUnitModule())
 			{
-				return DataManager->GetUnitModule()->GetUnitDataById(DataId);
+				return UnitModule->GetUnitDataById(DataId);
 			}
 		}
 	}
 	return nullptr;
 }
 
-int32 ABaseUnitSpawner::ResolveSpawnDataId() const
-{
-	// 현재 1차 구현: 스포너에 셋팅된 테스트 DataId 그대로 사용
-	return PoolEntry.UnitDataId;
-}
-
-TSubclassOf<AUnitCharacter> ABaseUnitSpawner::ResolveSpawnClass(int32 /*ResolvedDataId*/) const
-{
-	// 현재 1차 구현: 스포너에 셋팅된 테스트 클래스 그대로 사용
-	return PoolEntry.UnitClass;
-}
-
 void ABaseUnitSpawner::HandleCleanupTick()
 {
-	CompactAliveUnits();
+	CompactSpawnedUnits();
 }
 
 void ABaseUnitSpawner::HandleUnitDestroyed(AActor* DestroyedActor)
 {
-	UnregisterAlive(DestroyedActor);
+	UnregisterSpawnedUnit(DestroyedActor);
 }
 
 UObjectPoolSubsystem* ABaseUnitSpawner::GetPool() const
@@ -262,10 +279,11 @@ void ABaseUnitSpawner::RequestUnitDataToSpawn()
 	{
 		if (USpawnUpgradeSubsystem* SpawnUpgradeSubsystem = World->GetSubsystem<USpawnUpgradeSubsystem>())
 		{
-			SpawnUpgradeSubsystem->RequestDataId(this);
+			SpawnUpgradeSubsystem->SetupSpawnerEntries(this);
 
-			if (PoolEntry.UnitDataId <= 0 || !PoolEntry.UnitClass)
+			if (SpawnEntries.IsEmpty())
 			{
+				UE_LOG(LogTemp, Warning, TEXT("[UnitSpawner] No spawn entries configured."));
 				return;
 			}
 
@@ -279,10 +297,12 @@ void ABaseUnitSpawner::RequestUnitDataToSpawn()
 
 void ABaseUnitSpawner::HandleSpawnLevelUpgraded(int32 InFamilyId, int32 OldLevel, int32 NewLevel)
 {
-	if (InFamilyId != PoolEntry.UnitDataId) return;
+	UE_LOG(LogTemp, Log, TEXT("HandleSpawnLevelUpgraded : %d"), NewLevel);
+	const int32 Index = FindEntryIndexByFamilyId(InFamilyId);
+	if (!SpawnEntries.IsValidIndex(Index)) return;
 
-	// 규칙: Lv == SpawnCount
-	SetSpawnCount(NewLevel);
+	// 규칙: SpawnCount == Level
+	SpawnEntries[Index].SpawnCount = FMath::Max(0, NewLevel);
 }
 
 FTransform ABaseUnitSpawner::MakeSpawnTransform() const
@@ -309,43 +329,55 @@ FTransform ABaseUnitSpawner::MakeSpawnTransform() const
 	return Out;
 }
 
-void ABaseUnitSpawner::RegisterAlive(AUnitCharacter* Unit)
+void ABaseUnitSpawner::RegisterSpawnedUnit(AUnitCharacter* Unit)
 {
 	if (!Unit) return;
 
-	for (const TWeakObjectPtr<AUnitCharacter>& W : AliveUnits)
+	for (const TWeakObjectPtr<AUnitCharacter>& W : SpawnedUnits)
 	{
 		if (W.Get() == Unit) return;
 	}
 
-	AliveUnits.Add(Unit);
+	SpawnedUnits.Add(Unit);
 
 	Unit->OnDestroyed.RemoveAll(this);
 	Unit->OnDestroyed.AddDynamic(this, &ABaseUnitSpawner::HandleUnitDestroyed);
 }
 
-void ABaseUnitSpawner::UnregisterAlive(AActor* UnitActor)
+void ABaseUnitSpawner::UnregisterSpawnedUnit(AActor* UnitActor)
 {
 	if (!UnitActor) return;
 
-	for (int32 i = AliveUnits.Num() - 1; i >= 0; --i)
+	for (int32 i = SpawnedUnits.Num() - 1; i >= 0; --i)
 	{
-		AUnitCharacter* U = AliveUnits[i].Get();
-		if (!U || U == UnitActor)
+		AUnitCharacter* Unit = SpawnedUnits[i].Get();
+		if (!Unit || Unit == UnitActor)
 		{
-			AliveUnits.RemoveAtSwap(i);
+			SpawnedUnits.RemoveAtSwap(i);
 		}
 	}
 }
 
-void ABaseUnitSpawner::CompactAliveUnits()
+void ABaseUnitSpawner::CompactSpawnedUnits()
 {
-	for (int32 i = AliveUnits.Num() - 1; i >= 0; --i)
+	for (int32 i = SpawnedUnits.Num() - 1; i >= 0; --i)
 	{
-		AUnitCharacter* Unit = AliveUnits[i].Get();
+		AUnitCharacter* Unit = SpawnedUnits[i].Get();
 		if (!Unit || !IsValid(Unit) || Unit->IsInPool())
 		{
-			AliveUnits.RemoveAtSwap(i);
+			SpawnedUnits.RemoveAtSwap(i);
 		}
 	}
+}
+
+int32 ABaseUnitSpawner::FindEntryIndexByFamilyId(int32 InFamilyId) const
+{
+	for (int32 i = 0; i < SpawnEntries.Num(); ++i)
+	{
+		if (SpawnEntries[i].FamilyId == InFamilyId)
+		{
+			return i;
+		}
+	}
+	return INDEX_NONE;
 }

@@ -16,6 +16,9 @@ void USpawnUpgradeSubsystem::Deinitialize()
 	SpawnLevels.Reset();
 	CostRules.Reset();
 	CurrentMana = 0;
+	UnitDataIdList.Reset();
+	AllyUnitIdList.Reset();
+	EnemyUnitIdList.Reset();
 
 	Super::Deinitialize();
 }
@@ -39,7 +42,6 @@ void USpawnUpgradeSubsystem::InitUnitDataIds()
 	if (!UnitModule) return;
 
 	UnitModule->GetOwnedUnitIds(UnitDataIdList);
-
 	if (UnitDataIdList.IsEmpty()) return;
 
 	for (int32 SingleId : UnitDataIdList)
@@ -54,32 +56,76 @@ void USpawnUpgradeSubsystem::InitUnitDataIds()
 		}
 	}
 
+	// 현재는 FamilyId == UnitDataId
+	for (int32 AllyId : AllyUnitIdList)
+	{
+		InitFamilyIfNeeded(AllyId, DefaultSpawnLevel);
+	}
+
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		if (!AllyUnitIdList.IsEmpty())
 		{
 			WorldEventSystem->Battle.OnAllyUnitListReady.Broadcast(AllyUnitIdList);
 		}
+
 		WorldEventSystem->Battle.OnSpawnUnitDataReady.Broadcast();
 	}
 }
 
-void USpawnUpgradeSubsystem::RequestDataId(ABaseUnitSpawner* InSpawner)
+void USpawnUpgradeSubsystem::SetupSpawnerEntries(ABaseUnitSpawner* InSpawner)
 {
 	if (!InSpawner) return;
 
-	const TArray<int32>& TargetList =
-		(InSpawner->GetTeam() == ETeamType::Ally) ? AllyUnitIdList : EnemyUnitIdList;
+	TArray<FSpawnUnitEntry> NewEntries;
+	BuildEntriesForTeam(InSpawner->GetTeam(), NewEntries);
 
-	const int32 SpawnerId = InSpawner->GetSpawnerId();
-	if (!TargetList.IsValidIndex(SpawnerId))
+	InSpawner->SetSpawnEntries(NewEntries);
+}
+
+void USpawnUpgradeSubsystem::BuildEntriesForTeam(ETeamType InTeam, TArray<FSpawnUnitEntry>& OutEntries)
+{
+	OutEntries.Reset();
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	UGameInstance* GI = World->GetGameInstance();
+	if (!GI) return;
+
+	UDataManager* DataManager = GI->GetSubsystem<UDataManager>();
+	if (!DataManager) return;
+
+	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	if (!UnitModule) return;
+
+	const TArray<int32>& SourceIds = (InTeam == ETeamType::Ally) ? AllyUnitIdList : EnemyUnitIdList;
+
+	for (int32 UnitDataId : SourceIds)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[SpawnUpgradeSubsystem] Invalid SpawnerId=%d, ListNum=%d"),
-			SpawnerId, TargetList.Num());
-		return;
+		FSpawnUnitEntry Entry;
+		Entry.FamilyId = UnitDataId; // 현재는 동일 키 사용
+		Entry.UnitDataId = UnitDataId;
+		Entry.UnitClass = UnitModule->GetSpawnUnitClass(UnitDataId);
+		Entry.PoolType = UnitModule->GetUnitPoolType(UnitDataId);
+		Entry.ReserveSize = 30;
+		Entry.SpawnCount = ResolveInitialSpawnCount(InTeam, Entry.FamilyId);
+
+		if (Entry.UnitClass && Entry.PoolType != EPoolTypes::None)
+		{
+			OutEntries.Add(Entry);
+		}
+	}
+}
+
+int32 USpawnUpgradeSubsystem::ResolveInitialSpawnCount(ETeamType InTeam, int32 InFamilyId) const
+{
+	if (InTeam == ETeamType::Ally)
+	{
+		return GetSpawnLevel(InFamilyId);
 	}
 
-	InSpawner->SetSpawnUnitData(TargetList[SpawnerId]);
+	return DefaultEnemySpawnCount;
 }
 
 void USpawnUpgradeSubsystem::BindUpgradeDelegates()
@@ -106,11 +152,11 @@ void USpawnUpgradeSubsystem::UnbindUpgradeDelegates()
 	}
 }
 
-int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 FamilyId) const
+int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 InFamilyId) const
 {
-	if (FamilyId <= 0) return 0;
+	if (InFamilyId <= 0) return 0;
 
-	if (const int32* Found = SpawnLevels.Find(FamilyId))
+	if (const int32* Found = SpawnLevels.Find(InFamilyId))
 	{
 		return *Found;
 	}
@@ -129,7 +175,6 @@ void USpawnUpgradeSubsystem::SetCurrentMana(int32 InMana, bool bBroadcastAll)
 
 	if (bBroadcastAll)
 	{
-		// 마나 변경으로 affordable이 바뀔 수 있으므로 전체 갱신
 		SyncAll();
 	}
 }
@@ -139,16 +184,16 @@ void USpawnUpgradeSubsystem::AddMana(int32 InDeltaMana)
 	SetCurrentMana(CurrentMana + InDeltaMana, true);
 }
 
-void USpawnUpgradeSubsystem::SetCostRule(int32 FamilyId, const FUpgradeCostRule& Rule, bool bBroadcast)
+void USpawnUpgradeSubsystem::SetCostRule(int32 InFamilyId, const FUpgradeCostRule& Rule, bool bBroadcast)
 {
-	if (FamilyId <= 0) return;
+	if (InFamilyId <= 0) return;
 
-	CostRules.Add(FamilyId, Rule);
-	InitFamilyIfNeeded(FamilyId, DefaultSpawnLevel);
+	CostRules.Add(InFamilyId, Rule);
+	InitFamilyIfNeeded(InFamilyId, DefaultSpawnLevel);
 
 	if (bBroadcast)
 	{
-		BroadcastState(FamilyId);
+		BroadcastState(InFamilyId);
 	}
 }
 
@@ -157,22 +202,20 @@ void USpawnUpgradeSubsystem::InitFamilyIfNeeded(int32 InFamilyId, int32 InDefaul
 	if (InFamilyId <= 0) return;
 	if (SpawnLevels.Contains(InFamilyId)) return;
 
-	const int32 Level = FMath::Max(0, InDefaultLevel);
-	SpawnLevels.Add(InFamilyId, Level);
+	SpawnLevels.Add(InFamilyId, FMath::Max(0, InDefaultLevel));
 }
 
-int32 USpawnUpgradeSubsystem::CalcCost(int32 InFamilyId, int32 InCurrentLevel) const
+int32 USpawnUpgradeSubsystem::CalcCost(int32 FamilyId, int32 CurrentLevel) const
 {
-	if (InCurrentLevel < 0) return 0;
+	if (CurrentLevel < 0) return 0;
 
-	const FUpgradeCostRule* Rule = CostRules.Find(InFamilyId);
+	const FUpgradeCostRule* Rule = CostRules.Find(FamilyId);
 	if (!Rule)
 	{
-		// 룰이 없으면 프로토 기본값
-		return FMath::Max(30, 30 + InCurrentLevel * 10);
+		return FMath::Max(30, 30 + CurrentLevel * 10);
 	}
 
-	return Rule->BaseCost + InCurrentLevel * Rule->CostStep;
+	return Rule->BaseCost + CurrentLevel * Rule->CostStep;
 }
 
 bool USpawnUpgradeSubsystem::SpendMana(int32 Cost)
@@ -193,38 +236,31 @@ void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 	int32& Level = SpawnLevels.FindOrAdd(InFamilyId);
 	const int32 OldLevel = Level;
 
-	// 업그레이드 비용(현재 레벨 기준)
 	const int32 Cost = CalcCost(InFamilyId, Level);
-
-	// 비용 부족이면 UI만 갱신
 	if (!SpendMana(Cost))
 	{
 		BroadcastState(InFamilyId);
 		return;
 	}
 
-	// 확정 업그레이드
 	Level += 1;
 	const int32 NewLevel = Level;
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		// 1) 스포너에 승인 통지 (실제 스폰/레벨업은 스포너가 담당)
 		WorldEventSystem->Battle.OnSpawnLevelUpgraded.Broadcast(InFamilyId, OldLevel, NewLevel);
 	}
 
-	// 2) UI 상태 갱신
-	// 마나가 변했으므로 다른 카드 affordability도 같이 변할 수 있어 전체 Sync
 	SyncAll();
 }
 
-void USpawnUpgradeSubsystem::EnsureFamily(int32 FamilyId, int32 DefaultLevel, bool bBroadcast)
+void USpawnUpgradeSubsystem::EnsureFamily(int32 InFamilyId, int32 InDefaultLevel, bool bBroadcast)
 {
-	InitFamilyIfNeeded(FamilyId, DefaultLevel);
+	InitFamilyIfNeeded(InFamilyId, InDefaultLevel);
 
 	if (bBroadcast)
 	{
-		BroadcastState(FamilyId);
+		BroadcastState(InFamilyId);
 	}
 }
 
@@ -246,7 +282,6 @@ void USpawnUpgradeSubsystem::BroadcastState(int32 FamilyId)
 
 void USpawnUpgradeSubsystem::SyncAll()
 {
-	// 룰이 등록되었지만 아직 레벨 초기화가 안된 family가 있을 수 있으니 CostRules도 훑어줌
 	for (const TPair<int32, FUpgradeCostRule>& RulePair : CostRules)
 	{
 		InitFamilyIfNeeded(RulePair.Key, DefaultSpawnLevel);
