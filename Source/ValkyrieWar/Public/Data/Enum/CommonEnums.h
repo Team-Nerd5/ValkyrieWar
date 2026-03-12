@@ -57,16 +57,18 @@ enum class EPoolTypes : uint8
 	BaseActor,
 
 	// 아군 근딜
-	Melee_Friend,
+	Melee_Ally,
+	// 아군 아처
+	Archer_Ally,
+	// 아군 마법사
+	Wizard_Ally,
 
 	// 적 근딜
 	Melee_Enemy,
-
-	// 아군 아처
-	Archer_Friend,
-
 	// 적 아처
 	Archer_Enemy,
+	// 적 마법사
+	Mage_Enemy
 };
 
 UENUM(BlueprintType)
