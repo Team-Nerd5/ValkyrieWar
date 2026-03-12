@@ -19,7 +19,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<UAnimInstance> AnimInstance = nullptr;		//애니메이션 블루프린트
+	TSoftClassPtr<UAnimInstance> AnimInstance = nullptr;		//애니메이션 블루프린트
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UAnimMontage> AnimMontage = nullptr;		//공격 몽타주
 	UPROPERTY(EditAnywhere)
