@@ -48,6 +48,13 @@ AValkyrieCharacter::AValkyrieCharacter()
 	CurrentComboCount = 0;
 	PrimaryActorTick.bCanEverTick = true;
 
+	//EventSystem
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
+		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
+	}
+
 }
 
 void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
@@ -72,14 +79,6 @@ void AValkyrieCharacter::ResetCombo()
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//EventSystem
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
-		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
-	}
-
 
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
