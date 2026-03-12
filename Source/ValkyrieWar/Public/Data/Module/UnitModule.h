@@ -38,6 +38,16 @@ public:
 		return TableDataByDataId.FindRef(InDataId).TeamType;
 	}
 
+	FORCEINLINE EPoolTypes GetUnitPoolType(int32 InDataId)
+	{
+		return TableDataByDataId.FindRef(InDataId).PoolType;
+	}
+
+	FORCEINLINE TSoftObjectPtr<UTexture2D> GetUnitIcon(int32 InDataId)
+	{
+		return TableDataByDataId.FindRef(InDataId).UnitIcon;
+	}
+
 protected:
 	virtual void MakeData() override;
 private:

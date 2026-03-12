@@ -28,4 +28,8 @@ public:
 	TSubclassOf<class AUnitCharacter> SpawnClass = nullptr;
 	UPROPERTY(EditAnywhere)
 	ETeamType TeamType = ETeamType::None;
+	UPROPERTY(EditAnywhere)
+	EPoolTypes PoolType = EPoolTypes::None;
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<UTexture2D> UnitIcon = nullptr;
 };
