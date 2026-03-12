@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/CommonEnums.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "UnitDataRow.generated.h"
 
 /**
@@ -32,4 +33,6 @@ public:
 	EPoolTypes PoolType = EPoolTypes::None;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> UnitIcon = nullptr;
+	UPROPERTY(EditAnywhere)
+	EUnitCharacterType UnitType = EUnitCharacterType::SwordMan;
 };

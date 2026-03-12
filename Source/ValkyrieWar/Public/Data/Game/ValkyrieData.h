@@ -40,6 +40,8 @@ private:
 	TMap<EStatusType, float> Stat;
 
 	UPROPERTY()
+	EGradeType Grade = EGradeType::Uncommon;
+	UPROPERTY()
 	TObjectPtr<UItemData> BaseWeapon;
 	UPROPERTY()
 	TMap<EEquipGroup, TObjectPtr<UItemData>> EquippedItem;

@@ -38,6 +38,9 @@ private:
 	UPROPERTY()
 	TMap<EStatusType, float> Stat;
 
+	UPROPERTY()
+	EGradeType GradeType = EGradeType::Uncommon;
+
 public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 

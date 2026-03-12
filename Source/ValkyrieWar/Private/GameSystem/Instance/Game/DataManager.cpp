@@ -31,6 +31,7 @@ int32 UDataManager::CreateData()
 	InitializeData(ValkyrieModule);
 	InitializeData(UnitModule);
 	InitializeData(TopMenuModule);
+	InitializeData(UnitUpgradeStatModule);
 
 	InitializeData(StageInfoModule);
 	InitializeData(StageModule);

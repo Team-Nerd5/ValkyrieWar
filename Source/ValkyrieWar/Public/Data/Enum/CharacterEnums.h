@@ -56,3 +56,12 @@ enum class EProjectileShootType : uint8
 	Multiple,	//기본 발사체 기준으로 개수만큼 추가
 };
 
+UENUM(BlueprintType)
+enum class EUnitCharacterType : uint8
+{
+	SwordMan,
+	SpearMan,
+	Archer,
+	General,
+	Wizard,
+};

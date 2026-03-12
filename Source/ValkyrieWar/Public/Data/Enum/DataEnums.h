@@ -16,11 +16,10 @@ enum class EGoodsType : uint8
 UENUM(BlueprintType)
 enum class EGradeType : uint8
 {
-	None,
 	Common,
 	Uncommon,
 	Rare,
-	Epic,
+	Unique,
 	Legend,
 };
 UENUM(BlueprintType)
@@ -126,6 +125,7 @@ enum class ETableDataType : uint8
 	Unit,
 	TopMenu,
 	Projectile,
+	UnitUpgradeStat,
 };
 
 UENUM(BlueprintType)

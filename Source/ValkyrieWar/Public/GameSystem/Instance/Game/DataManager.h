@@ -16,6 +16,7 @@
 #include "Data/Module/StatGroupModule.h"
 #include "Data/Module/TopMenuModule.h"
 #include "Data/Module/ProjectileModule.h"
+#include "Data/Module/UnitUpgradeStatModule.h"
 #include "Data/Module/StageModule.h"
 #include "Data/Module/StageInfoModule.h"
 
@@ -75,6 +76,8 @@ private:
 	TObjectPtr<UTopMenuModule> TopMenuModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UProjectileModule> ProjectileModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UUnitUpgradeStatModule> UnitUpgradeStatModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UStageModule> StageModule = nullptr;
 	UPROPERTY()
