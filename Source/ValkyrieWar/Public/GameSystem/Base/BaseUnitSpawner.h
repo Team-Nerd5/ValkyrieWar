@@ -125,7 +125,7 @@ protected:
 	TObjectPtr<AActor> SpawnPointActor = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-	FVector2D SpawnHalfExtent = FVector2D(200.f, 200.f);
+	FVector2D SpawnHalfExtent = FVector2D(200.f, 3000.f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	bool bAutoStart = true;
@@ -139,7 +139,7 @@ protected:
 
 	// 한 틱에 너무 많이 생성되는 것 방지
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-	int32 MaxSpawnPerTick = 10;
+	int32 MaxSpawnPerTick = 50;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
 	ETeamType Team = ETeamType::Ally;
