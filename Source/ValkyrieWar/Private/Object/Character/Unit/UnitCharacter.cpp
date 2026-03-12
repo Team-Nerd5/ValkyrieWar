@@ -357,6 +357,15 @@ void AUnitCharacter::OnTargetAssigned_Implementation(AActor* NewTarget)
 	else
 	{
 		ApplyMoveSpeed(WalkSpeed);
+
+		if (AUnitAIController* AIC = Cast<AUnitAIController>(GetController()))
+		{
+			// 타깃이 사라졌으면 즉시 이동 중단(발키리 캐릭터 추적 중단을 위함)
+			if (!IsValid(NewTarget))
+			{
+				AIC->StopMovement();
+			}
+		}
 	}
 }
 
