@@ -49,13 +49,6 @@ AValkyrieCharacter::AValkyrieCharacter()
 	CurrentComboCount = 0;
 	PrimaryActorTick.bCanEverTick = true;
 
-	//EventSystem
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
-		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
-	}
-
 }
 
 void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
@@ -117,8 +110,6 @@ void AValkyrieCharacter::ChangeCombatWeapon(uint64 InEquipUID)
 						{
 							GetMesh()->SetAnimInstanceClass(NewAnimClass);
 						}
-						UE_LOG(LogTemp, Error, TEXT("삐빅! 장착 시도한 무기ID: %llu / 찾으려는 AttackID: %d / 근데 AttackData가 없습니다!!"),
-							EquippedWeapon->GetUID(), EquippedWeapon->GetAttackID());
 					}
 				}
 			}
@@ -141,27 +132,6 @@ void AValkyrieCharacter::BeginPlay()
 		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
 		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
 	}
-	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
-	{
-		if (UItemModule* ItemModule = DataManager->GetItemModule())
-		{
-			uint64 TestItemUID = 777;
-			int32 TestWeaponDataID = 411101;
-			ItemModule->LoadItem(TestItemUID, TestWeaponDataID, 1);
-
-			EquippedWeapon = ItemModule->GetItem(TestItemUID);
-
-			if (EquippedWeapon && DataManager->GetAttackModule())
-			{
-				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());
-				if (AttackData)
-				{
-					UpdateWeaponMesh();
-				}
-			}
-		}
-	}
-
 }
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
