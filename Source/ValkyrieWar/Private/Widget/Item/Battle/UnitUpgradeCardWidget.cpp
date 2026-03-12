@@ -14,6 +14,8 @@
 
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "Data/Module/UnitModule.h"
 
 void UUnitUpgradeCardWidget::Init(int32 InUnitId)
 {
@@ -22,6 +24,29 @@ void UUnitUpgradeCardWidget::Init(int32 InUnitId)
 	EnsureWidgetTree();
 	ApplyCardStyle(false);
 	ApplyStateVisuals();
+
+	UTexture2D* LoadedIcon = nullptr;
+
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UDataManager* DataManager = GI->GetSubsystem<UDataManager>())
+		{
+			if (UUnitModule* UnitModule = DataManager->GetUnitModule())
+			{
+				const TSoftObjectPtr<UTexture2D> IconPtr = UnitModule->GetUnitIcon(UnitId);
+
+				if (!IconPtr.IsNull())
+				{
+					LoadedIcon = IconPtr.LoadSynchronous();
+				}
+			}
+		}
+	}
+
+	if (LoadedIcon && UnitIconImage)
+	{
+		UnitIconImage->SetBrushFromTexture(LoadedIcon);
+	}
 }
 
 void UUnitUpgradeCardWidget::NativePreConstruct()
@@ -140,13 +165,15 @@ void UUnitUpgradeCardWidget::EnsureWidgetTree()
 		OverlaySlot->SetPadding(FMargin(10.f));
 	}
 
+	IconSizeBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("IconSizeBox"));
 	UnitIconImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("UnitIconImage"));
+	IconSizeBox->AddChild(UnitIconImage);
 	{
-		UVerticalBoxSlot* OverlaySlot = VBox->AddChildToVerticalBox(UnitIconImage);
-		OverlaySlot->SetSize(ESlateSizeRule::Fill);
-		OverlaySlot->SetHorizontalAlignment(HAlign_Center);
-		OverlaySlot->SetVerticalAlignment(VAlign_Center);
-		OverlaySlot->SetPadding(FMargin(0.f, 6.f));
+		UVerticalBoxSlot* VerticalBoxSlot = VBox->AddChildToVerticalBox(IconSizeBox);
+		VerticalBoxSlot->SetSize(ESlateSizeRule::Automatic);
+		VerticalBoxSlot->SetHorizontalAlignment(HAlign_Center);
+		VerticalBoxSlot->SetVerticalAlignment(VAlign_Center);
+		VerticalBoxSlot->SetPadding(FMargin(0.f, 6.f));
 	}
 
 	LevelText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("LevelText"));

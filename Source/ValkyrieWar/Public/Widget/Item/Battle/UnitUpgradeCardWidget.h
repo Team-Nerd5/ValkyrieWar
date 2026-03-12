@@ -6,6 +6,7 @@
 
 class UButton;
 class UBorder;
+class USizeBox;
 class UImage;
 class UTextBlock;
 
@@ -54,6 +55,9 @@ private:
 
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UBorder> GlowBorder;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	USizeBox* IconSizeBox;
 
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UImage> UnitIconImage;
