@@ -40,6 +40,9 @@ private:
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UUnitUpgradeCardWidget> Card_4;
 
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UUnitUpgradeCardWidget> Card_5;
+
 	UPROPERTY()
 	TArray<TObjectPtr<UUnitUpgradeCardWidget>> Cards;
 

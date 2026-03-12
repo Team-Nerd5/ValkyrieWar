@@ -35,6 +35,7 @@ void UUnitCardListWidget::CacheCards()
 	if (Card_2) Cards.Add(Card_2);
 	if (Card_3) Cards.Add(Card_3);
 	if (Card_4) Cards.Add(Card_4);
+	if (Card_5) Cards.Add(Card_5);
 }
 
 void UUnitCardListWidget::BindDelegates()
