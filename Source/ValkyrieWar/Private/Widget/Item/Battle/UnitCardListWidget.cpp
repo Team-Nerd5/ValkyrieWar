@@ -66,7 +66,7 @@ void UUnitCardListWidget::UnbindDelegates()
 	bBound = false;
 }
 
-void UUnitCardListWidget::SetIds(TArray<int32> InIds)
+void UUnitCardListWidget::SetIds(TArray<int32>& InIds)
 {
 	if (InIds.IsEmpty() || Cards.IsEmpty()) return;
 
@@ -74,12 +74,22 @@ void UUnitCardListWidget::SetIds(TArray<int32> InIds)
 	{
 		if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
 		{
-			for (int i = 0; i < InIds.Num(); i++)
+			const int32 Count = FMath::Min(InIds.Num(), Cards.Num());
+			for (int32 i = 0; i < Count; ++i)
 			{
 				if (Cards[i])
 				{
 					Cards[i]->Init(InIds[i]);
 					Sub->EnsureFamily(InIds[i]);
+					Cards[i]->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+
+			for (int32 i = Count; i < Cards.Num(); ++i)
+			{
+				if (Cards[i])
+				{
+					Cards[i]->SetVisibility(ESlateVisibility::Collapsed);
 				}
 			}
 		}

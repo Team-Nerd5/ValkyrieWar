@@ -50,7 +50,7 @@ private:
 	bool bBound = false;
 
 	UFUNCTION()
-	void SetIds(TArray<int32> InIds);
+	void SetIds(TArray<int32>& InIds);
 
 	UFUNCTION()
 	void OnBattleModeChanged(EInputControlMode InCurrentMode);
