@@ -15,28 +15,8 @@ void UUnitCardListWidget::NativeConstruct()
 	SetVisibility(ESlateVisibility::Collapsed);
 	bIsShown = false;
 
-	CacheCardsIfNeeded();
-
-	if (Card_1) Card_1->Init(210002);
-	if (Card_2) Card_2->Init(210001);
-	if (Card_3) Card_3->Init(103);
-	if (Card_4) Card_4->Init(104);
-
+	CacheCards();
 	BindDelegates();
-
-	// 처음 진입 시점에 현재 상태를 한번 밀어줌
-	if (UWorld* World = GetWorld())
-	{
-		if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
-		{
-			Sub->EnsureFamily(210002);
-			Sub->EnsureFamily(210001);
-			Sub->EnsureFamily(103);
-			Sub->EnsureFamily(104);
-
-			Sub->SyncAll();
-		}
-	}
 }
 
 void UUnitCardListWidget::NativeDestruct()
@@ -47,7 +27,7 @@ void UUnitCardListWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UUnitCardListWidget::CacheCardsIfNeeded()
+void UUnitCardListWidget::CacheCards()
 {
 	Cards.Reset();
 
@@ -64,11 +44,11 @@ void UUnitCardListWidget::BindDelegates()
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		WorldEventSystem->Battle.OnBattleModeChanged.AddUniqueDynamic(this, &UUnitCardListWidget::OnBattleModeChanged);
-
 		WorldEventSystem->Battle.OnUpgradeStateChanged.AddUniqueDynamic(this, &UUnitCardListWidget::OnUpgradeStateChanged);
-
-		bBound = true;
+		WorldEventSystem->Battle.OnAllyUnitListReady.AddUniqueDynamic(this, &UUnitCardListWidget::SetIds);
 	}
+
+	bBound = true;
 }
 
 void UUnitCardListWidget::UnbindDelegates()
@@ -79,9 +59,30 @@ void UUnitCardListWidget::UnbindDelegates()
 	{
 		WorldEventSystem->Battle.OnBattleModeChanged.RemoveDynamic(this, &UUnitCardListWidget::OnBattleModeChanged);
 		WorldEventSystem->Battle.OnUpgradeStateChanged.RemoveDynamic(this, &UUnitCardListWidget::OnUpgradeStateChanged);
+		WorldEventSystem->Battle.OnAllyUnitListReady.RemoveDynamic(this, &UUnitCardListWidget::SetIds);
 	}
 
 	bBound = false;
+}
+
+void UUnitCardListWidget::SetIds(TArray<int32> InIds)
+{
+	if (InIds.IsEmpty() || Cards.IsEmpty()) return;
+
+	if (UWorld* World = GetWorld())
+	{
+		if (USpawnUpgradeSubsystem* Sub = World->GetSubsystem<USpawnUpgradeSubsystem>())
+		{
+			for (int i = 0; i < InIds.Num(); i++)
+			{
+				if (Cards[i])
+				{
+					Cards[i]->Init(InIds[i]);
+					Sub->EnsureFamily(InIds[i]);
+				}
+			}
+		}
+	}
 }
 
 void UUnitCardListWidget::OnBattleModeChanged(EInputControlMode InCurrentMode)
@@ -118,7 +119,7 @@ void UUnitCardListWidget::OnUpgradeStateChanged(int32 FamilyId, int32 Level, int
 
 	if (Cards.Num() == 0)
 	{
-		CacheCardsIfNeeded();
+		CacheCards();
 	}
 
 	if (UUnitUpgradeCardWidget* Card = FindCardByFamilyId(FamilyId))

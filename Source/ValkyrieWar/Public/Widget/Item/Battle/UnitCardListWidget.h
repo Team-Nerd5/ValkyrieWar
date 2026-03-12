@@ -47,6 +47,9 @@ private:
 	bool bBound = false;
 
 	UFUNCTION()
+	void SetIds(TArray<int32> InIds);
+
+	UFUNCTION()
 	void OnBattleModeChanged(EInputControlMode InCurrentMode);
 
 	// 업그레이드 상태 수신 (MAX 제거)
@@ -56,7 +59,7 @@ private:
 	void BindDelegates();
 	void UnbindDelegates();
 
-	void CacheCardsIfNeeded();
+	void CacheCards();
 	UUnitUpgradeCardWidget* FindCardByFamilyId(int32 FamilyId) const;
 
 	void ShowList(bool bAnimate);

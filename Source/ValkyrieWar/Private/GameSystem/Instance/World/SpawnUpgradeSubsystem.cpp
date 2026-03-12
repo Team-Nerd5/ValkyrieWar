@@ -44,7 +44,7 @@ void USpawnUpgradeSubsystem::InitUnitDataIds()
 
 	for (int32 SingleId : UnitDataIdList)
 	{
-		if (true)
+		if (UnitModule->GetUnitTeam(SingleId) == ETeamType::Ally)
 		{
 			AllyUnitIdList.AddUnique(SingleId);
 		}
@@ -56,6 +56,10 @@ void USpawnUpgradeSubsystem::InitUnitDataIds()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
+		if (!AllyUnitIdList.IsEmpty())
+		{
+			WorldEventSystem->Battle.OnAllyUnitListReady.Broadcast(AllyUnitIdList);
+		}
 		WorldEventSystem->Battle.OnSpawnUnitDataReady.Broadcast();
 	}
 }
@@ -184,7 +188,7 @@ void USpawnUpgradeSubsystem::HandleUpgradeClicked(int32 InFamilyId)
 {
 	if (InFamilyId <= 0) return;
 
-	InitFamilyIfNeeded(InFamilyId, 1);
+	InitFamilyIfNeeded(InFamilyId, DefaultSpawnLevel);
 
 	int32& Level = SpawnLevels.FindOrAdd(InFamilyId);
 	const int32 OldLevel = Level;
@@ -229,7 +233,7 @@ void USpawnUpgradeSubsystem::BroadcastState(int32 FamilyId)
 	UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
 	if (!WorldEventSystem) return;
 
-	InitFamilyIfNeeded(FamilyId, 1);
+	InitFamilyIfNeeded(FamilyId, DefaultSpawnLevel);
 
 	const int32 Level = GetSpawnLevel(FamilyId);
 	const int32 Cost = CalcCost(FamilyId, Level);
@@ -245,7 +249,7 @@ void USpawnUpgradeSubsystem::SyncAll()
 	// 룰이 등록되었지만 아직 레벨 초기화가 안된 family가 있을 수 있으니 CostRules도 훑어줌
 	for (const TPair<int32, FUpgradeCostRule>& RulePair : CostRules)
 	{
-		InitFamilyIfNeeded(RulePair.Key, 1);
+		InitFamilyIfNeeded(RulePair.Key, DefaultSpawnLevel);
 	}
 
 	for (const TPair<int32, int32>& Pair : SpawnLevels)

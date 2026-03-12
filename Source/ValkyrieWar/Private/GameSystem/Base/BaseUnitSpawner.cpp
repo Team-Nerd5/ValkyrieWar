@@ -50,7 +50,7 @@ void ABaseUnitSpawner::BeginPlay()
 			// SpawnUpgradeSubsystem에 바인딩 (승인된 업그레이드만 받음)
 			WorldEventSystem->Battle.OnSpawnLevelUpgraded.AddUniqueDynamic(this, &ABaseUnitSpawner::HandleSpawnLevelUpgraded);
 		}
-		else if (Team == ETeamType::Enemy)
+		else
 		{
 			// 현재 테스트용으로 구현
 			// TODO: 적 병종별로, 스테이지별로 동적 세팅되도록 수정

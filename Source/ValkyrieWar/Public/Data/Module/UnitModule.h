@@ -33,6 +33,11 @@ public:
 		return TableDataByDataId.FindRef(InDataId).SpawnClass;
 	}
 
+	FORCEINLINE ETeamType GetUnitTeam(int32 InDataId)
+	{
+		return TableDataByDataId.FindRef(InDataId).TeamType;
+	}
+
 protected:
 	virtual void MakeData() override;
 private:
