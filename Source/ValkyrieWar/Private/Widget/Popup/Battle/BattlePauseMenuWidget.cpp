@@ -42,29 +42,27 @@ void UBattlePauseMenuWidget::NativeDestruct()
 
 void UBattlePauseMenuWidget::OpenUI()
 {
+	Super::OpenUI();
 	// UBaseWidget::OpenUI()를 그대로 쓰면 CreateTopMenu()가 호출되므로
 	// 여기서는 직접 처리하는 쪽이 더 안전함.
-	bIsOpen = true;
-	SetVisibility(ESlateVisibility::Visible);
+	//bIsOpen = true;
+	//SetVisibility(ESlateVisibility::Visible);
 
 	if (bPauseGameWhenOpened)
 	{
 		UGameplayStatics::SetGamePaused(this, true);
 	}
-
-	SetKeyboardFocus();
+	//SetKeyboardFocus();
 }
 
 void UBattlePauseMenuWidget::CloseUI()
 {
-	bIsOpen = false;
-
 	if (bPauseGameWhenOpened)
 	{
 		UGameplayStatics::SetGamePaused(this, false);
 	}
 
-	SetVisibility(ESlateVisibility::Hidden);
+	Super::CloseUI();
 }
 
 FReply UBattlePauseMenuWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
