@@ -9,6 +9,7 @@
 #include "Data/Table/GameData/StatGroupDataRow.h"
 #include "Data/Game/AttackData.h"
 #include "Data/Game/SkillData.h"
+#include "Data/Struct/StatValueData.h"
 
 #include "GameplayTagContainer.h"
 #include "GameSystem/Instance/Game/GameManager.h"
@@ -41,12 +42,20 @@ private:
 	UPROPERTY()
 	EGradeType GradeType = EGradeType::Uncommon;
 
+	UPROPERTY()
+	int32 Level = 1;
+
 public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
+	void LevelUp();
+	void ApplyStatValues(FStatValueData& InStatValueData);
+
 	FORCEINLINE uint64 GetUID() { return UID; }
+	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 	FORCEINLINE ETeamType GetTeamType() { return TableData.TeamType; }
+	FORCEINLINE int32 GetLevel() { return Level; }
 };

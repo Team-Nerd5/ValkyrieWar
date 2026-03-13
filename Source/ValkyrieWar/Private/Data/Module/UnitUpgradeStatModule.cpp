@@ -10,7 +10,7 @@ void UUnitUpgradeStatModule::Initialize(UGameManager* InGameManager)
 
 	if (GameManager.IsValid())
 	{
-		DataTable = GameManager->GetGameData(ETableDataType::StatGroup);
+		DataTable = GameManager->GetGameData(ETableDataType::UnitUpgradeStat);
 		MakeData();
 	}
 
