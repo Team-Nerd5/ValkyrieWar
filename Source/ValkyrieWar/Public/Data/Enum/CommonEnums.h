@@ -30,6 +30,7 @@ enum class EUIType : uint8
 
 	// Battle Popup
 	PopupBattleResult,
+	PopupBattlePause,
 };
 
 UENUM(BlueprintType)
