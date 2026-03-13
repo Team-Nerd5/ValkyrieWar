@@ -5,13 +5,19 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseActor.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
+
 #include "AbilitySystemInterface.h"
+#include "AbilitySystemBlueprintLibrary.h"
+
+#include "Data/Table/GameData/ProjectileDataRow.h"
 
 #include "BaseProjectile.generated.h"
 
 class UAbilitySystemComponent;
 class UNiagaraComponent;
 class UProjectileMovementComponent;
+class UCapsuleComponent;
+
 /**
  * 
  */
@@ -31,6 +37,8 @@ public:
 
 	virtual void OnRelease_Implementation() override;
 
+	void SetData(FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData);
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
@@ -38,6 +46,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UNiagaraComponent> Effect = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> MovementComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCapsuleComponent> Collision = nullptr;
 };

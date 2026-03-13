@@ -14,6 +14,7 @@
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
 
@@ -249,7 +250,7 @@ void AValkyrieCharacter::OnAttackNotify()
 	}
 	else
 	{
-		//Projectile 생성 및 현재 Ability 주입
+		//풀에서..
 	}
 	
 
@@ -345,6 +346,12 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
+
+
+	/*if (ObjectPool)
+	{
+		ObjectPool->InitPool(AttackData->GetProjectileData()->EPoolTypes, )
+	}*/
 
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();

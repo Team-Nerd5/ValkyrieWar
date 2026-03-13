@@ -86,6 +86,9 @@ protected:
 	TObjectPtr<UStaticMeshComponent> StaticWeapon = nullptr;
 
 	UPROPERTY()
+	TObjectPtr<class UObjectPoolSubsystem> ObjectPool = nullptr;
+
+	UPROPERTY()
 	TObjectPtr<AActor> CurrentTarget = nullptr;
 
 	int32 UsingSkillIndex = 0;

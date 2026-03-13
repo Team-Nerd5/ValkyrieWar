@@ -69,7 +69,11 @@ enum class EPoolTypes : uint8
 	// 적 아처
 	Archer_Enemy,
 	// 적 마법사
-	Mage_Enemy
+	Mage_Enemy,
+
+
+	//기본 화살
+	Arrow_Normal,
 };
 
 UENUM(BlueprintType)

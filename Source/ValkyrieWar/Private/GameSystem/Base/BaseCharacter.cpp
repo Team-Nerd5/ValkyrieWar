@@ -5,6 +5,7 @@
 #include "GameSystem/Base/BaseGameplayAbility.h"
 
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
 
 #include "Data/Attribute/StatAttributeSet.h"
 #include "Components/CapsuleComponent.h"
