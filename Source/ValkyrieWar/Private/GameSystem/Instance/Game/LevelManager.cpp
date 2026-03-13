@@ -71,8 +71,7 @@ void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap, bool bShowLoadi
 
 void ULevelManager::InitEvent()
 {
-	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
-	if (EventSystem)
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Login.OnDataLoadComplete.AddDynamic(this, &ULevelManager::OnDataLoadComplete);
 	}
@@ -83,13 +82,7 @@ void ULevelManager::StartDataLoading()
 	CurrentState = ELoadingState::LoadingData;
 
 	//데이터 로드..
-	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
-	if (DataManager)
-	{
-		DataLoadTask += DataManager->CreateData();
-	}
-	USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>();
-	if (SaveManager)
+	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
 	{
 		DataLoadTask += SaveManager->LoadAllData();
 	}
@@ -105,6 +98,24 @@ void ULevelManager::OnDataLoadCompleted()
 		if (SaveManager->IsNewAccount())
 		{
 			UGameDataFactory::GenerateValkyrie(110001, GetGameInstance());
+		}
+	}
+
+	//로드된 장비들을 캐릭터에 장착처리 시킴
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	{
+		TArray<UItemData*> Items = DataManager->GetItemModule()->GetItems();
+
+		for (UItemData* Item : Items)
+		{
+			if (Item->GetEquipCharacter() > 0)
+			{
+				UValkyrieData* Equipped = DataManager->GetValkyrieModule()->GetExistValkyrie(Item->GetEquipCharacter());
+				if (Equipped)
+				{
+					Equipped->EquipItem(Item->GetEquipGroup(), Item, Cast<UGameManager>(GetGameInstance()));
+				}
+			}
 		}
 	}
 

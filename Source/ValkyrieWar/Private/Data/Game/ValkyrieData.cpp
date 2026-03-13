@@ -15,12 +15,14 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 
 		if (DataManager)
 		{
-			//기본 무기 데이터를 가져옴...
-			FItemDataRow BaseWeapon = DataManager->GetItemModule()->GetTableDataById(TableData.BaseWeaponId);
-			if (BaseWeapon.DataId > 0)
+			FItemDataRow BaseData = DataManager->GetItemModule()->GetTableDataById(TableData.BaseWeaponId);
+			if (BaseData.DataId > 0)
 			{
-				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon.AttackId);
-				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon.SkillId);
+				BaseWeapon = NewObject<UItemData>(this);
+				BaseWeapon->MakeData(BaseData);
+
+				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseData.AttackId);
+				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseData.SkillId);
 			}
 
 			FStatGroupDataRow StatData = DataManager->GetStatGroupModule()->GetData(TableData.StatId);
@@ -33,19 +35,52 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 		}
 	}
 }
-
-void UValkyrieData::UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager)
+//장비를 장착하거나 아이템 로드 시 장착된 캐릭터에 장착 처리에 사용
+void UValkyrieData::EquipItem(EEquipGroup InEquipGroup, UItemData* InItem, UGameManager* InGameManager)
 {
-	if (InGameManager && InNewWeapon)
+	if (!InGameManager)
+		return;
+
+	if (InItem)
+	{
+		//있으면 덮어쓰기
+		EquippedItem.Add(InEquipGroup, InItem);
+	}
+
+	if (InEquipGroup == EEquipGroup::Weapon)
 	{
 		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
 
 		if (DataManager)
 		{
-			AttackData = DataManager->GetAttackModule()->GetAttackData(InNewWeapon->GetAttackID());
-			SkillData = DataManager->GetSkillModule()->GetSkillData(InNewWeapon->GetSkillID());
+			AttackData = DataManager->GetAttackModule()->GetAttackData(InItem->GetAttackID());
+			SkillData = DataManager->GetSkillModule()->GetSkillData(InItem->GetSkillID());
 		}
 	}
+
+	//TODO : 장비 스탯 업데이트
+}
+
+//장비 해제 처리
+void UValkyrieData::UnEquipItem(EEquipGroup InEquipGroup, UGameManager* InGameManager)
+{
+	if (InEquipGroup == EEquipGroup::Weapon)
+	{
+		UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>();
+
+		if (DataManager)
+		{
+			AttackData = DataManager->GetAttackModule()->GetAttackData(BaseWeapon->GetAttackID());
+			SkillData = DataManager->GetSkillModule()->GetSkillData(BaseWeapon->GetSkillID());
+		}
+	}
+
+	UItemData* Equipping = EquippedItem.FindChecked(InEquipGroup);
+	Equipping->Equip(0);
+
+	EquippedItem.Remove(InEquipGroup);
+
+	//TODO : 장비 스탯 업데이트
 }
 
 void UValkyrieData::Initialize(const FValkyrieDataRow InTableData, UGameManager* InGameManager)

@@ -187,7 +187,7 @@ void UTestPopupWidget::Equip()
 
 	// 추후 케릭터UID 입력 필요
 	const uint64 TempCharacterUID = 1001001;
-	InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
+	//InventorySystem->EquipItem(CachedItemData, TempCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(TempCharacterUID);
@@ -210,7 +210,7 @@ void UTestPopupWidget::UnEquip()
 	}
 #pragma endregion
 
-	InventorySystem->UnEquipItem(CachedItemData);
+	//InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(0);

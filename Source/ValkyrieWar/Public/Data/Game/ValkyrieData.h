@@ -36,15 +36,21 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<USkillData>> SkillData;
 
-	//기본 데이터 세팅
-	void MakeData(const FValkyrieDataRow InTableData, UGameManager* InGameManager);
-
 	UPROPERTY()
 	TMap<EStatusType, float> Stat;
 
+	UPROPERTY()
+	TObjectPtr<UItemData> BaseWeapon;
+	UPROPERTY()
+	TMap<EEquipGroup, TObjectPtr<UItemData>> EquippedItem;
+
+private:
+	//기본 데이터 세팅
+	void MakeData(const FValkyrieDataRow InTableData, UGameManager* InGameManager);
 public:
-	//장착된 무기 세팅
-	void UpdateWeapon(UItemData* InNewWeapon, UGameManager* InGameManager);
+	void EquipItem(EEquipGroup InEquipGroup, UItemData* InItem, UGameManager* InGameManager);
+	void UnEquipItem(EEquipGroup InEquipGroup, UGameManager* InGameManager);
+
 
 	//새로 캐릭터를 획득
 	void Initialize(const FValkyrieDataRow InTableData, UGameManager* InGameManager);
@@ -58,4 +64,5 @@ public:
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
+	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
 };

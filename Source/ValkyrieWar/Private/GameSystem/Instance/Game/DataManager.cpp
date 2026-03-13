@@ -28,8 +28,8 @@ int32 UDataManager::CreateData()
 	InitializeData(SkillModule);
 
 	InitializeData(ItemModule);
-	InitializeData(UnitModule);
 	InitializeData(ValkyrieModule);
+	InitializeData(UnitModule);
 	InitializeData(TopMenuModule);
 
 	return TaskCount;

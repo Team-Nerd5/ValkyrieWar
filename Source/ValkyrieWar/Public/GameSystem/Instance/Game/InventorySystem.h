@@ -38,10 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SellItem(UItemData* InItem, int32 InAmount);
 
-	void EquipItem(UItemData* InItem, uint64 InCharacterUID);
+	void EquipItem(UItemData* InItem, UValkyrieData* InValkyrie);
 
 	UFUNCTION(BlueprintCallable)
-	void UnEquipItem(UItemData* InItem);
+	void UnEquipItem(UItemData* InItem, UValkyrieData* InValkyrie);
 
 private:
 	UPROPERTY()

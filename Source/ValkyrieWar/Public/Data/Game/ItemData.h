@@ -19,6 +19,7 @@ public:
 	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData);
 	void AddAmount(int32 InAmount);
 	void Equip(uint64 InEquipCharacter);
+	void MakeData(FItemDataRow InTableData);
 
 	FORCEINLINE EItemType GetItemType() { return TableData.ItemType; }
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }

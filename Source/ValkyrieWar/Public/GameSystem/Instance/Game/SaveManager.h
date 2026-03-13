@@ -93,9 +93,6 @@ public:
 	void LoadData(ESaveType InSaveType);
 	void SaveData(ESaveType InSaveType);
 
-
-
-
 	uint64 GetNextItemUID();
 	uint64 GetNextValkyrieUID();
 

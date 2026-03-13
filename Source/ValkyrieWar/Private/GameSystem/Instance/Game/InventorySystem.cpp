@@ -214,60 +214,42 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 	}
 }
 
-void UInventorySystem::EquipItem(UItemData* InItem, uint64 InCharacterUID)
+//이걸 불러오려면...어차피 캐릭터를 로드했어야 함...인벤토리니까
+void UInventorySystem::EquipItem(UItemData* InItem, UValkyrieData* InValkyrie)
 {
-#pragma region 유효성 검사
-	if (!(DataManager->GetItemModule()))
+	if (InValkyrie)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] ItemModule이 없습니다"));
-		return;
-	}
-	if (!InItem)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] InItem이 없습니다"));
-		return;
-	}
-	if (InItem->GetItemGroup() != EItemGroup::Equip)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(EquipItem)] 장착할 수 없는 아이템 입니다"));
-		return;
-
-	}
-#pragma endregion
-
-	// 대상 캐릭터가 같은 부위에 이미 장착한 아이템이 있다면 장착해제
-	if (InItem->GetEquipGroup() != EEquipGroup::None)
-	{
-		if (UItemData* AlreadyEquipped = GetEquippedItemByGroup(InCharacterUID, InItem->GetEquipGroup()))
+		UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>();
+		if (InValkyrie->IsEquipped(InItem->GetEquipGroup()))
 		{
-			AlreadyEquipped->Equip(0);
+			InValkyrie->UnEquipItem(InItem->GetEquipGroup(), GameManager);
+		}
+
+		InItem->Equip(InValkyrie->GetUID());
+		InValkyrie->EquipItem(InItem->GetEquipGroup(), InItem, GameManager);
+
+		//인벤토리 아이템 개수가 바뀜
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 		}
 	}
-	// 장착할 아이템이 대상 캐릭터가 아닌 이미 다른 캐릭터에 장착되어있다면 장착 해제
-	uint64 ItemOwner = InItem->GetEquipCharacter();
-	if (ItemOwner != 0 && ItemOwner != InCharacterUID)
-	{
-		InItem->Equip(0);
-	}
-
-	// 최종적으로 InItem을 대상 케릭터에 장착
-	InItem->Equip(InCharacterUID);
 }
 
-void UInventorySystem::UnEquipItem(UItemData* InItem)
+//캐릭터 정보 위젯의 장착 화면에서 장착 아이템을 해제했을 때
+void UInventorySystem::UnEquipItem(UItemData* InItem, UValkyrieData* InValkyrie)
 {
-#pragma region 유효성 검사
-	if (!(DataManager->GetItemModule()))
+	if (InValkyrie)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] ItemModule이 없습니다"));
-		return;
+		UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>();
+		if (InValkyrie->IsEquipped(InItem->GetEquipGroup()))
+		{
+			InValkyrie->UnEquipItem(InItem->GetEquipGroup(), GameManager);
+		}
+		//인벤토리 아이템 개수가 바뀜
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
+		}
 	}
-	if (!InItem)
-	{
-		UE_LOG(LogTemp, Log, TEXT("[InventorySystem(UnEquipItem)] InItem이 없습니다"));
-		return;
-	}
-#pragma endregion
-
-	InItem->Equip(0);
 }

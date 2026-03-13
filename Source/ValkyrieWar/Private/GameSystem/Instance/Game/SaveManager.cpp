@@ -235,7 +235,7 @@ void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharac
 #pragma region Set data after load saved data
 void USaveManager::SetItemData()
 {
-	
+	//로드된 보유 아이템 데이터를 가져옴
 }
 
 void USaveManager::SetAccountData()

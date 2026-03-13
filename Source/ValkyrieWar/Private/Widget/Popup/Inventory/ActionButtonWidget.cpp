@@ -140,7 +140,7 @@ void UActionButtonWidget::Sell()
 	{
 		// 판매 아이템이 장착아이템이라면 장착해제
 		uint64 TempCharacterUID = CachedItemData->GetEquipCharacter();
-		InventorySystem->UnEquipItem(CachedItemData);
+		//InventorySystem->UnEquipItem(CachedItemData);
 		// 인벤토리 장비칸 갱신
 		WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(TempCharacterUID);
 	}
@@ -181,7 +181,7 @@ void UActionButtonWidget::Equip()
 	}
 #pragma endregion
 
-	InventorySystem->EquipItem(CachedItemData, CachedCharacterUID);
+	//InventorySystem->EquipItem(CachedItemData, CachedCharacterUID);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(CachedCharacterUID);
@@ -215,7 +215,7 @@ void UActionButtonWidget::Unequip()
 #pragma endregion
 	uint64 TempCharacterUID = CachedItemData->GetEquipCharacter();
 
-	InventorySystem->UnEquipItem(CachedItemData);
+	//InventorySystem->UnEquipItem(CachedItemData);
 
 	WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	WorldEventSystem->Widget.OnUpdateCharacterEquipment.Broadcast(TempCharacterUID);

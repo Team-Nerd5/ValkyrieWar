@@ -187,55 +187,6 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 			StaticWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
 		}
 	}
-
-	//이건 또 뭐냐...
-	//TArray<USceneComponent*> AttachedComponents;
-	//GetMesh()->GetChildrenComponents(true, AttachedComponents);
-	//for (USceneComponent* Child : AttachedComponents)
-	//{
-	//	if (Child->ComponentHasTag(TEXT("EquippedWeaponMesh")))
-	//	{
-	//		Child->DestroyComponent();
-	//	}
-	//}
-	//if (WeaponDataPtr->IsSkeletalWeapon()) // 스켈레탈 메시
-	//{
-	//	if (USkeletalMesh* SkelMesh = WeaponDataPtr->GetSkeletalMesh().LoadSynchronous())
-	//	{
-	//		// NewObject..??
-	//		USkeletalMeshComponent* NewComp = NewObject<USkeletalMeshComponent>(this);
-	//		NewComp->RegisterComponent();
-	//		NewComp->SetSkeletalMesh(SkelMesh);
-	//		NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh")); 
-	//		NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
-
-	//		NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
-	//		NewComp->RegisterComponent();
-
-	//		// 데이터 테이블 오프셋 적용
-	//		NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
-	//		NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
-	//	}
-	//}
-	//else // 스테틱
-	//{
-	//	if (UStaticMesh* StaticMesh = WeaponDataPtr->GetStaticMesh().LoadSynchronous())
-	//	{
-	//		UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>(this);
-	//		NewComp->RegisterComponent();
-	//		NewComp->SetStaticMesh(StaticMesh);
-	//		NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh"));
-	//		NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
-
-	//		NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
-	//		NewComp->RegisterComponent();
-
-	//		// 데이터 테이블 오프셋 적용
-	//		NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
-	//		NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
-	//	}
-	//}
-	
 }
 
 void AValkyrieCharacter::ExecuteAttack()
@@ -398,8 +349,7 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
 
-	//캐릭터 블루프린트 생성 후 무기 세팅
-	//장비 음..
+	UpdateWeaponMesh();
 }
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {

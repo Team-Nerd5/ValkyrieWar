@@ -26,3 +26,13 @@ void UItemData::Equip(uint64 InEquipCharacter)
 {
 	EquipCharacter = InEquipCharacter;
 }
+
+//기본무기용 데이터 만들어주기
+void UItemData::MakeData(FItemDataRow InTableData)
+{
+	Amount = 1;
+	TableData = InTableData;
+
+	ItemGroup = UGameDataHelper::GetItemGroup(InTableData.ItemType);
+	EquipGroup = UGameDataHelper::GetEquipGroup(InTableData.ItemType);
+}
