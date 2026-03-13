@@ -138,6 +138,12 @@ void ABattleGameState::PlayGame()
 		Sub->InitUnitDataIds();
 		Sub->BindUpgradeDelegates();
 	}
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		// 전투 진입시 제공하는 마나 : 처음 한 번 업그레이드 가능한 정도로 세팅
+		EventSystem->Battle.OnManaAdd.Broadcast(InitialMana);
+	}
 }
 
 void ABattleGameState::CheckTimeOver()

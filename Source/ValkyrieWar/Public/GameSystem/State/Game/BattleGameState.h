@@ -46,6 +46,8 @@ private:
 private:
 	EBattleState State = EBattleState::Init;
 
+	int32 InitialMana = 50;
+
 	// ===== Timer Data =====
 	UPROPERTY(EditAnywhere, Category = "Battle|Timer")
 	float TimeLimitSeconds = 180.f; // 기본 3분
