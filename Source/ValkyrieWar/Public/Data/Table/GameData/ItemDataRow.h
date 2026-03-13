@@ -22,12 +22,7 @@ public:
 	FString Name = TEXT("");
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
-	UPROPERTY(EditAnywhere)
-	bool IsSkeletal = false;
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==false"))
-	TSoftObjectPtr<UStaticMesh> StaticMesh = nullptr;
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==true"))
-	TSoftObjectPtr<USkeletalMesh> SkeletalMesh = nullptr;
+
 	UPROPERTY(EditAnywhere)
 	int32 SellPrice = 0;
 
@@ -38,4 +33,12 @@ public:
 	int32 AttackId = 0;
 	UPROPERTY(EditAnywhere)
 	TArray<int32> SkillId;
+	UPROPERTY(EditAnywhere)
+	bool IsSkeletal = false;
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==false"))
+	TSoftObjectPtr<UStaticMesh> StaticMesh = nullptr;
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "IsSkeletal==true"))
+	TSoftObjectPtr<USkeletalMesh> SkeletalMesh = nullptr;
+	UPROPERTY(EditAnywhere)
+	FName SocketName = TEXT("");
 };

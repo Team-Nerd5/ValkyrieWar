@@ -33,7 +33,7 @@ public:
 	/// </summary>
 	/// <param name="InDataId"></param>
 	/// <param name="InAmount"></param>
-	void AddItem(int32 InDataId, int32 InAmount = 1);
+	UItemData* AddItem(int32 InDataId, int32 InAmount = 1);
 
 	/// <summary>
 	/// 아이템 개수 변경(추가, 삭제)
@@ -58,7 +58,7 @@ protected:
 
 	void SetList();
 	uint64 GetExistItemUID(int32 InDataId);
-	void AddNewItem(FItemDataRow InTableData, int32 InAmount);
+	UItemData* AddNewItem(FItemDataRow InTableData, int32 InAmount);
 private:
 	UPROPERTY()
 	TMap<uint64, TObjectPtr<UItemData>> OwnItems;

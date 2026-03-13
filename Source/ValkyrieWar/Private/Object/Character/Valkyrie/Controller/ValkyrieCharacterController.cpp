@@ -18,7 +18,7 @@
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "Object/Character/Valkyrie/Controller/CameraBoundsVolume.h"
-
+#include "Object/Cheat/BattleCheatManager.h"
 #include "Widget/HUD/BattleWidget.h"
 
 
@@ -42,7 +42,7 @@ AValkyrieCharacterController::AValkyrieCharacterController()
 	bIsDragging = false;
 	bIsInputActive = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("유닛 생성됨"));
+	CheatClass = UBattleCheatManager::StaticClass();
 }
 
 void AValkyrieCharacterController::BeginPlay()

@@ -136,19 +136,21 @@ TArray<UItemData*> UInventorySystem::GetEquipItems()
 	return EquipItems;
 }
 
-void UInventorySystem::AddItem(int32 InDataId, int32 InAmount)
+UItemData* UInventorySystem::AddItem(int32 InDataId, int32 InAmount)
 {
 	if (!DataManager)
 	{
 		DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
 	}
 
-	DataManager->GetItemModule()->AddItem(InDataId, InAmount);
+	UItemData* AddedItem = DataManager->GetItemModule()->AddItem(InDataId, InAmount);
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
 	}
+
+	return AddedItem;
 }
 
 void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)

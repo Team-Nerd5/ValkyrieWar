@@ -49,6 +49,12 @@ AValkyrieCharacter::AValkyrieCharacter()
 	CurrentComboCount = 0;
 	PrimaryActorTick.bCanEverTick = true;
 
+	//EventSystem
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
+		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
+	}
 }
 
 void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
@@ -70,73 +76,40 @@ void AValkyrieCharacter::ResetCombo()
 	}
 }
 
-void AValkyrieCharacter::EquipSelectedWeapon()
-{
-	FItemDataRow* RowData = SelectedWeaponRow.GetRow<FItemDataRow>(TEXT("EquipWeaponContext"));
-	if (!RowData) return;
-
-	if (GetWorld() && (GetWorld()->IsPlayInEditor() || GetWorld()->HasBegunPlay()))
-	{
-		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
-		{
-			if (UItemModule* ItemModule = DataManager->GetItemModule())
-			{
-				uint64 GeneratedItemUID = FMath::RandHelper(99999) + 1000;
-				ItemModule->LoadItem(GeneratedItemUID, RowData->DataId, 1);
-
-				ChangeCombatWeapon(GeneratedItemUID);
-			}
-		}
-	}
-}
-
-void AValkyrieCharacter::ChangeCombatWeapon(uint64 InEquipUID)
+#if WITH_EDITOR
+//테스트용 장비 변경 코드
+void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 {
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
-		if (UItemModule* ItemModule = DataManager->GetItemModule())
+		if (InEquip)
 		{
-			EquippedWeapon = ItemModule->GetItem(InEquipUID);
-
-			if (EquippedWeapon && EquippedWeapon->GetItemGroup() == EItemGroup::Equip)
+			EquippedWeapon = InEquip;
+			if (UAttackModule* AttackModule = DataManager->GetAttackModule())
 			{
-				if (UAttackModule* AttackModule = DataManager->GetAttackModule())
-				{
-					AttackData = AttackModule->GetAttackData(EquippedWeapon->GetAttackID());
+				AttackData = AttackModule->GetAttackData(EquippedWeapon->GetAttackID());
 
-					if (IsValid(AttackData))
+				if (IsValid(AttackData))
+				{
+					TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
+					if (AnimClass.IsValid())
 					{
-						TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
-						if (AnimClass.IsValid())
-						{
-							UClass* NewAnimClass = AnimClass.LoadSynchronous();
-							GetMesh()->SetAnimInstanceClass(NewAnimClass);
-							UE_LOG(LogTemp, Error, TEXT("삐빅! 장착 시도한 무기ID: %llu / 찾으려는 AttackID: %d / 근데 AttackData가 없습니다!!"),
-								EquippedWeapon->GetUID(), EquippedWeapon->GetAttackID());
-						}
-						
+						UClass* NewAnimClass = AnimClass.LoadSynchronous();
 					}
+
+					UpdateWeaponMesh();
 				}
 			}
-			else
-			{
-				EquippedWeapon = nullptr;
-			}
-		}
+		}		
 	}
-	UpdateWeaponMesh();
 }
+#endif
 
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//EventSystem
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Valkyrie.OnUseAttack.AddDynamic(this, &AValkyrieCharacter::ExecuteAttack);
-		EventSystem->Valkyrie.OnUseSkill.AddDynamic(this, &AValkyrieCharacter::ExecuteSkill);
-	}
+	
 }
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -177,56 +150,91 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
-	UItemData* WeaponDataPtr = EquippedWeapon.Get();
-	UAttackData* AttackDataPtr = AttackData.Get();
+	if (!EquippedWeapon)
+		return;
 
-	if (!WeaponDataPtr||!AttackDataPtr) return;
-
-	TArray<USceneComponent*> AttachedComponents;
-	GetMesh()->GetChildrenComponents(true, AttachedComponents);
-	for (USceneComponent* Child : AttachedComponents)
+	if (EquippedWeapon->IsSkeletalWeapon())
 	{
-		if (Child->ComponentHasTag(TEXT("EquippedWeaponMesh")))
+		if (StaticWeapon)
 		{
-			Child->DestroyComponent();
+			StaticWeapon->SetStaticMesh(nullptr);
+		}
+		if (SkeletalWeapon)
+		{
+			TSoftObjectPtr<USkeletalMesh> WeaponMeshData = EquippedWeapon->GetSkeletalMesh();
+			SkeletalWeapon->SetSkeletalMeshAsset(WeaponMeshData.LoadSynchronous());
+
+			FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+			SkeletalWeapon->AttachToComponent(GetMesh(), AttachRules, EquippedWeapon->GetTableData().SocketName);
+			SkeletalWeapon->SetRelativeLocation(AttackData->GetLocationOffset());
+			SkeletalWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
 		}
 	}
-	if (WeaponDataPtr->IsSkeletalWeapon()) // 스켈레탈 메시
+	else
 	{
-		if (USkeletalMesh* SkelMesh = WeaponDataPtr->GetSkeletalMesh().LoadSynchronous())
+		if (SkeletalWeapon)
 		{
-			USkeletalMeshComponent* NewComp = NewObject<USkeletalMeshComponent>(this);
-			NewComp->RegisterComponent();
-			NewComp->SetSkeletalMesh(SkelMesh);
-			NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh")); 
-			NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+			SkeletalWeapon->SetSkeletalMeshAsset(nullptr);
+		}
+		if (StaticWeapon)
+		{
+			TSoftObjectPtr<UStaticMesh> WeaponMeshData = EquippedWeapon->GetStaticMesh();
+			StaticWeapon->SetStaticMesh(WeaponMeshData.LoadSynchronous());
 
-			NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
-			NewComp->RegisterComponent();
-
-			// 데이터 테이블 오프셋 적용
-			NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
-			NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
+			FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
+			StaticWeapon->AttachToComponent(GetMesh(), AttachRules, EquippedWeapon->GetTableData().SocketName);
+			StaticWeapon->SetRelativeLocation(AttackData->GetLocationOffset());
+			StaticWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
 		}
 	}
-	else // 스테틱
-	{
-		if (UStaticMesh* StaticMesh = WeaponDataPtr->GetStaticMesh().LoadSynchronous())
-		{
-			UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>(this);
-			NewComp->RegisterComponent();
-			NewComp->SetStaticMesh(StaticMesh);
-			NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh"));
-			NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 
-			NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
-			NewComp->RegisterComponent();
+	//이건 또 뭐냐...
+	//TArray<USceneComponent*> AttachedComponents;
+	//GetMesh()->GetChildrenComponents(true, AttachedComponents);
+	//for (USceneComponent* Child : AttachedComponents)
+	//{
+	//	if (Child->ComponentHasTag(TEXT("EquippedWeaponMesh")))
+	//	{
+	//		Child->DestroyComponent();
+	//	}
+	//}
+	//if (WeaponDataPtr->IsSkeletalWeapon()) // 스켈레탈 메시
+	//{
+	//	if (USkeletalMesh* SkelMesh = WeaponDataPtr->GetSkeletalMesh().LoadSynchronous())
+	//	{
+	//		// NewObject..??
+	//		USkeletalMeshComponent* NewComp = NewObject<USkeletalMeshComponent>(this);
+	//		NewComp->RegisterComponent();
+	//		NewComp->SetSkeletalMesh(SkelMesh);
+	//		NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh")); 
+	//		NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 
-			// 데이터 테이블 오프셋 적용
-			NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
-			NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
-		}
-	}
+	//		NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+	//		NewComp->RegisterComponent();
+
+	//		// 데이터 테이블 오프셋 적용
+	//		NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
+	//		NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
+	//	}
+	//}
+	//else // 스테틱
+	//{
+	//	if (UStaticMesh* StaticMesh = WeaponDataPtr->GetStaticMesh().LoadSynchronous())
+	//	{
+	//		UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>(this);
+	//		NewComp->RegisterComponent();
+	//		NewComp->SetStaticMesh(StaticMesh);
+	//		NewComp->ComponentTags.Add(TEXT("EquippedWeaponMesh"));
+	//		NewComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
+
+	//		NewComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("WeaponSocket"));
+	//		NewComp->RegisterComponent();
+
+	//		// 데이터 테이블 오프셋 적용
+	//		NewComp->SetRelativeLocation(AttackDataPtr->GetLocationOffset());
+	//		NewComp->SetRelativeRotation(AttackDataPtr->GetRotatinOffset());
+	//	}
+	//}
 	
 }
 

@@ -30,7 +30,7 @@ public:
 	TArray<UItemData*> GetEquipItems();
 
 	//이게 원래 맞음..UID로 호출 하면 안됨
-	void AddItem(int32 InDataId, int32 InAmount);
+	UItemData* AddItem(int32 InDataId, int32 InAmount);
 
 	UFUNCTION(BlueprintCallable)
 	void UseItem(UItemData* InItem, int32 InAmount);

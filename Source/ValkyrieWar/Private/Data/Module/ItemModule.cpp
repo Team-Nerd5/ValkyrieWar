@@ -70,7 +70,7 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 }
 
 //아이템류는 중복저장하면 안됨(장비는 가능)
-void UItemModule::AddItem(int32 InDataId, int32 InAmount)
+UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 {
 	FItemDataRow TableData = GetTableDataById(InDataId);
 		
@@ -79,7 +79,7 @@ void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 		UItemData* Item = GetItem(ItemUID);
 		if(Item->GetItemGroup() == EItemGroup::Equip)
 		{
-			AddNewItem(TableData, InAmount);
+			return AddNewItem(TableData, InAmount);
 		}
 		else
 		{
@@ -89,11 +89,13 @@ void UItemModule::AddItem(int32 InDataId, int32 InAmount)
 				OwnItems.Remove(ItemUID);
 				SetList();
 			}
+
+			return Item;
 		}
 	}
 	else
 	{
-		AddNewItem(TableData, InAmount);
+		return AddNewItem(TableData, InAmount);
 	}	
 }
 
@@ -115,7 +117,7 @@ bool UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 
 	return true;
 }
-void UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
+UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 {
 	if (InTableData.DataId > 0 && GameManager.IsValid())
 	{
@@ -126,7 +128,11 @@ void UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 
 		OwnItems.Add(UID, NewItem);
 		SetList();
+
+		return NewItem;
 	}
+
+	return nullptr;
 }
 
 FItemDataRow UItemModule::GetTableDataById(int32 InDataId)

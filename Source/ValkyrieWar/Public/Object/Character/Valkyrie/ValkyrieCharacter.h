@@ -55,13 +55,9 @@ public:
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Equip")
-	FDataTableRowHandle SelectedWeaponRow;
-
-	UFUNCTION(CallInEditor, BlueprintCallable, Category = "Weapon|Equip")
-	void EquipSelectedWeapon();
-
-	void ChangeCombatWeapon(uint64 InEquipUID);
+#if WITH_EDITOR
+	void ChangeWeapon(UItemData* InEquip);
+#endif
 
 protected:
 	virtual void BeginPlay() override;
@@ -87,6 +83,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
 	TObjectPtr<UAnimMontage> ComboMontage;
 
+	//-----------------테스트 후 제거
 	UPROPERTY()
 	TObjectPtr<class AValkyrieWeapon> CurrentWeaponActor;
 
@@ -95,6 +92,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AValkyrieWeapon> WeaponClass;
+	//-------------------------------
 
 	UPROPERTY()
 	TObjectPtr<UValkyrieData> Data = nullptr;
