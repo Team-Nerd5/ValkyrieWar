@@ -1,4 +1,4 @@
-﻿#include "Widget/Item/Battle/UnitUpgradeCardWidget.h"
+﻿#include "Widget/Item/Battle/UnitSpawnUpgradeCardWidget.h"
 
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
@@ -17,7 +17,7 @@
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "Data/Module/UnitModule.h"
 
-void UUnitUpgradeCardWidget::Init(int32 InUnitId)
+void UUnitSpawnUpgradeCardWidget::Init(int32 InUnitId)
 {
 	UnitId = InUnitId;
 
@@ -49,7 +49,7 @@ void UUnitUpgradeCardWidget::Init(int32 InUnitId)
 	}
 }
 
-void UUnitUpgradeCardWidget::NativePreConstruct()
+void UUnitSpawnUpgradeCardWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
@@ -58,7 +58,7 @@ void UUnitUpgradeCardWidget::NativePreConstruct()
 	ApplyStateVisuals();
 }
 
-void UUnitUpgradeCardWidget::NativeConstruct()
+void UUnitSpawnUpgradeCardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -68,22 +68,22 @@ void UUnitUpgradeCardWidget::NativeConstruct()
 
 	if (UpgradeButton)
 	{
-		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitUpgradeCardWidget::HandleUpgradeButton);
-		UpgradeButton->OnClicked.AddDynamic(this, &UUnitUpgradeCardWidget::HandleUpgradeButton);
+		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
+		UpgradeButton->OnClicked.AddDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
 	}
 }
 
-void UUnitUpgradeCardWidget::NativeDestruct()
+void UUnitSpawnUpgradeCardWidget::NativeDestruct()
 {
 	if (UpgradeButton)
 	{
-		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitUpgradeCardWidget::HandleUpgradeButton);
+		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
 	}
 
 	Super::NativeDestruct();
 }
 
-void UUnitUpgradeCardWidget::HandleUpgradeButton()
+void UUnitSpawnUpgradeCardWidget::HandleUpgradeButton()
 {
 	if (UnitId <= 0) return;
 
@@ -97,13 +97,13 @@ void UUnitUpgradeCardWidget::HandleUpgradeButton()
 	}
 }
 
-void UUnitUpgradeCardWidget::SetAffordable(bool bAffordable)
+void UUnitSpawnUpgradeCardWidget::SetAffordable(bool bAffordable)
 {
 	bAffordableCached = bAffordable;
 	ApplyStateVisuals();
 }
 
-void UUnitUpgradeCardWidget::ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable)
+void UUnitSpawnUpgradeCardWidget::ApplyUpgradeState(int32 InLevel, int32 InCost, bool bAffordable)
 {
 	// BP에서 텍스트/아이콘 갱신(원하면 BP로 다시 돌려도 됨)
 	// BP_SetLevel(InLevel);
@@ -116,7 +116,7 @@ void UUnitUpgradeCardWidget::ApplyUpgradeState(int32 InLevel, int32 InCost, bool
 	ApplyStateVisuals();
 }
 
-void UUnitUpgradeCardWidget::EnsureWidgetTree()
+void UUnitSpawnUpgradeCardWidget::EnsureWidgetTree()
 {
 	// WBP로 구성되어 있으면 아무 것도 하지 않음
 	if (WidgetTree && WidgetTree->RootWidget) return;
@@ -193,32 +193,32 @@ void UUnitUpgradeCardWidget::EnsureWidgetTree()
 	}
 }
 
-FLinearColor UUnitUpgradeCardWidget::GetBgColor() const
+FLinearColor UUnitSpawnUpgradeCardWidget::GetBgColor() const
 {
 	return FLinearColor(0.09f, 0.09f, 0.14f, 1.f); // #171824
 }
 
-FLinearColor UUnitUpgradeCardWidget::GetFrameColor() const
+FLinearColor UUnitSpawnUpgradeCardWidget::GetFrameColor() const
 {
 	return FLinearColor(0.17f, 0.18f, 0.27f, 1.f); // #2C2F44
 }
 
-FLinearColor UUnitUpgradeCardWidget::GetTextColor() const
+FLinearColor UUnitSpawnUpgradeCardWidget::GetTextColor() const
 {
 	return FLinearColor(0.91f, 0.93f, 1.00f, 1.f); // #E9ECFF
 }
 
-FLinearColor UUnitUpgradeCardWidget::GetManaColor() const
+FLinearColor UUnitSpawnUpgradeCardWidget::GetManaColor() const
 {
 	return FLinearColor(0.023153f, 0.074214f, 1.00f, 1.f); // #45E6FF
 }
 
-FLinearColor UUnitUpgradeCardWidget::GetWarnColor() const
+FLinearColor UUnitSpawnUpgradeCardWidget::GetWarnColor() const
 {
 	return FLinearColor(1.00f, 0.30f, 0.65f, 1.f); // #FF4DA6
 }
 
-void UUnitUpgradeCardWidget::ApplyCardStyle(bool bIsDesignTime)
+void UUnitSpawnUpgradeCardWidget::ApplyCardStyle(bool bIsDesignTime)
 {
 	const FLinearColor Bg = GetBgColor();
 	const FLinearColor Frame = GetFrameColor();
@@ -279,7 +279,7 @@ void UUnitUpgradeCardWidget::ApplyCardStyle(bool bIsDesignTime)
 	}
 }
 
-void UUnitUpgradeCardWidget::ApplyStateVisuals()
+void UUnitSpawnUpgradeCardWidget::ApplyStateVisuals()
 {
 	const FLinearColor Mana = GetManaColor();
 	const FLinearColor Warn = GetWarnColor();

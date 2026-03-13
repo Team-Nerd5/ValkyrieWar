@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "UnitUpgradeCardWidget.generated.h"
+#include "UnitSpawnUpgradeCardWidget.generated.h"
 
 class UButton;
 class UBorder;
@@ -11,7 +11,7 @@ class UImage;
 class UTextBlock;
 
 UCLASS()
-class VALKYRIEWAR_API UUnitUpgradeCardWidget : public UUserWidget
+class VALKYRIEWAR_API UUnitSpawnUpgradeCardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

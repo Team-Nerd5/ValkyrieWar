@@ -6,7 +6,7 @@
 #include "UnitCardListWidget.generated.h"
 
 class UWidgetAnimation;
-class UUnitUpgradeCardWidget;
+class UUnitSpawnUpgradeCardWidget;
 
 UCLASS()
 class VALKYRIEWAR_API UUnitCardListWidget : public UUserWidget
@@ -29,22 +29,22 @@ private:
 	TObjectPtr<UWidgetAnimation> Anim_Out;
 
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UUnitUpgradeCardWidget> Card_1;
+	TObjectPtr<UUnitSpawnUpgradeCardWidget> Card_1;
 
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UUnitUpgradeCardWidget> Card_2;
+	TObjectPtr<UUnitSpawnUpgradeCardWidget> Card_2;
 
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UUnitUpgradeCardWidget> Card_3;
+	TObjectPtr<UUnitSpawnUpgradeCardWidget> Card_3;
 
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UUnitUpgradeCardWidget> Card_4;
+	TObjectPtr<UUnitSpawnUpgradeCardWidget> Card_4;
 
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UUnitUpgradeCardWidget> Card_5;
+	TObjectPtr<UUnitSpawnUpgradeCardWidget> Card_5;
 
 	UPROPERTY()
-	TArray<TObjectPtr<UUnitUpgradeCardWidget>> Cards;
+	TArray<TObjectPtr<UUnitSpawnUpgradeCardWidget>> Cards;
 
 	bool bIsShown = false;
 	bool bBound = false;
@@ -63,7 +63,7 @@ private:
 	void UnbindDelegates();
 
 	void CacheCards();
-	UUnitUpgradeCardWidget* FindCardByFamilyId(int32 FamilyId) const;
+	UUnitSpawnUpgradeCardWidget* FindCardByFamilyId(int32 FamilyId) const;
 
 	void ShowList(bool bAnimate);
 	void HideList(bool bAnimate);

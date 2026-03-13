@@ -1,6 +1,6 @@
 ﻿#include "Widget/Item/Battle/UnitCardListWidget.h"
 
-#include "Widget/Item/Battle/UnitUpgradeCardWidget.h"
+#include "Widget/Item/Battle/UnitSpawnUpgradeCardWidget.h"
 
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
@@ -133,15 +133,15 @@ void UUnitCardListWidget::OnUpgradeStateChanged(int32 FamilyId, int32 Level, int
 		CacheCards();
 	}
 
-	if (UUnitUpgradeCardWidget* Card = FindCardByFamilyId(FamilyId))
+	if (UUnitSpawnUpgradeCardWidget* Card = FindCardByFamilyId(FamilyId))
 	{
 		Card->ApplyUpgradeState(Level, Cost, bAffordable);
 	}
 }
 
-UUnitUpgradeCardWidget* UUnitCardListWidget::FindCardByFamilyId(int32 FamilyId) const
+UUnitSpawnUpgradeCardWidget* UUnitCardListWidget::FindCardByFamilyId(int32 FamilyId) const
 {
-	for (UUnitUpgradeCardWidget* Card : Cards)
+	for (UUnitSpawnUpgradeCardWidget* Card : Cards)
 	{
 		if (Card && Card->GetUnitId() == FamilyId)
 		{
