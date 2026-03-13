@@ -166,11 +166,11 @@ int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 InFamilyId) const
 
 void USpawnUpgradeSubsystem::SetCurrentMana(int32 InMana, bool bBroadcastAll)
 {
-	CurrentMana = FMath::Max(0, InMana);
+	CurrentMana = FMath::Min(MaxMana, InMana);
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Battle.OnCurrentManaChanged.Broadcast(CurrentMana);
+		WorldEventSystem->Battle.OnCurrentManaChanged.Broadcast(CurrentMana, MaxMana);
 	}
 
 	if (bBroadcastAll)

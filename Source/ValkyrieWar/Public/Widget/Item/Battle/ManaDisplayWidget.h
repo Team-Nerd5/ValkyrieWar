@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Data/Enum/CommonEnums.h"
 #include "ManaDisplayWidget.generated.h"
 
 class UTextBlock;
@@ -24,7 +25,7 @@ public:
 	void SetMana(int32 InCurrentMana, int32 InMaxMana);
 
 	UFUNCTION(BlueprintCallable, Category = "Mana")
-	void SetCurrentMana(int32 InCurrentMana);
+	void SetCurrentMana(int32 InCurrentMana, int32 InMaxMana);
 
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	void SetMaxMana(int32 InMaxMana);
@@ -38,31 +39,41 @@ protected:
 	virtual void NativeDestruct() override;
 
 private:
+	void RefreshUI();
+	void UpdateLowState(bool bLow);
+
+	UFUNCTION()
+	void OnControllModeChanged(EInputControlMode InMode);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ModeSwitch")
+	bool bIsAutoMode = false;
+
+private:
 	// ===== UMG Bind =====
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> ManaText;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> ManaBar;
+
 	// 부족/충분 상태 변화에 따른 애니메이션
 	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
 	TObjectPtr<UWidgetAnimation> Anim_LowMana;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	TObjectPtr<UWidgetAnimation> Anim_ModeChange;
 
 	// ===== Cached =====
 	UPROPERTY(Transient)
 	int32 CurrentMana = 0;
 
 	UPROPERTY(Transient)
+	float ManaProgress = 0.f;
+
+	UPROPERTY(Transient)
 	int32 RequiredMana = 0;
 
 	UPROPERTY(Transient)
 	bool bIsLowCached = false;
-
-private:
-	void RefreshUI();
-	void UpdateLowState(bool bLow);
-
-	//UFUNCTION(BlueprintImplementableEvent, Category = "Mana")
-	//void BP_OnManaChanged(int32 InCurrentMana, int32 InMaxMana, float InRatio);
-
-	//UFUNCTION(BlueprintImplementableEvent, Category = "Mana")
-	//void BP_OnLowManaStateChanged(bool bIsLow);
 };

@@ -80,7 +80,7 @@ void UModeChangeButtonWidget::RefreshVisual(EInputControlMode InCurrentMode)
 		// 애니메이션이 있으면 재생
 		if (Anim_ModeChange)
 		{
-			if (InCurrentMode == EInputControlMode::Auto)
+			if (bIsAutoMode)
 			{
 				PlayAnimationForward(Anim_ModeChange);
 			}

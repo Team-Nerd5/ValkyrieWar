@@ -87,6 +87,9 @@ private:
 	TMap<int32, FUpgradeCostRule> CostRules;
 
 	UPROPERTY()
+	int32 MaxMana = 1000;
+
+	UPROPERTY()
 	int32 CurrentMana = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "SpawnUpgrade")

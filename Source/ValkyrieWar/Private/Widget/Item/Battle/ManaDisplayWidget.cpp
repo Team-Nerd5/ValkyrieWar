@@ -14,6 +14,7 @@ void UManaDisplayWidget::NativeConstruct()
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		WorldEventSystem->Battle.OnCurrentManaChanged.AddDynamic(this, &UManaDisplayWidget::SetCurrentMana);
+		WorldEventSystem->Battle.OnBattleModeChanged.AddDynamic(this, &UManaDisplayWidget::OnControllModeChanged);
 	}
 
 	RefreshUI();
@@ -29,9 +30,10 @@ void UManaDisplayWidget::SetMana(int32 InCurrentMana, int32 InMaxMana)
 	RefreshUI();
 }
 
-void UManaDisplayWidget::SetCurrentMana(int32 InCurrentMana)
+void UManaDisplayWidget::SetCurrentMana(int32 InCurrentMana, int32 InMaxMana)
 {
 	CurrentMana = InCurrentMana;
+	ManaProgress = (float)InCurrentMana / (float)InMaxMana;
 	RefreshUI();
 }
 
@@ -48,8 +50,6 @@ void UManaDisplayWidget::SetRequiredMana(int32 InRequiredMana)
 
 void UManaDisplayWidget::RefreshUI()
 {
-	//const float Ratio = (float)CurrentMana / (float));
-
 	// Text: "35 / 100"
 	if (ManaText)
 	{
@@ -57,10 +57,10 @@ void UManaDisplayWidget::RefreshUI()
 	}
 
 	// Bar: 0~1
-	//if (Bar_Mana)
-	//{
-	//	Bar_Mana->SetPercent(FMath::Clamp(Ratio, 0.f, 1.f));
-	//}
+	if (ManaBar)
+	{
+		ManaBar->SetPercent(FMath::Clamp(ManaProgress, 0.f, 1.f));
+	}
 
 	// Low state 판단 (RequiredMana 기준이 있으면 그걸, 없으면 단순 임계치)
 	bool bLow = false;
@@ -100,4 +100,22 @@ void UManaDisplayWidget::UpdateLowState(bool bLow)
 	}
 
 	//BP_OnLowManaStateChanged(bIsLowCached);
+}
+
+void UManaDisplayWidget::OnControllModeChanged(EInputControlMode InMode)
+{
+	bIsAutoMode = (InMode == EInputControlMode::Auto) ? true : false;
+
+	if (Anim_ModeChange)
+	{
+		if (bIsAutoMode)
+		{
+			PlayAnimationForward(Anim_ModeChange);
+		}
+		else
+		{
+			PlayAnimationReverse(Anim_ModeChange);
+
+		}
+	}
 }

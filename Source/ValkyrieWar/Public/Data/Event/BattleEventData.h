@@ -27,7 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSpawnLevelUpgraded, int32, FamilyId, int32, OldLevel, int32, NewLevel);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnManaAdd, int32, InValue);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentManaChanged, int32, InCurrentMana);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCurrentManaChanged, int32, InCurrentMana, int32, InMaxMana);
 
 /**
  * 
