@@ -5,6 +5,8 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "GameSystem/State/Game/BattleGameState.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 
 void UBattleResultWidget::NativeConstruct()
 {
@@ -38,10 +40,9 @@ void UBattleResultWidget::HandleBackToLobbyClicked()
 {
 	OnCloseUIRequested.Broadcast(this);
 
-	ABattleGameState* State = GetWorld()->GetGameState<ABattleGameState>();
-	if (State)
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		State->ChangeState(EBattleState::MoveToLobby);
+		WorldEventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::MoveToLobby);
 	}
 }
 
