@@ -27,7 +27,7 @@ void ATestActorSpawner::BeginPlay()
 
 void ATestActorSpawner::SpawnActor()
 {
-	SpawnedActor = SubSystem->Get<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, GetActorLocation(), GetActorRotation());
+	SpawnedActor = SubSystem->Get<ABaseCharacter>(EPoolTypes::BaseCharacter, GetActorLocation(), GetActorRotation());
 
 }
 

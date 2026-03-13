@@ -227,7 +227,6 @@ void ATestUnitSpawner::HandleSpawnTick()
 
 		ATestBaseUnit* Unit = Pool->Get<ATestBaseUnit>(
 			PickType,
-			Entry->UnitClass,
 			SpawnTM.GetLocation(),
 			SpawnTM.Rotator()
 		);

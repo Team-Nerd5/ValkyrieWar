@@ -218,7 +218,6 @@ void ABaseUnitSpawner::SpawnOne(const FSpawnUnitEntry& Entry)
 
 	AUnitCharacter* Unit = Pool->Get<AUnitCharacter>(
 		Entry.PoolType,
-		Entry.UnitClass,
 		SpawnTM.GetLocation(),
 		SpawnTM.Rotator()
 	);

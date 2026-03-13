@@ -30,7 +30,7 @@ public:
 
 	// 풀링 시스템 Get함수
 	template<typename T>
-	T* Get(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation);
+	T* Get(EPoolTypes InType, FVector InLocation, FRotator InRotation);
 
 	// 풀링 시스템 Release 함수
 	template<typename T>
@@ -43,7 +43,7 @@ private:
 
 	// 풀을 가져오는 함수
 	template<typename T>
-	TPoolData<T>* GetObjectPool(EPoolTypes InType, TSubclassOf<AActor> InClass);
+	FPoolData<T>* GetObjectPool(EPoolTypes InType);
 
 private:
 	TMap<EPoolTypes, TUniquePtr<IPoolData>> ObjectPoolMap;
@@ -69,20 +69,16 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 #pragma endregion
 
 	CreateObjectPool<T>(InType, InClass);
-	TPoolData<T>* PoolData = GetObjectPool<T>(InType, InClass);
+	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
 
 	if (PoolData)
 	{
 		PoolData->DataInstance.Reserve(InMaxSize);
-#pragma region 풀링 시스템 확인 로그
-		UE_LOG(LogTemp, Warning, TEXT("[InitPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
-			*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
-#pragma endregion
 	}
 }
 
 template<typename T>
-inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InClass, FVector InLocation, FRotator InRotation)
+inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, FVector InLocation, FRotator InRotation)
 {
 #pragma region 유효성 검사
 	UWorld* World = GetWorld();
@@ -91,13 +87,9 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Spawn)] 월드가 없습니다"));
 		return nullptr;
 	}
-	if (!UGameBaseLibrary::CheckClassImplements(InClass, UObjectPoolInterface::StaticClass()))
-	{
-		return nullptr;
-	}
 #pragma endregion
 
-	TPoolData<T>* PoolData = GetObjectPool<T>(InType, InClass);
+	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
 
 	T* SpawnedActor = nullptr;	
 	if (PoolData && PoolData->NumInstance() > 0)
@@ -120,11 +112,6 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 				UE_LOG(LogTemp, Log, TEXT("[Subsystem(Spawn)] 풀에서 재사용"));
 			}
 		}
-#pragma region 풀링 시스템 확인 로그
-		UE_LOG(LogTemp, Warning, TEXT("[GetPool] %s Pool Reserved. Num: %d, Max(Capacity): %d, Memory: %d Bytes"),
-			*InClass->GetName(), PoolData->DataInstance.Num(), PoolData->DataInstance.Max(), PoolData->DataInstance.GetAllocatedSize());
-#pragma endregion
-
 	}
 
 	if (!SpawnedActor)
@@ -134,7 +121,7 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, TSubclassOf<AActor> InCla
 		SpawnParams.ObjectFlags = RF_Transient;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnedActor = World->SpawnActor<T>(
-			InClass,
+			PoolData->SpawnClass,
 			InLocation,
 			InRotation,
 			SpawnParams
@@ -169,7 +156,7 @@ inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Return)] 스폰할 액터가 없습니다"));
 		return;
 	}
-	TPoolData<T>* PoolData = GetObjectPool<T>(InType, InActor->GetClass());
+	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
 	if (!PoolData)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Return)] PoolData가 없습니다"));
@@ -206,20 +193,18 @@ inline void UObjectPoolSubsystem::CreateObjectPool(EPoolTypes InType, TSubclassO
 	if (!InClass)
 		return;
 
-	if (!ObjectPoolMap.Contains(InType))
-		ObjectPoolMap.Add(InType, MakeUnique<TPoolData<T>>());
+	if (!ObjectPoolMap.Contains(InType))	
+		ObjectPoolMap.Add(InType, MakeUnique<FPoolData<T>>(InClass));
 
 	return;
 }
 
 template<typename T>
-inline TPoolData<T>* UObjectPoolSubsystem::GetObjectPool(EPoolTypes InType, TSubclassOf<AActor> InClass)
+inline FPoolData<T>* UObjectPoolSubsystem::GetObjectPool(EPoolTypes InType)
 {
-	if (!InClass)
-		return nullptr;
 	if (!ObjectPoolMap.Contains(InType))
 		return nullptr;
 
-	return static_cast<TPoolData<T>*>(ObjectPoolMap[InType].Get());
+	return static_cast<FPoolData<T>*>(ObjectPoolMap[InType].Get());
 }
 

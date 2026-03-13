@@ -2,11 +2,8 @@
 
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
-#include "Object/Weapon/Range/Projectile/ArrowStackComponent.h"
 #include "Camera/CameraComponent.h"
 #include "AbilitySystemComponent.h"
-
-#include "Components/DecalComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -19,6 +16,7 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
+#include "GameSystem/Base/BaseProjectile.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -29,10 +27,9 @@
 #include "Data/Attribute/StatAttributeSet.h"
 #include "Data/Table/GameData/ItemDataRow.h"
 
-
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
-#include "Object/Weapon/Range/ValkyrieBow.h"
+
 
 AValkyrieCharacter::AValkyrieCharacter()
 {
@@ -245,12 +242,16 @@ void AValkyrieCharacter::OnAttackNotify()
 	//무기 동작을 시작하는 지점 아님 -> 필요하면 별개로 만들어야함
 	if (AttackData->GetAttackType() == EAttackType::Melee)
 	{
-		//타겟에게 데미지
+		//TODO : 타겟 탐색
+		// 타겟에게 데미지
 		ApplyAttack(nullptr);
 	}
 	else
 	{
-		//풀에서..
+		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+		{
+			//Pool->Get<ABaseProjectile>(AttackData->GetProjectileData()->EPoolTypes, );
+		}
 	}
 	
 
@@ -347,11 +348,13 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
 
-
-	/*if (ObjectPool)
+	if (FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
 	{
-		ObjectPool->InitPool(AttackData->GetProjectileData()->EPoolTypes, )
-	}*/
+		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+		{			
+			Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileData->SpawnObject.LoadSynchronous(), 5);
+		}
+	}	
 
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();

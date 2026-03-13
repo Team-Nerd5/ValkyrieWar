@@ -8,8 +8,16 @@ struct IPoolData
 };
 
 template<typename T>
-struct TPoolData : public IPoolData
+struct FPoolData : public IPoolData
 {
+	FPoolData(TSubclassOf<AActor> InClass)
+	{
+		SpawnClass = InClass;
+	}
+	UPROPERTY()
+	TSubclassOf<AActor> SpawnClass;
+
+	UPROPERTY()
 	TArray<TObjectPtr<T>> DataInstance;
 
 	// 인스턴스 추가
@@ -20,8 +28,6 @@ struct TPoolData : public IPoolData
 
 		DataInstance.Add(Instance);
 	}
-
-	// inline UClass* GetInstanceClass() { return T::StaticClass(); }
 
 	// Pop 호출
 	inline T* PopInstance()

@@ -39,6 +39,8 @@ public:
 
 	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
 
+	ETeamType GetTeamType() { return Data ? Data->GetTeamType() : ETeamType::None; }
+
 	// 스포너가 스폰(또는 재사용) 시점에 세팅
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void SetPoolType(EPoolTypes InType) { MyPoolType = InType; }

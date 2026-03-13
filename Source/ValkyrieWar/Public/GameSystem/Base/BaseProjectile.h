@@ -33,11 +33,13 @@ public:
 
 	ABaseProjectile();
 
+	virtual void BeginPlay() override;
+
 	virtual void OnGet_Implementation() override;
 
 	virtual void OnRelease_Implementation() override;
 
-	void SetData(FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData);
+	void SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData);
 
 protected:
 	UPROPERTY()
@@ -51,4 +53,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCapsuleComponent> Collision = nullptr;
+
+	FGameplayTag AbilityTag;
+
+	EPoolTypes PoolType = EPoolTypes::None;
+
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 };
