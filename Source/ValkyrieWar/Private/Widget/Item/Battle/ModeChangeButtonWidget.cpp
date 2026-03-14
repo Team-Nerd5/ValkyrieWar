@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 void UModeChangeButtonWidget::NativePreConstruct()
 {
@@ -16,7 +17,7 @@ void UModeChangeButtonWidget::NativePreConstruct()
 	if (Image_Knob)
 	{
 		// 디자이너에서도 상태가 보이도록
-		FWidgetTransform Transform = Image_Knob->RenderTransform;
+		FWidgetTransform Transform = Image_Knob->GetRenderTransform();
 		Image_Knob->SetRenderTransform(Transform);
 	}
 }

@@ -132,6 +132,7 @@ void ABaseCharacter::CreateAttackAbility()
         {
             FGameplayAbilitySpec Spec(UBaseGameplayAbility::StaticClass(), 1, -1, AttackData);
             Spec.GetDynamicSpecSourceTags().AddTag(AttackData->GetAbilityTag());
+            AttackSpec = Spec;
             AbilitySystemComponent->GiveAbility(Spec);
         }
     }

@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Test/OKM/TestActorSpawner.h"
-#include "Data/Pool/PoolTypes.h"
+#include "Object/Pool/PoolData.h"
 #include "Data/Enum/CommonEnums.h"
 #include "GameSystem/Base/BaseCharacter.h"
 

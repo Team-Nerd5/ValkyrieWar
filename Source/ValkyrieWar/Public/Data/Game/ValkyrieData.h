@@ -65,4 +65,13 @@ public:
 	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
+	FORCEINLINE UItemData* GetEquippedItem(EEquipGroup InType)
+	{
+		if (EquippedItem.Contains(InType))
+		{
+			return EquippedItem.FindChecked(InType);
+		}
+		else
+			return nullptr;
+	}
 };

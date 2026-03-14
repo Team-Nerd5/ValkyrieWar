@@ -96,6 +96,14 @@ void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 					}
 
 					UpdateWeaponMesh();
+
+					if ( FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
+					{
+						if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+						{
+							Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileData->SpawnObject.LoadSynchronous(), 5);
+						}
+					}
 				}
 			}
 		}		
@@ -193,10 +201,11 @@ void AValkyrieCharacter::ExecuteAttack()
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
-	if (!MontageData.IsValid())
-		return;
 
 	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
+	if (!AttackMontage)
+		return;
+
 
 	if (AnimInst && AttackMontage)
 	{
@@ -234,7 +243,7 @@ void AValkyrieCharacter::ExecuteAttack()
 
 void AValkyrieCharacter::OnAttackNotify()
 {
-	if (!AttackData)
+	if (!AttackData || !EquippedWeapon)
 		return;
 
 	//근접 공격 시 데미지 처리 시점
@@ -250,7 +259,26 @@ void AValkyrieCharacter::OnAttackNotify()
 	{
 		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
 		{
-			//Pool->Get<ABaseProjectile>(AttackData->GetProjectileData()->EPoolTypes, );
+			FVector FirePos = GetActorLocation();
+			if (EquippedWeapon->IsSkeletalWeapon())
+			{
+				if (!SkeletalWeapon->DoesSocketExist(FName("FirePos")))
+				{
+					UE_LOG(LogTemp, Error, TEXT("Weapon id %d doesn't have FirePos Socket!!"), EquippedWeapon->GetTableData().DataId);
+					return;
+				}
+				FirePos = SkeletalWeapon->GetSocketLocation(FName("FirePos"));
+			}
+			else
+			{
+				if (StaticWeapon->DoesSocketExist(FName("FirePos")))
+				{
+					UE_LOG(LogTemp, Error, TEXT("Weapon id %d doesn't have FirePos Socket!!"), EquippedWeapon->GetTableData().DataId);
+					return;
+				}
+			}
+			ABaseProjectile* Projectile = Pool->Get<ABaseProjectile>(AttackData->GetProjectileData()->EPoolTypes, FirePos, GetActorRotation());
+			Projectile->SetData(AttackData->GetAbilityTag(), AttackSpec, *AttackData->GetProjectileData());
 		}
 	}
 	
@@ -348,6 +376,8 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
 
+
+	//데이터 풀 타입 있는지도 체크...
 	if (FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
 	{
 		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))

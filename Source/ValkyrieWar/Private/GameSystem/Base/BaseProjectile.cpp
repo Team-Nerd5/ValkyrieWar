@@ -16,10 +16,16 @@ ABaseProjectile::ABaseProjectile()
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
 
 	Collision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
+	Collision->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
+
+	SetRootComponent(Collision);
 
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
-	MovementComponent->bRotationFollowsVelocity = false;
+	MovementComponent->bRotationFollowsVelocity = true;
 	MovementComponent->ProjectileGravityScale = 0.0f;
+	MovementComponent->bInitialVelocityInLocalSpace = true;
+
+	MovementComponent->SetUpdatedComponent(RootComponent);
 
 	Effect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("VFX"));
 	Effect->SetupAttachment(RootComponent);
@@ -46,6 +52,8 @@ void ABaseProjectile::OnGet_Implementation()
 void ABaseProjectile::OnRelease_Implementation()
 {
 	Effect->SetActive(false);
+	MovementComponent->StopMovementImmediately();
+	MovementComponent->Deactivate();
 }
 
 void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData)
@@ -55,12 +63,16 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 		AbilitySystemComponent->GiveAbility(InSpec);
 		AbilityTag = InTag;
 	}
+	PoolType = InProjectileData.EPoolTypes;
+
 	if (MovementComponent)
 	{
 		MovementComponent->InitialSpeed = InProjectileData.MoveSpeed;
 		MovementComponent->MaxSpeed = InProjectileData.MoveSpeed;
+
+		MovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * InProjectileData.MoveSpeed);
+		MovementComponent->Activate();
 	}
-	PoolType = InProjectileData.EPoolTypes;
 }
 
 void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,

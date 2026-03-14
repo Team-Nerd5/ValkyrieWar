@@ -21,7 +21,7 @@ class UCapsuleComponent;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class VALKYRIEWAR_API ABaseProjectile : public ABaseActor, public IAbilitySystemInterface, public IObjectPoolInterface
 {
 	GENERATED_BODY()
@@ -51,7 +51,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> MovementComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UCapsuleComponent> Collision = nullptr;
 
 	FGameplayTag AbilityTag;

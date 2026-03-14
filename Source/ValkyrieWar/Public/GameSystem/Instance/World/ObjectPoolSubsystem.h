@@ -6,9 +6,9 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "GameFramework/Actor.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
-#include "Data/Pool/PoolTypes.h"
 #include "Data/Enum/CommonEnums.h"
 #include "Interface/ObjectPool/ObjectPoolInterface.h"
+#include "Object/Pool/PoolData.h"
 #include "ObjectPoolSubsystem.generated.h"
 
 /**
@@ -43,7 +43,7 @@ private:
 
 	// 풀을 가져오는 함수
 	template<typename T>
-	FPoolData<T>* GetObjectPool(EPoolTypes InType);
+	TPoolData<T>* GetObjectPool(EPoolTypes InType);
 
 private:
 	TMap<EPoolTypes, TUniquePtr<IPoolData>> ObjectPoolMap;
@@ -69,7 +69,7 @@ inline void UObjectPoolSubsystem::InitPool(EPoolTypes InType, TSubclassOf<AActor
 #pragma endregion
 
 	CreateObjectPool<T>(InType, InClass);
-	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
+	TPoolData<T>* PoolData = GetObjectPool<T>(InType);
 
 	if (PoolData)
 	{
@@ -89,7 +89,7 @@ inline T* UObjectPoolSubsystem::Get(EPoolTypes InType, FVector InLocation, FRota
 	}
 #pragma endregion
 
-	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
+	TPoolData<T>* PoolData = GetObjectPool<T>(InType);
 
 	T* SpawnedActor = nullptr;	
 	if (PoolData && PoolData->NumInstance() > 0)
@@ -156,7 +156,7 @@ inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Return)] 스폰할 액터가 없습니다"));
 		return;
 	}
-	FPoolData<T>* PoolData = GetObjectPool<T>(InType);
+	TPoolData<T>* PoolData = GetObjectPool<T>(InType);
 	if (!PoolData)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Return)] PoolData가 없습니다"));
@@ -194,17 +194,17 @@ inline void UObjectPoolSubsystem::CreateObjectPool(EPoolTypes InType, TSubclassO
 		return;
 
 	if (!ObjectPoolMap.Contains(InType))	
-		ObjectPoolMap.Add(InType, MakeUnique<FPoolData<T>>(InClass));
+		ObjectPoolMap.Add(InType, MakeUnique<TPoolData<T>>(InClass));
 
 	return;
 }
 
 template<typename T>
-inline FPoolData<T>* UObjectPoolSubsystem::GetObjectPool(EPoolTypes InType)
+inline TPoolData<T>* UObjectPoolSubsystem::GetObjectPool(EPoolTypes InType)
 {
 	if (!ObjectPoolMap.Contains(InType))
 		return nullptr;
 
-	return static_cast<FPoolData<T>*>(ObjectPoolMap[InType].Get());
+	return static_cast<TPoolData<T>*>(ObjectPoolMap[InType].Get());
 }
 

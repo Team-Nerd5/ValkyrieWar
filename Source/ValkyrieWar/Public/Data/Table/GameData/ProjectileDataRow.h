@@ -19,7 +19,7 @@ public:
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
 	float MoveSpeed = 1000.0f;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	EPoolTypes EPoolTypes = EPoolTypes::None;
 	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<class ABaseProjectile> SpawnObject = nullptr;

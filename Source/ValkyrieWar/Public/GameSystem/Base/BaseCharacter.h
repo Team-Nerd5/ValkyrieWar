@@ -89,4 +89,7 @@ protected:
 	TObjectPtr<AActor> CurrentTarget = nullptr;
 
 	int32 UsingSkillIndex = 0;
+
+	FGameplayAbilitySpec AttackSpec;
+	TArray<FGameplayAbilitySpec> SkillSpecs;
 };
