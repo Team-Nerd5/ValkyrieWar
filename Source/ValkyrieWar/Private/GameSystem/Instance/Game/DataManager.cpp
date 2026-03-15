@@ -32,5 +32,8 @@ int32 UDataManager::CreateData()
 	InitializeData(UnitModule);
 	InitializeData(TopMenuModule);
 
+	InitializeData(StageInfoModule);
+	InitializeData(StageModule);
+
 	return TaskCount;
 }

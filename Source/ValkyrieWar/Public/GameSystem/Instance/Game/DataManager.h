@@ -16,6 +16,8 @@
 #include "Data/Module/StatGroupModule.h"
 #include "Data/Module/TopMenuModule.h"
 #include "Data/Module/ProjectileModule.h"
+#include "Data/Module/StageModule.h"
+#include "Data/Module/StageInfoModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -44,6 +46,8 @@ public:
 	FORCEINLINE UStatGroupModule* GetStatGroupModule() const { return StatGroupModule; }
 	FORCEINLINE UTopMenuModule* GetTopMenuModule() const { return TopMenuModule; }
 	FORCEINLINE UProjectileModule* GetProjectileModule() const { return ProjectileModule; }
+	FORCEINLINE UStageModule* GetStageModule() const { return StageModule; }
+	FORCEINLINE UStageInfoModule* GetStageInfoModule() const { return StageInfoModule; }
 
 private:
 	template<typename T>
@@ -71,6 +75,10 @@ private:
 	TObjectPtr<UTopMenuModule> TopMenuModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UProjectileModule> ProjectileModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UStageModule> StageModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UStageInfoModule> StageInfoModule = nullptr;
 
 
 	UPROPERTY()

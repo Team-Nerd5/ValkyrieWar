@@ -14,7 +14,11 @@ struct VALKYRIEWAR_API FStageInfoDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 GroupId = 0;
+	int32 DataId = 0;
+	UPROPERTY(EditAnywhere)
+	int32 ChapterNum = 0;
+	UPROPERTY(EditAnywhere)
+	int32 StageNum = 0;
 	UPROPERTY(EditAnywhere)
 	int32 EnemyUnit1 = 0;
 	UPROPERTY(EditAnywhere)
@@ -27,5 +31,4 @@ public:
 	int32 EnemyUnit5 = 0;
 	UPROPERTY(EditAnywhere)
 	int32 RewardGroupId = 0;
-
 };

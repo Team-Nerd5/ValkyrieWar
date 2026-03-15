@@ -13,16 +13,13 @@ struct VALKYRIEWAR_API FStageDataRow : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
+	//챕터별 데이터
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<UTexture2D> Icon = nullptr;
+	int32 Chapter = 0;
 	UPROPERTY(EditAnywhere)
-	int32 MissionId1 = 0;
+	int32 ChapterMissionId = 0;
 	UPROPERTY(EditAnywhere)
-	int32 MissionId2 = 0;
-	UPROPERTY(EditAnywhere)
-	int32 MissionId3 = 0;
-	UPROPERTY(EditAnywhere)
-	int32 StageGroupId = 0;
+	int32 StageNum = 0;
 };
