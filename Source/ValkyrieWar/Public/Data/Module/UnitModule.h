@@ -50,10 +50,22 @@ public:
 
 protected:
 	virtual void MakeData() override;
+
+public:
+	void UnitLevelUpStat(int32 InUnitId);
+
 private:
 	TMap<int32, FUnitDataRow> TableDataByDataId;
 
 	//TODO: 임시 보유 유닛 데이터(전체 보유로 판단)
 	UPROPERTY()
 	TMap<int32, TObjectPtr<UUnitData>> OwnUnits;
+
+	UPROPERTY()
+	TMap<int32, FStatValueData> UnitStats;
+
+	// StatGroupId를 어떻게 써야할지 이해가 되지 않아서 임시로 사용
+	int32 StatGroupId1 = 670001;
+	int32 StatGroupId2 = 670002;
+	int32 StatGroupId3 = 670003;
 };

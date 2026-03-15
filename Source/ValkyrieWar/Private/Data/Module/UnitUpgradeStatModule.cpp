@@ -41,7 +41,7 @@ FStatValueData const UUnitUpgradeStatModule::GetTotalStat(int32 InGroupId, int32
 	{
 		FUnitStatLevelData StatGroupData = StatData.FindChecked(InGroupId);
 
-		for (int32 i = 2; i < InTargetLevel; i++)
+		for (int32 i = 2; i <= InTargetLevel; i++)
 		{
 			FStatGroupDataRow LevelStat = StatGroupData.UnitStatData.FindChecked(i);
 			Data.Attack += LevelStat.Attack;

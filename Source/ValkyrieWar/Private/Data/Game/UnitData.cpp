@@ -39,10 +39,3 @@ void UUnitData::LevelUp()
 {
 	Level++;
 }
-
-void UUnitData::ApplyStatValues(FStatValueData& InStatValueData)
-{
-	Stat.Add(EStatusType::Attack, InStatValueData.Attack);
-	Stat.Add(EStatusType::Health, InStatValueData.Health);
-	Stat.Add(EStatusType::Defence, InStatValueData.Defence);
-}

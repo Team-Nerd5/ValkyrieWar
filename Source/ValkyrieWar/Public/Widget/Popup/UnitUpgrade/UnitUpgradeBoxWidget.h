@@ -59,8 +59,12 @@ private:
 	UPROPERTY()
 	TObjectPtr<UUnitModule> UnitModule = nullptr;
 	UPROPERTY()
-	TWeakObjectPtr<UUnitData> CachedUnitData = nullptr;
+	TObjectPtr<UUnitData> CachedUnitData = nullptr;
 
 	int32 UnitDataId = 0;
-	
+
+	// StatGroupId를 어떻게 써야할지 이해가 되지 않아서 임시로 사용
+	int32 StatGroupId1 = 670001;
+	int32 StatGroupId2 = 670002;
+	int32 StatGroupId3 = 670003;
 };
