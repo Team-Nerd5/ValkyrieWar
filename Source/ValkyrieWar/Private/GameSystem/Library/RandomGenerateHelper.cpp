@@ -9,26 +9,20 @@ int32 URandomGenerateHelper::GetRandomValkyrie(UDataManager* InDataManager, int3
 {
 	if (InDataManager)
 	{
-		TMap<int32, FGachaRandomDataRow> GachaData = InDataManager->GetGachaRandomModule()->GetRandomData(InGroupId);
+		TMap<EGradeType, FGachaRandomDataRow> GachaData = InDataManager->GetGachaRandomModule()->GetRandomData(InGroupId);
 
 		if (IsGachaDataValid(GachaData))
 		{
 			int32 Rand = FMath::RandHelper(10000);
 
-			if (Rand < GachaData.FindChecked(static_cast<int32>(EGradeType::Legend)).Rate)
+			if (Rand < GachaData.FindChecked(EGradeType::Legend).Rate)
 			{
 				//5성이면 Array를 찾아서
-				TArray<int32> TargetValkyries = GachaData.FindChecked(static_cast<int32>(EGradeType::Legend)).TargetValkyires;
+				TArray<int32> TargetValkyries = GachaData.FindChecked(EGradeType::Legend).TargetValkyires;
 
 				if (TargetValkyries.Num() == 0)
 				{
-					TArray<int32> AllData = InDataManager->GetValkyrieModule()->GetAllByGrade(EGradeType::Legend);
-					if (AllData.Num() == 0)
-						return 0;
-
-					int32 RandomIndex = FMath::RandHelper(AllData.Num());
-
-					return AllData[RandomIndex];
+					return GetRandomValkyrieInGrade(InDataManager, EGradeType::Legend);
 				}
 				else
 				{
@@ -38,30 +32,29 @@ int32 URandomGenerateHelper::GetRandomValkyrie(UDataManager* InDataManager, int3
 				}
 
 			}
-			else if (Rand < GachaData.FindChecked(static_cast<int32>(EGradeType::Unique)).Rate)
+			else if (Rand < GachaData.FindChecked(EGradeType::Unique).Rate)
 			{
-
+				return GetRandomValkyrieInGrade(InDataManager, EGradeType::Unique);
 			}
-			else if (Rand < GachaData.FindChecked(static_cast<int32>(EGradeType::Rare)).Rate)
+			else if (Rand < GachaData.FindChecked(EGradeType::Rare).Rate)
 			{
-
+				return GetRandomValkyrieInGrade(InDataManager, EGradeType::Rare);
 			}
-			else if (Rand < GachaData.FindChecked(static_cast<int32>(EGradeType::Uncommon)).Rate)
+			else if (Rand < GachaData.FindChecked(EGradeType::Uncommon).Rate)
 			{
-
+				return GetRandomValkyrieInGrade(InDataManager, EGradeType::Uncommon);
 			}
 			else
 			{
-
+				return GetRandomValkyrieInGrade(InDataManager, EGradeType::Common);
 			}
 		}
-	}
-	
+	}	
 
 	return 0;
 }
 
-bool URandomGenerateHelper::IsGachaDataValid(TMap<int32, FGachaRandomDataRow> InData)
+bool URandomGenerateHelper::IsGachaDataValid(TMap<EGradeType, FGachaRandomDataRow> InData)
 {
 	if (InData.Num() != 5)
 		return false;
@@ -78,4 +71,15 @@ bool URandomGenerateHelper::IsGachaDataValid(TMap<int32, FGachaRandomDataRow> In
 	}
 
 	return true;
+}
+
+int32 URandomGenerateHelper::GetRandomValkyrieInGrade(UDataManager* InDataManager, EGradeType InGrade)
+{
+	TArray<int32> AllData = InDataManager->GetValkyrieModule()->GetAllByGrade(EGradeType::Legend);
+	if (AllData.Num() == 0)
+		return 0;
+
+	int32 RandomIndex = FMath::RandHelper(AllData.Num());
+
+	return AllData[RandomIndex];
 }

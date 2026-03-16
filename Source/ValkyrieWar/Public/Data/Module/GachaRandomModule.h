@@ -17,7 +17,7 @@ struct VALKYRIEWAR_API FRandromGroup
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	TMap<int32, FGachaRandomDataRow> RandomData;
+	TMap<EGradeType, FGachaRandomDataRow> RandomData;
 };
 
 UCLASS()
@@ -27,7 +27,7 @@ class VALKYRIEWAR_API UGachaRandomModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	TMap<int32, FGachaRandomDataRow> GetRandomData(int32 InGroupId);
+	TMap<EGradeType, FGachaRandomDataRow> GetRandomData(int32 InGroupId);
 protected:
 	virtual void MakeData() override;
 

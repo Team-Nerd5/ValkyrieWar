@@ -16,14 +16,14 @@ void UGachaRandomModule::Initialize(UGameManager* InGameManager)
 
 	SendDataLoadComplete();
 }
-TMap<int32, FGachaRandomDataRow> UGachaRandomModule::GetRandomData(int32 InGroupId)
+TMap<EGradeType, FGachaRandomDataRow> UGachaRandomModule::GetRandomData(int32 InGroupId)
 {
 	if (TableDataByGroupId.Contains(InGroupId))
 	{
 		return TableDataByGroupId.FindChecked(InGroupId).RandomData;
 	}
 
-	return TMap<int32, FGachaRandomDataRow>();
+	return TMap<EGradeType, FGachaRandomDataRow>();
 }
 void UGachaRandomModule::MakeData()
 {

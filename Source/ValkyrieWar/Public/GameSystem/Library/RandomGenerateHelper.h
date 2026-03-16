@@ -20,5 +20,7 @@ public:
 	static int32 GetRandomValkyrie(UDataManager* InDataManager, int32 InGroupId);
 
 private:
-	static bool IsGachaDataValid(TMap<int32, FGachaRandomDataRow> InData);
+	static bool IsGachaDataValid(TMap<EGradeType, FGachaRandomDataRow> InData);
+
+	static int32 GetRandomValkyrieInGrade(UDataManager* InDataManager, EGradeType InGrade);
 };

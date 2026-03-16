@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/DataEnums.h"
 #include "GachaRandomDataRow.generated.h"
 
 /**
@@ -18,7 +19,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 Rate = 0;
 	UPROPERTY(EditAnywhere)
-	int32 ResultGrade = 0;
+	EGradeType ResultGrade = EGradeType::Common;
 	UPROPERTY(EditAnywhere)
 	TArray<int32> TargetValkyires;
 };
