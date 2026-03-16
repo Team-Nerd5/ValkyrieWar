@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Data/Module/StageModule.h"
+#include "Data/Struct/StageEntryData.h"
 #include "StageItemWidget.generated.h"
 
 class UButton;

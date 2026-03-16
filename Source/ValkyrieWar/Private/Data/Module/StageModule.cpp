@@ -4,6 +4,7 @@
 #include "Data/Module/StageModule.h"
 #include "Data/Table/GameData/StageDataRow.h"
 #include "Data/Game/StageData.h"
+#include "Data/Struct/StageEntryData.h"
 
 void UStageModule::Initialize(UGameManager* InGameManager)
 {

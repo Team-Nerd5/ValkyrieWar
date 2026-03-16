@@ -10,7 +10,9 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+
 #include "Data/Module/StageModule.h"
+#include "Data/Struct/StageEntryData.h"
 
 void UStageListPanelWidget::NativeConstruct()
 {
