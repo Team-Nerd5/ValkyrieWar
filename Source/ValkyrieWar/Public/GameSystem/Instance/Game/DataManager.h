@@ -47,6 +47,7 @@ public:
 	FORCEINLINE UStatGroupModule* GetStatGroupModule() const { return StatGroupModule; }
 	FORCEINLINE UTopMenuModule* GetTopMenuModule() const { return TopMenuModule; }
 	FORCEINLINE UProjectileModule* GetProjectileModule() const { return ProjectileModule; }
+	FORCEINLINE UUnitUpgradeStatModule* GetUnitUpgradeStatModule() const { return UnitUpgradeStatModule; }
 	FORCEINLINE UStageModule* GetStageModule() const { return StageModule; }
 	FORCEINLINE UStageInfoModule* GetStageInfoModule() const { return StageInfoModule; }
 
