@@ -17,46 +17,23 @@ void UUnitUpgradeStatModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-FStatGroupDataRow const UUnitUpgradeStatModule::GetStat(int32 InGroupId, int32 InLevel)
+UUnitUpgradeData* const UUnitUpgradeStatModule::GetNextLevelData(int32 InGroupId, int32 InNextLevel)
 {
-	if (StatData.Contains(InGroupId))
+	//예외처리 추가 확인 필요..
+	if (UpgradeData.Contains(InGroupId))
 	{
-		FUnitStatLevelData StatGroupData = StatData.FindChecked(InGroupId);
-
-		if (StatGroupData.UnitStatData.Contains(InLevel))
-		{
-			return StatGroupData.UnitStatData.FindChecked(InLevel);
-		}
+		return  UpgradeData.FindRef(InGroupId).UpgradeDataList.FindChecked(InNextLevel);
 	}
-	//없으면 빈값 그냥 내보내도록...
-	return FStatGroupDataRow();
+	return nullptr;
 }
 
-//현재 레벨이니까... 테이블에서 현재 레벨 - 1까지 더해줌
 FStatValueData const UUnitUpgradeStatModule::GetTotalStat(int32 InGroupId, int32 InTargetLevel)
 {
-	FStatValueData Data;
-
-	if (StatData.Contains(InGroupId) && InTargetLevel > 1)
-	{
-		FUnitStatLevelData StatGroupData = StatData.FindChecked(InGroupId);
-
-		for (int32 i = 2; i <= InTargetLevel; i++)
-		{
-			if (!StatGroupData.UnitStatData.Contains(i))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Missing level %d in group %d"), i, InGroupId);
-				continue;
-			}
-			FStatGroupDataRow LevelStat = StatGroupData.UnitStatData.FindChecked(i);
-			Data.Attack += LevelStat.Attack;
-			Data.Defence += LevelStat.Defence;
-			Data.Health += LevelStat.Health;
-		}
-	}
-
-	return Data;
+	//음...들어온 레벨까지의 모든 스탯 총합?
+	return FStatValueData();
 }
+
+
 
 void UUnitUpgradeStatModule::MakeData()
 {
@@ -73,19 +50,11 @@ void UUnitUpgradeStatModule::MakeData()
 				{
 					if (!Item) continue;
 
-					FStatGroupDataRow Stat = DataManager->GetStatGroupModule()->GetData(Item->StatGroupId);
-					if (!StatData.Contains(Item->StatGroupId))
-					{
-						FUnitStatLevelData NewData;
-						NewData.UnitStatData.Add(Item->Level, Stat);
-						StatData.Add(Item->StatGroupId, NewData);
-					}
-					else
-					{
-						FUnitStatLevelData* FindData = &StatData.FindChecked(Item->StatGroupId);
-						FindData->UnitStatData.Add(Item->Level, Stat);
-					}
-					StatGroupIdByLevel.Add(Item->Level, Item->StatGroupId);
+					UUnitUpgradeData* NewData = NewObject<UUnitUpgradeData>(this);
+					NewData->MakeData(*Item, GameManager.Get());
+
+					FUnitStatLevelData* FindData = &UpgradeData.FindOrAdd(Item->GroupId);
+					FindData->UpgradeDataList.Add(Item->Level, NewData);
 				}
 			}			
 		}			

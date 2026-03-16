@@ -14,6 +14,7 @@
 #include "Components/UniformGridSlot.h"
 
 #include "Widget/Popup/Inventory/InventoryWidget.h"
+#include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
 
 void ULobbyWidget::NativeConstruct()
 {
@@ -86,7 +87,6 @@ void ULobbyWidget::ShowInventory()
 {
     if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
     {
-        //이거 음..클래스 가져오는걸 음...
         UInventoryWidget* Widget = UIManager->OpenUI<UInventoryWidget>(EUIType::PopupInventory);
 
         //위젯 초기화
@@ -102,6 +102,16 @@ void ULobbyWidget::ShowCharacterInfo()
         //캐릭터창은 로비 UI를 꺼준다
         UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
 
+    }
+}
+
+void ULobbyWidget::ShowUnitUpgrade()
+{
+    if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+    {
+        UUnitUpgradeWidget* Widget = UIManager->OpenUI<UUnitUpgradeWidget>(EUIType::PopupUnitUpgrade);
+
+        //위젯 초기화
     }
 }
 
@@ -131,6 +141,9 @@ void ULobbyWidget::OnClickInventory(EUIType InMenuType)
             break;
     case EUIType::PopupCharacterInfo:
 
+        break;
+    case EUIType::PopupUnitUpgrade:
+        ShowUnitUpgrade();
         break;
     }
 }

@@ -37,6 +37,8 @@ private:
 	void ShowInventory();
 	void ShowCharacterInfo();
 
+	void ShowUnitUpgrade();
+
 	UFUNCTION()
 	void ShowStageInternal();
 

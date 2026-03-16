@@ -26,7 +26,7 @@ enum class EUIType : uint8
 	PopupGachaResult,
 	PopupGachaRate,
 
-	PopupUnitEnforce,
+	PopupUnitUpgrade,
 
 	// Battle Popup
 	PopupBattleResult,

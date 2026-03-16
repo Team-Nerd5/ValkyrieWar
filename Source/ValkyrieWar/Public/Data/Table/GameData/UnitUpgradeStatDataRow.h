@@ -23,5 +23,5 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 Level = 1;
 	UPROPERTY(EditAnywhere)
-	int32 StatGroupId = 0;
+	int32 StatDataId = 0;
 };

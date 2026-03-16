@@ -70,7 +70,9 @@ protected: // 스킬 관련
 	UFUNCTION()
 	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
 	virtual void ExecuteAttack() override;
+	UFUNCTION()
 	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
 	UFUNCTION()

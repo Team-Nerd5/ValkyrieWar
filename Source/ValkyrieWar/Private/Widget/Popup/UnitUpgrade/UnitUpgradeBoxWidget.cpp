@@ -38,6 +38,8 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 		return;
 	if (!UnitUpgradeStatModule)
 		return;
+
+	//굳이 또 찾아야..? 포인터니까 그냥 새로 고침만 하면 안될지?
 	CachedUnitData = UnitModule->GetUnitDataById(InUnitId);
 	if (!CachedUnitData)
 		return;
@@ -68,24 +70,24 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 	{
 		CurrentLevel_Defence->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Defence) + UnitModule->GetUnitStat(UnitDataId).Defence));
 	}
-
-	auto NextLevelData = UnitUpgradeStatModule->GetStat(UnitUpgradeStatModule->GetStatGroupId(Level + 1), Level + 1);
+	//모듈 변수로 저장하지 마세요.
+	auto NextLevelData = UnitUpgradeStatModule->GetNextLevelData(CachedUnitData->GetLevelUpGroupId(), Level + 1);
 	if (NextLevel_Attack)
 	{
-		NextLevel_Attack->SetVisibility(NextLevelData.Attack > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Attack)));
+		NextLevel_Attack->SetVisibility(NextLevelData->GetAttack() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetAttack())));
 	}
 	if (NextLevel_Health)
 	{
-		NextLevel_Health->SetVisibility(NextLevelData.Health > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		NextLevel_Health->SetVisibility(NextLevelData->GetHealth() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Health)));
+		NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetHealth())));
 	}
 	if (NextLevel_Defence)
 	{
-		NextLevel_Defence->SetVisibility(NextLevelData.Defence > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		NextLevel_Defence->SetVisibility(NextLevelData->GetDefence() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Defence)));
+		NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetDefence())));
 	}
 
 	if (NextLevel_Cost)

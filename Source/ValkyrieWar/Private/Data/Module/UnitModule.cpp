@@ -47,28 +47,16 @@ void UUnitModule::UnitLevelUpStat(int32 InDataId)
 	if (!DataManager)
 		return;
 
-	// 저장된 증가한 스텟 가져오기
-	FStatValueData IncreaseStatData = UnitAddedStats.FindRef(TargetUnitData->GetDataId());
-
 	// 유닛 레벨업
 	TargetUnitData->LevelUp();
-	
-	// 다음 레벨 데이터ID 가져오기
-	int32 StatGroupId = DataManager->GetUnitUpgradeStatModule()->GetStatGroupId(TargetUnitData->GetLevel());
 
-	// 레벨에 해당되는 StatGroupId을 Unit에 저장
-	TargetUnitData->SetLevelUpGroupId(StatGroupId);
+	UUnitUpgradeData* UpgradeData = DataManager->GetUnitUpgradeStatModule()->GetNextLevelData(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
 
-	// 레벨업 이후 증가한 스텟 가져오기
+	//UnitData의 테이블 데이터를 코드로 바꿔버리는데 이러면 큰일납니다.
+	//데이터 자체를 바꿔버리는거에요. 게임 돌때마다 테이블이 바뀌는 일이 발생합니다.
+
 	auto BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
 
-	if(BonusStatData.Attack != 0)
-		IncreaseStatData.Attack = BonusStatData.Attack;
-	if (BonusStatData.Health != 0)
-	IncreaseStatData.Health = BonusStatData.Health;
-	if (BonusStatData.Defence != 0)
-	IncreaseStatData.Defence = BonusStatData.Defence;
-
 	// 증가한 스텟 저장
-	UnitAddedStats.Add(TargetUnitData->GetDataId(), IncreaseStatData);
+	UnitAddedStats.Add(TargetUnitData->GetDataId(), BonusStatData);
 }

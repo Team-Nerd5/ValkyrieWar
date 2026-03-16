@@ -49,7 +49,6 @@ public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
 	void LevelUp();
-	void SetLevelUpGroupId(int32 InStatGroupId);
 
 	FORCEINLINE uint64 GetUID() { return UID; }
 	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
