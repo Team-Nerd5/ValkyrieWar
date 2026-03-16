@@ -281,13 +281,6 @@ void AValkyrieCharacter::OnAttackNotify()
 			Projectile->SetData(AttackData->GetAbilityTag(), AttackSpec, *AttackData->GetProjectileData());
 		}
 	}
-	
-
-	if (CurrentWeaponActor)
-	{
-		//사용 불가(오류나는 형태임)
-		//CurrentWeaponActor->ExecuteWeaponAction(this, *ArrowClass);
-	}
 }
 
 void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)

@@ -36,7 +36,6 @@ public:
 	
 
 	virtual void OnAttackNotify() override;
-	UFUNCTION(BlueprintCallable, Category = "Combat|Skill")
 	virtual void OnSkillNotify() override;
 	 
 
@@ -71,29 +70,13 @@ protected: // 스킬 관련
 	UFUNCTION()
 	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteAttack() override;
-	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Combat|Combo")
-	TObjectPtr<UAnimMontage> ComboMontage;
-
-	//-----------------테스트 후 제거
-	UPROPERTY()
-	TObjectPtr<class AValkyrieWeapon> CurrentWeaponActor;
-
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TSubclassOf<class AArrowProjectile> ArrowClass;
-
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TSubclassOf<class AValkyrieWeapon> WeaponClass;
-	//-------------------------------
-
 	UPROPERTY()
 	TObjectPtr<UValkyrieData> Data = nullptr;
 
