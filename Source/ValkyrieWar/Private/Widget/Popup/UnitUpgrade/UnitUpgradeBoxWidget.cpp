@@ -72,23 +72,27 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 	}
 	//모듈 변수로 저장하지 마세요.
 	auto NextLevelData = UnitUpgradeStatModule->GetNextLevelData(CachedUnitData->GetLevelUpGroupId(), Level + 1);
-	if (NextLevel_Attack)
+	if (NextLevelData)
 	{
-		NextLevel_Attack->SetVisibility(NextLevelData->GetAttack() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetAttack())));
-	}
-	if (NextLevel_Health)
-	{
-		NextLevel_Health->SetVisibility(NextLevelData->GetHealth() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		if (NextLevel_Attack)
+		{
+			NextLevel_Attack->SetVisibility(NextLevelData->GetAttack() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+			NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetAttack())));
+		}
+		if (NextLevel_Health)
+		{
+			NextLevel_Health->SetVisibility(NextLevelData->GetHealth() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetHealth())));
-	}
-	if (NextLevel_Defence)
-	{
-		NextLevel_Defence->SetVisibility(NextLevelData->GetDefence() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+			NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetHealth())));
+		}
+		if (NextLevel_Defence)
+		{
+			NextLevel_Defence->SetVisibility(NextLevelData->GetDefence() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetDefence())));
+			NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData->GetDefence())));
+		}
 	}
+	
 
 	if (NextLevel_Cost)
 	{

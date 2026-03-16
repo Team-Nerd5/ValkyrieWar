@@ -19,4 +19,12 @@ public:
 	float Defence = 0;
 	UPROPERTY()
 	float Health = 0;
+
+public:
+	void Add(float InAttack, float InDefence, float InHealth)
+	{
+		Attack += InAttack;
+		Defence += InDefence;
+		Health += InHealth;
+	}
 };

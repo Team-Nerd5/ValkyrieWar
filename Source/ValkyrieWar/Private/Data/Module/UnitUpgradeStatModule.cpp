@@ -29,8 +29,15 @@ UUnitUpgradeData* const UUnitUpgradeStatModule::GetNextLevelData(int32 InGroupId
 
 FStatValueData const UUnitUpgradeStatModule::GetTotalStat(int32 InGroupId, int32 InTargetLevel)
 {
-	//음...들어온 레벨까지의 모든 스탯 총합?
-	return FStatValueData();
+	FStatValueData TotalStat;
+	for (auto Data : UpgradeData.FindRef(InGroupId).UpgradeDataList)
+	{
+		if (Data.Key > InTargetLevel)
+			break;
+
+		TotalStat.Add(Data.Value->GetAttack(), Data.Value->GetDefence(), Data.Value->GetHealth());
+	}
+	return TotalStat;
 }
 
 

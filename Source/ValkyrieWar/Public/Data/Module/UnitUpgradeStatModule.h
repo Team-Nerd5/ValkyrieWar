@@ -31,6 +31,7 @@ public:
 	//다음 레벨의 데이터를 가져옴(다음 레벨이 되기위한 비용, 다음 레벨에 오르는 스탯)
 	UUnitUpgradeData* const GetNextLevelData(int32 InGroupId, int32 InNextLevel);
 
+	//타겟 레벨까지의 총 레벨업 스텟 합산
 	FStatValueData const GetTotalStat(int32 InGroupId, int32 InTargetLevel);
 
 protected:
