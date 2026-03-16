@@ -35,4 +35,6 @@ public:
 	TSoftObjectPtr<UTexture2D> UnitIcon = nullptr;
 	UPROPERTY(EditAnywhere)
 	EUnitCharacterType UnitType = EUnitCharacterType::SwordMan;
+	UPROPERTY(EditAnywhere)
+	int32 LevelUpGroupId = 0;
 };
