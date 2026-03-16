@@ -19,6 +19,7 @@
 #include "Data/Module/UnitUpgradeStatModule.h"
 #include "Data/Module/StageModule.h"
 #include "Data/Module/StageInfoModule.h"
+#include "Data/Module/GachaRandomModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -50,6 +51,7 @@ public:
 	FORCEINLINE UUnitUpgradeStatModule* GetUnitUpgradeStatModule() const { return UnitUpgradeStatModule; }
 	FORCEINLINE UStageModule* GetStageModule() const { return StageModule; }
 	FORCEINLINE UStageInfoModule* GetStageInfoModule() const { return StageInfoModule; }
+	FORCEINLINE UGachaRandomModule* GetGachaRandomModule() const { return GachaRandomModule; }
 
 private:
 	template<typename T>
@@ -83,6 +85,8 @@ private:
 	TObjectPtr<UStageModule> StageModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UStageInfoModule> StageInfoModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UGachaRandomModule> GachaRandomModule = nullptr;
 
 
 	UPROPERTY()

@@ -36,5 +36,7 @@ int32 UDataManager::CreateData()
 	InitializeData(StageInfoModule);
 	InitializeData(StageModule);
 
+	InitializeData(GachaRandomModule);
+
 	return TaskCount;
 }

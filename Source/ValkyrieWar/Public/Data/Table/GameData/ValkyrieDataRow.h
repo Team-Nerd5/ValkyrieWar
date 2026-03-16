@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Enum/DataEnums.h"
 #include "ValkyrieDataRow.generated.h"
 
 /**
@@ -16,7 +17,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
-	int32 BaseGrade = 0;
+	EGradeType BaseGrade = EGradeType::Common;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)

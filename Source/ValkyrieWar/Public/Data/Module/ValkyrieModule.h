@@ -41,6 +41,8 @@ public:
 	uint64 CreateValkyrie(int32 InDataId);
 
 	void LoadData(uint64 InUID, int32 InDataId);
+
+	TArray<int32> GetAllByGrade(EGradeType InGradeType);
 protected:
 	virtual void MakeData() override;
 private:

@@ -45,6 +45,18 @@ void UValkyrieModule::LoadData(uint64 InUID, int32 InDataId)
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
 }
 
+TArray<int32> UValkyrieModule::GetAllByGrade(EGradeType InGradeType)
+{
+	TArray<int32> DataIdArray;
+
+	for (auto Data : TableDataByDataId)
+	{
+		if (Data.Value.BaseGrade == InGradeType)
+			DataIdArray.Add(Data.Value.DataId);
+	}
+	return DataIdArray;
+}
+
 void UValkyrieModule::MakeData()
 {
 	if (DataTable)
