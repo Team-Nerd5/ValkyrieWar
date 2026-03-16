@@ -43,9 +43,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Button_StartStage = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_Close = nullptr;
-
 	UFUNCTION()
 	void HandlePrevChapter();
 
@@ -57,9 +54,6 @@ protected:
 
 	UFUNCTION()
 	void StartStage();
-
-	UFUNCTION()
-	void CloseStageListPopup();
 
 	void RefreshChapterHeader();
 	void RefreshChapterButtons();

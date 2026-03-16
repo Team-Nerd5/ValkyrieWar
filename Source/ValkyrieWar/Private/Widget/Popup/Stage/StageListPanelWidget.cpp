@@ -33,12 +33,6 @@ void UStageListPanelWidget::NativeConstruct()
 		Button_StartStage->OnClicked.AddDynamic(this, &UStageListPanelWidget::StartStage);
 
 	}
-
-	if (Button_Close)
-	{
-		Button_Close->OnClicked.AddDynamic(this, &UStageListPanelWidget::CloseStageListPopup);
-
-	}
 }
 
 void UStageListPanelWidget::NativeDestruct()
@@ -56,12 +50,6 @@ void UStageListPanelWidget::NativeDestruct()
 	if (Button_StartStage)
 	{
 		Button_StartStage->OnClicked.RemoveDynamic(this, &UStageListPanelWidget::StartStage);
-
-	}
-
-	if (Button_Close)
-	{
-		Button_Close->OnClicked.RemoveDynamic(this, &UStageListPanelWidget::CloseStageListPopup);
 
 	}
 
@@ -262,9 +250,4 @@ void UStageListPanelWidget::StartStage()
 	{
 		LevelManager->LoadMap(EMapType::Battle, true);
 	}
-}
-
-void UStageListPanelWidget::CloseStageListPopup()
-{
-	CloseUI();
 }
