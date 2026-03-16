@@ -362,10 +362,10 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 {
 	Data = InData;
 
-	StatAttribute->SetAttack(Data->GetStat(EStatusType::Attack));
-	StatAttribute->SetDefense(Data->GetStat(EStatusType::Defence));
-	StatAttribute->SetHealth(Data->GetStat(EStatusType::Health));
-	StatAttribute->SetMaxHealth(Data->GetStat(EStatusType::Health));
+	StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
+	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
+	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
+	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
 
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();

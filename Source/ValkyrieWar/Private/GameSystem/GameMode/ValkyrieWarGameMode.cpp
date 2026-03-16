@@ -37,19 +37,19 @@ void AValkyrieWarGameMode::RestartPlayer(AController* NewPlayer)
     {
         UValkyrieData* Selected = GameManager->GetSelectedValkyrie();
 
-        if (Selected)
-        {
-            if (auto SpawnDataClass = Selected->GetSpawnClass())
-            {
-                UClass* SpawnClass = SpawnDataClass.LoadSynchronous();
-                AValkyrieCharacter* Valkyrie = SpawnValkyrie(NewPlayer, SpawnClass);
-                if (Valkyrie)
-                {
-                    Valkyrie->SetData(Selected);
-                }
-            }
-        }
-    }
+		if (Selected)
+		{
+			UClass* SpawnClass = Selected->GetSpawnClass().LoadSynchronous();
+			if (SpawnClass)
+			{
+				AValkyrieCharacter* Valkyrie = SpawnValkyrie(NewPlayer, SpawnClass);
+				if (Valkyrie)
+				{
+					Valkyrie->SetData(Selected);
+				}
+			}
+		}
+	}
 }
 
 AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(AController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn)

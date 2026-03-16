@@ -66,9 +66,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
-	TObjectPtr<class UStatAttributeSet> StatAttribute = nullptr;
-
 protected:
 	UPROPERTY()
 	TObjectPtr<UItemData> EquippedWeapon = nullptr;
@@ -87,6 +84,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentTarget = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
+	TObjectPtr<class UStatAttributeSet> StatAttributeSet = nullptr;
 
 	int32 UsingSkillIndex = 0;
 

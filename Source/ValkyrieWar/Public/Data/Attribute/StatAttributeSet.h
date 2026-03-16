@@ -17,7 +17,7 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName)\
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)\
 
-UCLASS()
+UCLASS(BlueprintType)
 class VALKYRIEWAR_API UStatAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()

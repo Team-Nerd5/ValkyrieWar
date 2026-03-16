@@ -22,7 +22,7 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-    StatAttribute = CreateDefaultSubobject<UStatAttributeSet>(TEXT("CharacterStat"));
+    StatAttributeSet = CreateDefaultSubobject<UStatAttributeSet>(TEXT("CharacterStat"));
 }
 
 void ABaseCharacter::OnGet_Implementation()
