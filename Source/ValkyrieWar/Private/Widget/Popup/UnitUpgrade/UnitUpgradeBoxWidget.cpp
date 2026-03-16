@@ -35,36 +35,16 @@ void UUnitUpgradeBoxWidget::Init(int32 InUnitId)
 void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 {
 	if (!UnitModule)
-	{
-		UE_LOG(LogTemp, Log, TEXT("유닛 모듈이 없습니다"));
 		return;
-	}
+	if (!UnitUpgradeStatModule)
+		return;
 	CachedUnitData = UnitModule->GetUnitDataById(InUnitId);
 	if (!CachedUnitData)
-	{
-		UE_LOG(LogTemp, Log, TEXT("유닛 데이터가 없습니다"));
 		return;
-	}
 	int32 UnitLevel = CachedUnitData->GetLevel();
 	if (UnitLevel < 1)
 		return;
 
-	int32 StatGroupId = 0;
-	int32 Temp = CachedUnitData->GetLevel() % 3;
-	switch (Temp)
-	{
-	case 1:
-		StatGroupId = StatGroupId1;
-		break;
-	case 2:
-		StatGroupId = StatGroupId2;
-		break;
-	case 0:
-		StatGroupId = StatGroupId3;
-		break;
-	default:
-		break;
-	}
 
 	if (UnitType)
 	{
@@ -72,23 +52,21 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 	}
 	if (CurrentLevel_Attack)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Attack : %.1f"), CachedUnitData->GetStat(EStatusType::Attack));
-		CurrentLevel_Attack->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Attack)));
+		CurrentLevel_Attack->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Attack) + UnitModule->GetUnitStat(UnitDataId).Attack));
 	}
 	if (CurrentLevel_Health)
 	{
-		CurrentLevel_Health->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Health)));
+		CurrentLevel_Health->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Health) + UnitModule->GetUnitStat(UnitDataId).Health));
 	}
 	if (CurrentLevel_Defence)
 	{
-		CurrentLevel_Defence->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Defence)));
+		CurrentLevel_Defence->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Defence) + UnitModule->GetUnitStat(UnitDataId).Defence));
 	}
 
-	auto NextLevelData = UnitUpgradeStatModule->GetStat(StatGroupId, UnitLevel + 1);
+	auto NextLevelData = UnitUpgradeStatModule->GetStat(UnitUpgradeStatModule->GetStatGroupId(UnitLevel + 1), UnitLevel + 1);
 	if (NextLevel_Attack)
 	{
 		NextLevel_Attack->SetVisibility(NextLevelData.Attack > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		UE_LOG(LogTemp, Log, TEXT("Attack : %.1f"), NextLevelData.Attack);
 		NextLevel_Attack->SetText(FText::AsNumber(NextLevelData.Attack));
 	}
 	if (NextLevel_Health)
@@ -112,7 +90,7 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 
 	UnitModule->UnitLevelUpStat(UnitDataId);
 
-	// 재화 소모 처리
+	// TODO: 재화 소모 처리
 
 	UpdateUpgradeInfo(UnitDataId);
 }

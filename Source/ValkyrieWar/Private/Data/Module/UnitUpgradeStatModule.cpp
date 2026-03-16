@@ -80,6 +80,7 @@ void UUnitUpgradeStatModule::MakeData()
 						FUnitStatLevelData* FindData = &StatData.FindChecked(Item->StatGroupId);
 						FindData->UnitStatData.Add(Item->Level, Stat);
 					}
+					StatGroupIdByLevel.Add(Item->Level, Item->StatGroupId);
 				}
 			}			
 		}			

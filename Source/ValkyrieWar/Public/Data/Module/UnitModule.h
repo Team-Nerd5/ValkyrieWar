@@ -48,6 +48,11 @@ public:
 		return TableDataByDataId.FindRef(InDataId).UnitIcon;
 	}
 
+	FORCEINLINE FStatValueData GetUnitStat(int32 InDataId)
+	{
+		return UnitAddedStats.FindRef(InDataId);
+	}
+
 protected:
 	virtual void MakeData() override;
 
@@ -61,11 +66,7 @@ private:
 	UPROPERTY()
 	TMap<int32, TObjectPtr<UUnitData>> OwnUnits;
 
+	// 증가한 스텟 저장
 	UPROPERTY()
-	TMap<int32, FStatValueData> UnitStats;
-
-	// StatGroupId를 어떻게 써야할지 이해가 되지 않아서 임시로 사용
-	int32 StatGroupId1 = 670001;
-	int32 StatGroupId2 = 670002;
-	int32 StatGroupId3 = 670003;
+	TMap<int32, FStatValueData> UnitAddedStats;
 };

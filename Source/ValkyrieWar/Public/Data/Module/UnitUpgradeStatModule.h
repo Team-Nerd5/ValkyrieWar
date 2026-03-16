@@ -34,9 +34,18 @@ public:
 
 	FStatValueData const GetTotalStat(int32 InGroupId, int32 InTargetLevel);
 
+	FORCEINLINE int32 GetStatGroupId(int32 InLevel)
+	{
+		return StatGroupIdByLevel.FindRef(InLevel);
+	}
 protected:
 	virtual void MakeData() override;
 private:
 	UPROPERTY()
 	TMap<int32, FUnitStatLevelData> StatData;
+
+	// StatGroup 임시 저장
+	// -> StatGroupId를 가져올 방법을 못찾음
+	UPROPERTY()
+	TMap<int32, int32> StatGroupIdByLevel;
 };

@@ -33,51 +33,32 @@ void UUnitModule::MakeData()
 			UUnitData* UnitData = NewObject<UUnitData>(this);
 			UnitData->MakeData(*Item, GameManager.Get());
 
-			OwnUnits.Add(Item->DataId, UnitData); 
+			OwnUnits.Add(Item->DataId, UnitData);
 		}
 	}
 }
 
 void UUnitModule::UnitLevelUpStat(int32 InDataId)
 {
-	// UI구현을 위해 임시 사용
-	FStatValueData IncreaseStatData;
-
 	UUnitData* TargetUnitData = OwnUnits.FindRef(InDataId);
 	if (!TargetUnitData)
 		return;
 
+	// 저장된 증가한 스텟 가져오기
+	FStatValueData IncreaseStatData;
+	IncreaseStatData = UnitAddedStats.FindRef(TargetUnitData->GetDataId());
+
+	// 유닛 레벨업
 	TargetUnitData->LevelUp();
 
-	int32 StatGroupId = 0;
-	int32 Temp = TargetUnitData->GetLevel() % 3;
-	switch (Temp)
-	{
-	case 1:
-		StatGroupId = StatGroupId1;
-		break;
-	case 2:
-		StatGroupId = StatGroupId2;
-		break;
-	case 0:
-		StatGroupId = StatGroupId3;
-		break;
-	default:
-		break;
-	}
-
-
-	if (UnitStats.Contains(TargetUnitData->GetDataId()))
-	{
-		IncreaseStatData = UnitStats.FindRef(TargetUnitData->GetDataId());
-	}
-
+	// 다음 레벨 데이터 가져오기
 	UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
+	int32 StatGroupId = DataManager->GetUnitUpgradeStatModule()->GetStatGroupId(TargetUnitData->GetLevel());
 	FStatGroupDataRow BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetStat(StatGroupId, TargetUnitData->GetLevel());
 
 	IncreaseStatData.Attack += BonusStatData.Attack;
 	IncreaseStatData.Health += BonusStatData.Health;
 	IncreaseStatData.Defence += BonusStatData.Defence;
 
-	UnitStats.Add(TargetUnitData->GetDataId(), IncreaseStatData);
+	UnitAddedStats.Add(TargetUnitData->GetDataId(), IncreaseStatData);
 }
