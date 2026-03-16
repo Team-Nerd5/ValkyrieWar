@@ -14,6 +14,7 @@
 #include "Components/UniformGridSlot.h"
 
 #include "Widget/Popup/Inventory/InventoryWidget.h"
+#include "Widget/Popup/Stage/StageListPanelWidget.h"
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
 
 void ULobbyWidget::NativeConstruct()
@@ -105,6 +106,14 @@ void ULobbyWidget::ShowCharacterInfo()
     }
 }
 
+void ULobbyWidget::ShowStageListPopup()
+{
+    if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+    {
+        UStageListPanelWidget* StageWidget = UIManager->OpenUI<UStageListPanelWidget>(EUIType::PopupStageList);
+    }
+}
+
 void ULobbyWidget::ShowUnitUpgrade()
 {
     if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
@@ -117,19 +126,7 @@ void ULobbyWidget::ShowUnitUpgrade()
 
 void ULobbyWidget::ShowStageInternal()
 {
-    //TODO: 전투로 연결한거 바꿔야함..
-    //우선은 그냥 전투 레벨로 전환
-
-    if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
-    {
-        LevelManager->LoadMap(EMapType::Battle, true);
-    }
-
-    //전투 연결 시 로직
-    //StageModule에 SelectedStage를 만들어둚.
-    //스테이지에서 시작 누르면 해당 스테이지 데이터를 Selected로 바꿔줌
-    //전투 레벨 불러올 때 SelectedStage 데이터로 세팅해줌
-
+    ShowStageListPopup();
 }
 
 void ULobbyWidget::OnClickInventory(EUIType InMenuType)

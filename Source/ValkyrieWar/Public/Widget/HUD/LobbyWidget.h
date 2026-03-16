@@ -36,6 +36,7 @@ protected:
 private:
 	void ShowInventory();
 	void ShowCharacterInfo();
+	void ShowStageListPopup();
 
 	void ShowUnitUpgrade();
 
