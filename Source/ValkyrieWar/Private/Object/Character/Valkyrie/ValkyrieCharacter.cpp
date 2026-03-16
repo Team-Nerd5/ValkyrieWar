@@ -29,6 +29,7 @@
 
 #include "Object/Character/Valkyrie/Animation/AnimNotifyState/ANS_ComboWindow.h"
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
+#include "AIController.h"
 
 
 AValkyrieCharacter::AValkyrieCharacter()
@@ -46,6 +47,8 @@ AValkyrieCharacter::AValkyrieCharacter()
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 	CurrentComboCount = 0;
 	PrimaryActorTick.bCanEverTick = true;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	AIControllerClass = AAIController::StaticClass();
 
 	//EventSystem
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
@@ -156,9 +159,8 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
-	if (!EquippedWeapon)
-		return;
-
+	if (!EquippedWeapon) return;
+	if (!AttackData) return;
 	if (EquippedWeapon->IsSkeletalWeapon())
 	{
 		if (StaticWeapon)
@@ -205,7 +207,7 @@ void AValkyrieCharacter::ExecuteAttack()
 	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
 	if (!AttackMontage)
 		return;
-
+	UE_LOG(LogTemp, Warning, TEXT("🔥 현재 뇌: %s / 재생할 몽타주: %s"), *AnimInst->GetName(), AttackMontage ? *AttackMontage->GetName() : TEXT("없음(Null)"));
 
 	if (AnimInst && AttackMontage)
 	{
