@@ -2,24 +2,49 @@
 
 
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+#include "Data/Module/UnitModule.h"
 
 void UUnitUpgradeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	Init();
 	InitUpgradeBox();
+}
+
+void UUnitUpgradeWidget::Init()
+{
+	if (UpgradeBox1) UpgradeBoxes.Add(UpgradeBox1);
+	if (UpgradeBox2) UpgradeBoxes.Add(UpgradeBox2);
+	if (UpgradeBox3) UpgradeBoxes.Add(UpgradeBox3);
+	if (UpgradeBox4) UpgradeBoxes.Add(UpgradeBox4);
+	if (UpgradeBox5) UpgradeBoxes.Add(UpgradeBox5);
 }
 
 void UUnitUpgradeWidget::InitUpgradeBox()
 {
-	if (UpgradeBox1)
-		UpgradeBox1->Init(210001);
-	if (UpgradeBox2)
-		UpgradeBox2->Init(210002);
-	if (UpgradeBox3)
-		UpgradeBox3->Init(210003);
-	if (UpgradeBox4)
-		UpgradeBox4->Init(210004);
-	if (UpgradeBox5)
-		UpgradeBox5->Init(210005);
+	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
+	if (!DataManager)
+		return;
+	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	if (!UnitModule)
+		return;
+
+	TArray<int32> UnitDataIds;
+	UnitModule->GetOwnedUnitIds(UnitDataIds);
+
+	for (int32 Key : UnitDataIds)
+	{
+		for (TObjectPtr<UUnitUpgradeBoxWidget> Box : UpgradeBoxes)
+		{
+			if (!Box)
+				break;
+
+			if (Box->GetUnitDataId() != 0)
+				continue;
+			Box->Init(Key);
+			break;
+		}
+	}
 }

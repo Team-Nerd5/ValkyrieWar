@@ -49,11 +49,12 @@ public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
 	void LevelUp();
+	void SetLevelUpGroupId(int32 InStatGroupId);
 
 	FORCEINLINE uint64 GetUID() { return UID; }
 	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
 	FORCEINLINE int32 GetDataId() { return TableData.DataId; }
-	FORCEINLINE int32 GetStatId() { return TableData.StatId; }
+	FORCEINLINE int32 GetLevelUpGroupId() { return TableData.LevelUpGroupId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }

@@ -41,15 +41,21 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 	CachedUnitData = UnitModule->GetUnitDataById(InUnitId);
 	if (!CachedUnitData)
 		return;
-	int32 UnitLevel = CachedUnitData->GetLevel();
-	if (UnitLevel < 1)
+	int32 Level = CachedUnitData->GetLevel();
+	if (Level < 1)
 		return;
 
 
 	if (UnitType)
 	{
-		UnitType->SetText(FText::FromString(TEXT("")));
+		FString EnumString = StaticEnum<EUnitCharacterType>()->GetNameStringByValue((int64)CachedUnitData->GetTableData().UnitType);
+		UnitType->SetText(FText::FromString(EnumString));
 	}
+	if (UnitLevel)
+	{
+		UnitLevel->SetText(FText::AsNumber(Level));
+	}
+
 	if (CurrentLevel_Attack)
 	{
 		CurrentLevel_Attack->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Attack) + UnitModule->GetUnitStat(UnitDataId).Attack));
@@ -63,34 +69,46 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 		CurrentLevel_Defence->SetText(FText::AsNumber(CachedUnitData->GetStat(EStatusType::Defence) + UnitModule->GetUnitStat(UnitDataId).Defence));
 	}
 
-	auto NextLevelData = UnitUpgradeStatModule->GetStat(UnitUpgradeStatModule->GetStatGroupId(UnitLevel + 1), UnitLevel + 1);
+	auto NextLevelData = UnitUpgradeStatModule->GetStat(UnitUpgradeStatModule->GetStatGroupId(Level + 1), Level + 1);
 	if (NextLevel_Attack)
 	{
 		NextLevel_Attack->SetVisibility(NextLevelData.Attack > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		NextLevel_Attack->SetText(FText::AsNumber(NextLevelData.Attack));
+		NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Attack)));
 	}
 	if (NextLevel_Health)
 	{
 		NextLevel_Health->SetVisibility(NextLevelData.Health > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Health->SetText(FText::AsNumber(NextLevelData.Health));
+		NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Health)));
 	}
 	if (NextLevel_Defence)
 	{
 		NextLevel_Defence->SetVisibility(NextLevelData.Defence > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-		NextLevel_Defence->SetText(FText::AsNumber(NextLevelData.Defence));
+		NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.0f"), NextLevelData.Defence)));
+	}
+
+	if (NextLevel_Cost)
+	{
+		// TODO: 업그레이드 코스트 UI업데이트
+
+		NextLevel_Cost->SetText(FText::FromString(FString::Printf(TEXT("0"))));
+	}
+
+	if (Level >= 10)
+	{
+		if (Btn_UpgradeUnit)
+		{
+			Btn_UpgradeUnit->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }
 
 void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 {
-	if (!CachedUnitData)
-		return;
+	// TODO: 재화 소모 조건 추가 및 처리
 
 	UnitModule->UnitLevelUpStat(UnitDataId);
-
-	// TODO: 재화 소모 처리
 
 	UpdateUpgradeInfo(UnitDataId);
 }

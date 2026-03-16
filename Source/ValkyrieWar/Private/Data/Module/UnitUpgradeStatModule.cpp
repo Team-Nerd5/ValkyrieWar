@@ -43,6 +43,11 @@ FStatValueData const UUnitUpgradeStatModule::GetTotalStat(int32 InGroupId, int32
 
 		for (int32 i = 2; i <= InTargetLevel; i++)
 		{
+			if (!StatGroupData.UnitStatData.Contains(i))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Missing level %d in group %d"), i, InGroupId);
+				continue;
+			}
 			FStatGroupDataRow LevelStat = StatGroupData.UnitStatData.FindChecked(i);
 			Data.Attack += LevelStat.Attack;
 			Data.Defence += LevelStat.Defence;

@@ -45,7 +45,6 @@ private:
 	TMap<int32, FUnitStatLevelData> StatData;
 
 	// StatGroup 임시 저장
-	// -> StatGroupId를 가져올 방법을 못찾음
 	UPROPERTY()
 	TMap<int32, int32> StatGroupIdByLevel;
 };

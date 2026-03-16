@@ -39,3 +39,11 @@ void UUnitData::LevelUp()
 {
 	Level++;
 }
+
+void UUnitData::SetLevelUpGroupId(int32 InStatGroupId)
+{
+	if (InStatGroupId > 0)
+		TableData.LevelUpGroupId = InStatGroupId;
+	else
+		TableData.LevelUpGroupId = 0;
+}

@@ -20,6 +20,8 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
+	void Init();
+
 	void InitUpgradeBox();
 
 protected:
@@ -34,4 +36,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox5 = nullptr;
 
+private:
+	TArray<TObjectPtr< UUnitUpgradeBoxWidget>> UpgradeBoxes;
 };

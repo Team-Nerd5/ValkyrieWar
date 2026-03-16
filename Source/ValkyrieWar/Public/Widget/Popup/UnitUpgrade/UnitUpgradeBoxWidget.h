@@ -30,6 +30,9 @@ public:
 
 	UFUNCTION()
 	void UpdateUpgradeInfo(int32 InUnitId);
+
+	UFUNCTION()
+	FORCEINLINE int32 GetUnitDataId() { return UnitDataId; }
 protected:
 	UFUNCTION()
 	void OnUpgradeUnit();
@@ -37,6 +40,8 @@ protected:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UnitType = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> UnitLevel = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> CurrentLevel_Attack = nullptr;
 	UPROPERTY(meta = (BindWidget))
@@ -49,6 +54,9 @@ protected:
 	TObjectPtr<UTextBlock> NextLevel_Health = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Defence = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> NextLevel_Cost = nullptr;
+
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_UpgradeUnit = nullptr;
