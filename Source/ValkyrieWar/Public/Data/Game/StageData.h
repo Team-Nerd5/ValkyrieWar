@@ -23,6 +23,9 @@ public:
 	void MakeData(const FStageDataRow InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE int32 GetChapter() { return TableData.Chapter; }
+
+	void GetSortedStageNums(TArray<int32>& OutStageNums) const;
+
 protected:
 	UPROPERTY()
 	FStageDataRow TableData;

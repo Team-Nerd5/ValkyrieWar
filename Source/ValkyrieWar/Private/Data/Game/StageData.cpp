@@ -16,3 +16,10 @@ void UStageData::MakeData(const FStageDataRow InTableData, UGameManager* InGameM
 		}
 	}
 }
+
+void UStageData::GetSortedStageNums(TArray<int32>& OutStageNums) const
+{
+	OutStageNums.Reset();
+	StageInfoData.GetKeys(OutStageNums);
+	OutStageNums.Sort();
+}
