@@ -59,20 +59,20 @@ enum class EPoolTypes : uint8
 	// 액터
 	BaseActor,
 
-	// 아군 근딜
-	Melee_Ally,
-	// 아군 아처
-	Archer_Ally,
-	// 아군 마법사
-	Wizard_Ally,
+	// 아군 유닛 풀타입
+	Ally_Archer,
+	Ally_Sword,
+	Ally_General,
+	Ally_Spear,
+	Ally_Wizard,
 
-	// 적 근딜
-	Melee_Enemy,
-	// 적 아처
-	Archer_Enemy,
-	// 적 마법사
-	Mage_Enemy,
-
+	// 적 유닛 풀타입
+	Enemy_Sword,
+	Enemy_Knight,
+	Enemy_Defender,
+	Enemy_Hammer,
+	Enemy_Archer,
+	Enemy_Mage,
 
 	//기본 화살
 	Arrow_Normal,
