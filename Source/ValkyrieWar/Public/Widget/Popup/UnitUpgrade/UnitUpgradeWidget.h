@@ -28,7 +28,7 @@ protected:
 	TObjectPtr<UHorizontalBox> UnitListBox = nullptr;
 
 	// UnitListBox에 표시할 Box위젯 클래스
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI|WidgetClass")
 	TSubclassOf<UUnitUpgradeBoxWidget> UpgradeWidgetClass = nullptr;
 
 private:
