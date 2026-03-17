@@ -28,6 +28,20 @@ public:
 		OwnUnits.GenerateKeyArray(OutIds);
 	}
 
+	FORCEINLINE void GetUnitIdsByTeam(ETeamType InTeamType, TArray<int32>& OutIds) const
+	{
+		OutIds.Reset();
+		for (const auto& TableData : TableDataByDataId)
+		{
+			const int32 DataId = TableData.Key;
+			const FUnitDataRow& Row = TableData.Value;
+			if (Row.TeamType == InTeamType)
+			{
+				OutIds.Add(DataId);
+			}
+		}
+	}
+
 	FORCEINLINE TSubclassOf<class AUnitCharacter> GetSpawnUnitClass(int32 InDataId)
 	{
 		return TableDataByDataId.FindRef(InDataId).SpawnClass;

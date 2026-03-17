@@ -3,27 +3,20 @@
 
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
 #include "GameSystem/Instance/Game/DataManager.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Data/Module/UnitModule.h"
 
 void UUnitUpgradeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Init();
 	InitUpgradeBox();
-}
-
-void UUnitUpgradeWidget::Init()
-{
-	if (UpgradeBox1) UpgradeBoxes.Add(UpgradeBox1);
-	if (UpgradeBox2) UpgradeBoxes.Add(UpgradeBox2);
-	if (UpgradeBox3) UpgradeBoxes.Add(UpgradeBox3);
-	if (UpgradeBox4) UpgradeBoxes.Add(UpgradeBox4);
-	if (UpgradeBox5) UpgradeBoxes.Add(UpgradeBox5);
 }
 
 void UUnitUpgradeWidget::InitUpgradeBox()
 {
+	if (!UpgradeWidgetClass)
+		return;
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
 		return;
@@ -31,20 +24,38 @@ void UUnitUpgradeWidget::InitUpgradeBox()
 	if (!UnitModule)
 		return;
 
-	TArray<int32> UnitDataIds;
-	UnitModule->GetOwnedUnitIds(UnitDataIds);
+	// 유닛 목록 초기화
+	if (UnitListBox)
+		UnitListBox->ClearChildren();
+	UpgradeBoxes.Empty();
 
-	for (int32 Key : UnitDataIds)
+	// 아군 유닛 DataId 가져오기
+	TArray<int32> AllyUnitDataIds;
+	UnitModule->GetUnitIdsByTeam(ETeamType::Ally, AllyUnitDataIds);
+
+	for (int32 Key : AllyUnitDataIds)
 	{
-		for (TObjectPtr<UUnitUpgradeBoxWidget> Box : UpgradeBoxes)
+		UUnitUpgradeBoxWidget* NewUpgradeBox = CreateWidget<UUnitUpgradeBoxWidget>(this, UpgradeWidgetClass);
+		if (NewUpgradeBox)
 		{
-			if (!Box)
-				break;
+			// 위젯 Key값 설정 및 저장
+			NewUpgradeBox->Init(Key);
+			UpgradeBoxes.Add(NewUpgradeBox);
 
-			if (Box->GetUnitDataId() != 0)
-				continue;
-			Box->Init(Key);
-			break;
+			if (UnitListBox)
+			{
+				// 위젯 박스 설정
+				UHorizontalBoxSlot* BoxSlot = UnitListBox->AddChildToHorizontalBox(NewUpgradeBox);
+				if (BoxSlot)
+				{
+					FSlateChildSize SizeRule;
+					SizeRule.SizeRule = ESlateSizeRule::Fill;
+					BoxSlot->SetSize(SizeRule);
+
+					BoxSlot->SetHorizontalAlignment(HAlign_Center);
+					BoxSlot->SetVerticalAlignment(VAlign_Center);
+				}
+			}
 		}
 	}
 }

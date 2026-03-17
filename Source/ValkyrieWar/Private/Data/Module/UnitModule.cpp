@@ -55,7 +55,7 @@ void UUnitModule::UnitLevelUpStat(int32 InDataId)
 	//UnitData의 테이블 데이터를 코드로 바꿔버리는데 이러면 큰일납니다.
 	//데이터 자체를 바꿔버리는거에요. 게임 돌때마다 테이블이 바뀌는 일이 발생합니다.
 
-	auto BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
+	FStatValueData BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
 
 	// 증가한 스텟 저장
 	UnitAddedStats.Add(TargetUnitData->GetDataId(), BonusStatData);

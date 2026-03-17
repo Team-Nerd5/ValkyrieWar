@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 
+#include "Components/HorizontalBox.h"
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeBoxWidget.h"
 
 #include "UnitUpgradeWidget.generated.h"
@@ -20,22 +21,17 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	void Init();
-
 	void InitUpgradeBox();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox1 = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox2 = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox3 = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox4 = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UUnitUpgradeBoxWidget> UpgradeBox5 = nullptr;
+	TObjectPtr<UHorizontalBox> UnitListBox = nullptr;
+
+	// UnitListBox에 표시할 Box위젯 클래스
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUnitUpgradeBoxWidget> UpgradeWidgetClass = nullptr;
 
 private:
-	TArray<TObjectPtr< UUnitUpgradeBoxWidget>> UpgradeBoxes;
+	// 표시할 위젯들 저장
+	TArray<TObjectPtr<UUnitUpgradeBoxWidget>> UpgradeBoxes;
 };

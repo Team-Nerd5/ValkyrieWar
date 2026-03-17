@@ -22,7 +22,14 @@ UUnitUpgradeData* const UUnitUpgradeStatModule::GetNextLevelData(int32 InGroupId
 	//예외처리 추가 확인 필요..
 	if (UpgradeData.Contains(InGroupId))
 	{
-		return  UpgradeData.FindRef(InGroupId).UpgradeDataList.FindChecked(InNextLevel);
+		if (FUnitStatLevelData* UnitUpgradeData = UpgradeData.Find(InGroupId))
+		{
+			if (UnitUpgradeData->UpgradeDataList.Contains(InNextLevel))
+			{
+				return UnitUpgradeData->UpgradeDataList.FindRef(InNextLevel);
+			}
+		}
+		//return  UpgradeData.FindRef(InGroupId).UpgradeDataList.FindChecked(InNextLevel);
 	}
 	return nullptr;
 }

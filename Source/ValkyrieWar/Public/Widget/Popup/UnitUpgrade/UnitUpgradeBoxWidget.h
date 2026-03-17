@@ -63,10 +63,6 @@ protected:
 
 private:
 	UPROPERTY()
-	TObjectPtr<UUnitUpgradeStatModule> UnitUpgradeStatModule = nullptr;
-	UPROPERTY()
-	TObjectPtr<UUnitModule> UnitModule = nullptr;
-	UPROPERTY()
 	TObjectPtr<UUnitData> CachedUnitData = nullptr;
 
 	int32 UnitDataId = 0;
