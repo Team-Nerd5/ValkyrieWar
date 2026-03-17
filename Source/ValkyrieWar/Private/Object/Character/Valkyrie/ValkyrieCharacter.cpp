@@ -202,9 +202,21 @@ void AValkyrieCharacter::ExecuteAttack()
 	if (!AttackData) return;
 
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("형!! 애님 인스턴스가 없어!! 뼈대에 ABP 연결됐는지 확인해!!"));
+		return; // 에디터 안 터지게 여기서 함수 종료!
+	}
+
 	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
 
 	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
+
+	if (AttackMontage == nullptr) // (형이 쓰는 몽타주 변수명으로 바꿔줘)
+	{
+		UE_LOG(LogTemp, Error, TEXT("형!! 공격 몽타주가 텅 비었어!! DT 배달 사고야!!"));
+		return;
+	}
 	if (!AttackMontage)
 		return;
 	UE_LOG(LogTemp, Warning, TEXT("🔥 현재 뇌: %s / 재생할 몽타주: %s"), *AnimInst->GetName(), AttackMontage ? *AttackMontage->GetName() : TEXT("없음(Null)"));
@@ -370,7 +382,15 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
-
+	if (AttackData)
+	{
+		TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
+		if (AnimClass.IsValid()) 
+		{
+			UClass* NewAnimClass = AnimClass.LoadSynchronous(); 
+			GetMesh()->SetAnimInstanceClass(NewAnimClass);      
+		}
+	}
 
 	//데이터 풀 타입 있는지도 체크...
 	if (FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
