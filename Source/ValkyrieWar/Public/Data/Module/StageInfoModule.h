@@ -18,6 +18,9 @@ public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
 	TMap<int32, FStageInfoDataRow> GetChapterStageInfo(int32 InChapter);
+
+	bool GetStageInfoByChapterAndStage(int32 InChapter, int32 InStageNum, FStageInfoDataRow& OutRow) const;
+
 protected:
 	virtual void MakeData() override;
 private:

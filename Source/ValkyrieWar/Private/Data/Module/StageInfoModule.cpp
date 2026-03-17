@@ -31,6 +31,27 @@ TMap<int32, FStageInfoDataRow> UStageInfoModule::GetChapterStageInfo(int32 InCha
 	return OutData;
 }
 
+bool UStageInfoModule::GetStageInfoByChapterAndStage(int32 InChapter, int32 InStageNum, FStageInfoDataRow& OutRow) const
+{
+	if (InChapter <= 0 || InStageNum <= 0)
+	{
+		return false;
+	}
+
+	for (const TPair<int32, FStageInfoDataRow>& Pair : TableDataByDataId)
+	{
+		const FStageInfoDataRow& Row = Pair.Value;
+
+		if (Row.ChapterNum == InChapter && Row.StageNum == InStageNum)
+		{
+			OutRow = Row;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void UStageInfoModule::MakeData()
 {
 	if (DataTable)

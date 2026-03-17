@@ -3,8 +3,10 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/Game/DataManager.h"
-#include "GameSystem/Base/BaseUnitSpawner.h"
+
 #include "Data/Module/UnitModule.h"
+#include "Data/Module/StageModule.h"
+#include "Data/Module/StageInfoModule.h"
 
 void USpawnUpgradeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -16,7 +18,6 @@ void USpawnUpgradeSubsystem::Deinitialize()
 	SpawnLevels.Reset();
 	CostRules.Reset();
 	CurrentMana = 0;
-	UnitDataIdList.Reset();
 	AllyUnitIdList.Reset();
 	EnemyUnitIdList.Reset();
 
@@ -25,36 +26,11 @@ void USpawnUpgradeSubsystem::Deinitialize()
 
 void USpawnUpgradeSubsystem::InitUnitDataIds()
 {
-	UnitDataIdList.Reset();
 	AllyUnitIdList.Reset();
 	EnemyUnitIdList.Reset();
 
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	UGameInstance* GI = World->GetGameInstance();
-	if (!GI) return;
-
-	UDataManager* DataManager = GI->GetSubsystem<UDataManager>();
-	if (!DataManager) return;
-
-	UUnitModule* UnitModule = DataManager->GetUnitModule();
-	if (!UnitModule) return;
-
-	UnitModule->GetOwnedUnitIds(UnitDataIdList);
-	if (UnitDataIdList.IsEmpty()) return;
-
-	for (int32 SingleId : UnitDataIdList)
-	{
-		if (UnitModule->GetUnitTeam(SingleId) == ETeamType::Ally)
-		{
-			AllyUnitIdList.AddUnique(SingleId);
-		}
-		else
-		{
-			EnemyUnitIdList.AddUnique(SingleId);
-		}
-	}
+	InitAllyUnitDataIds();
+	InitEnemyUnitDataIdsFromSelectedStage();
 
 	// 현재는 FamilyId == UnitDataId
 	for (int32 AllyId : AllyUnitIdList)
@@ -73,6 +49,39 @@ void USpawnUpgradeSubsystem::InitUnitDataIds()
 	}
 }
 
+void USpawnUpgradeSubsystem::InitAllyUnitDataIds()
+{
+	AllyUnitIdList.Reset();
+
+	UUnitModule* UnitModule = GetUnitModule();
+	if (!UnitModule) return;
+
+	TArray<int32> OwnedUnitIds;
+	UnitModule->GetOwnedUnitIds(OwnedUnitIds);
+
+	for (int32 UnitDataId : OwnedUnitIds)
+	{
+		if (UnitModule->GetUnitTeam(UnitDataId) == ETeamType::Ally)
+		{
+			AllyUnitIdList.AddUnique(UnitDataId);
+		}
+	}
+}
+
+void USpawnUpgradeSubsystem::InitEnemyUnitDataIdsFromSelectedStage()
+{
+	EnemyUnitIdList.Reset();
+
+	FStageInfoDataRow StageRow;
+	if (!TryGetSelectedStageRow(StageRow))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SpawnUpgradeSubsystem] Failed to get selected stage row."));
+		return;
+	}
+
+	ExtractEnemyIdsFromStageRow(StageRow, EnemyUnitIdList);
+}
+
 void USpawnUpgradeSubsystem::SetupSpawnerEntries(ABaseUnitSpawner* InSpawner)
 {
 	if (!InSpawner) return;
@@ -87,35 +96,121 @@ void USpawnUpgradeSubsystem::BuildEntriesForTeam(ETeamType InTeam, TArray<FSpawn
 {
 	OutEntries.Reset();
 
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	UGameInstance* GI = World->GetGameInstance();
-	if (!GI) return;
-
-	UDataManager* DataManager = GI->GetSubsystem<UDataManager>();
-	if (!DataManager) return;
-
-	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	UUnitModule* UnitModule = GetUnitModule();
 	if (!UnitModule) return;
 
-	const TArray<int32>& SourceIds = (InTeam == ETeamType::Ally) ? AllyUnitIdList : EnemyUnitIdList;
+	if (InTeam == ETeamType::Ally)
+	{
+		BuildAllyEntries(UnitModule, OutEntries);
+	}
+	else
+	{
+		BuildEnemyEntries(UnitModule, OutEntries);
+	}
+}
 
-	for (int32 UnitDataId : SourceIds)
+void USpawnUpgradeSubsystem::BuildAllyEntries(UUnitModule* InUnitModule, TArray<FSpawnUnitEntry>& OutEntries)
+{
+	if (!InUnitModule) return;
+
+	for (int32 UnitDataId : AllyUnitIdList)
 	{
 		FSpawnUnitEntry Entry;
-		Entry.FamilyId = UnitDataId; // 현재는 동일 키 사용
-		Entry.UnitDataId = UnitDataId;
-		Entry.UnitClass = UnitModule->GetSpawnUnitClass(UnitDataId);
-		Entry.PoolType = UnitModule->GetUnitPoolType(UnitDataId);
-		Entry.ReserveSize = 30;
-		Entry.SpawnCount = ResolveInitialSpawnCount(InTeam, Entry.FamilyId);
+		const int32 SpawnCount = ResolveInitialSpawnCount(ETeamType::Ally, UnitDataId);
 
-		if (Entry.UnitClass && Entry.PoolType != EPoolTypes::None)
+		if (MakeSpawnEntry(InUnitModule, UnitDataId, UnitDataId, SpawnCount, Entry))
 		{
 			OutEntries.Add(Entry);
 		}
 	}
+}
+
+void USpawnUpgradeSubsystem::BuildEnemyEntries(UUnitModule* InUnitModule, TArray<FSpawnUnitEntry>& OutEntries)
+{
+	if (!InUnitModule) return;
+
+	for (int32 UnitDataId : EnemyUnitIdList)
+	{
+		FSpawnUnitEntry Entry;
+		const int32 SpawnCount = ResolveInitialSpawnCount(ETeamType::Enemy, UnitDataId);
+
+		// 현재는 FamilyId == UnitDataId
+		if (MakeSpawnEntry(InUnitModule, UnitDataId, UnitDataId, SpawnCount, Entry))
+		{
+			OutEntries.Add(Entry);
+		}
+	}
+}
+
+bool USpawnUpgradeSubsystem::MakeSpawnEntry(
+	UUnitModule* InUnitModule,
+	int32 InFamilyId,
+	int32 InUnitDataId,
+	int32 InSpawnCount,
+	FSpawnUnitEntry& OutEntry
+) const
+{
+	if (!InUnitModule) return false;
+	if (InUnitDataId <= 0) return false;
+
+	OutEntry.FamilyId = InFamilyId;
+	OutEntry.UnitDataId = InUnitDataId;
+	OutEntry.UnitClass = InUnitModule->GetSpawnUnitClass(InUnitDataId);
+	OutEntry.PoolType = InUnitModule->GetUnitPoolType(InUnitDataId);
+	OutEntry.ReserveSize = DefaultReserveSize;
+	OutEntry.SpawnCount = FMath::Max(0, InSpawnCount);
+
+	if (!OutEntry.UnitClass)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[SpawnUpgradeSubsystem] UnitClass is null. UnitDataId=%d"),
+			InUnitDataId);
+		return false;
+	}
+
+	if (OutEntry.PoolType == EPoolTypes::None)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[SpawnUpgradeSubsystem] PoolType is None. UnitDataId=%d"),
+			InUnitDataId);
+		return false;
+	}
+
+	return true;
+}
+
+bool USpawnUpgradeSubsystem::TryGetSelectedStageRow(FStageInfoDataRow& OutStageRow) const
+{
+	UStageModule* StageModule = GetStageModule();
+	UStageInfoModule* StageInfoModule = GetStageInfoModule();
+	if (!StageModule || !StageInfoModule) return false;
+
+	const int32 SelectedStageCode = StageModule->GetSelectedStageCode();
+	if (SelectedStageCode <= 0) return false;
+
+	const int32 Chapter = StageModule->GetChapterFromStageCode(SelectedStageCode);
+	const int32 StageNum = StageModule->GetStageFromStageCode(SelectedStageCode);
+
+	return StageInfoModule->GetStageInfoByChapterAndStage(Chapter, StageNum, OutStageRow);
+}
+
+void USpawnUpgradeSubsystem::ExtractEnemyIdsFromStageRow(const FStageInfoDataRow& InRow, TArray<int32>& OutEnemyIds) const
+{
+	OutEnemyIds.Reset();
+
+	auto AddEnemyIfValid = [&OutEnemyIds](int32 InUnitId)
+		{
+			if (InUnitId > 0)
+			{
+				OutEnemyIds.Add(InUnitId);
+			}
+		};
+
+	AddEnemyIfValid(InRow.EnemyUnit1);
+	AddEnemyIfValid(InRow.EnemyUnit2);
+	AddEnemyIfValid(InRow.EnemyUnit3);
+	AddEnemyIfValid(InRow.EnemyUnit4);
+	AddEnemyIfValid(InRow.EnemyUnit5);
 }
 
 int32 USpawnUpgradeSubsystem::ResolveInitialSpawnCount(ETeamType InTeam, int32 InFamilyId) const
@@ -166,7 +261,7 @@ int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 InFamilyId) const
 
 void USpawnUpgradeSubsystem::SetCurrentMana(int32 InMana, bool bBroadcastAll)
 {
-	CurrentMana = FMath::Min(MaxMana, InMana);
+	CurrentMana = FMath::Clamp(InMana, 0, MaxMana);
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
@@ -291,4 +386,42 @@ void USpawnUpgradeSubsystem::SyncAll()
 	{
 		BroadcastState(Pair.Key);
 	}
+}
+
+UDataManager* USpawnUpgradeSubsystem::GetDataManager() const
+{
+	UWorld* World = GetWorld();
+	if (!World) return nullptr;
+
+	UGameInstance* GI = World->GetGameInstance();
+	if (!GI) return nullptr;
+
+	return GI->GetSubsystem<UDataManager>();
+}
+
+UUnitModule* USpawnUpgradeSubsystem::GetUnitModule() const
+{
+	if (UDataManager* DataManager = GetDataManager())
+	{
+		return DataManager->GetUnitModule();
+	}
+	return nullptr;
+}
+
+UStageModule* USpawnUpgradeSubsystem::GetStageModule() const
+{
+	if (UDataManager* DataManager = GetDataManager())
+	{
+		return DataManager->GetStageModule();
+	}
+	return nullptr;
+}
+
+UStageInfoModule* USpawnUpgradeSubsystem::GetStageInfoModule() const
+{
+	if (UDataManager* DataManager = GetDataManager())
+	{
+		return DataManager->GetStageInfoModule();
+	}
+	return nullptr;
 }
