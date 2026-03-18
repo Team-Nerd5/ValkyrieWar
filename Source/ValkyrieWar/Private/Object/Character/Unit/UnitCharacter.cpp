@@ -12,6 +12,7 @@
 
 #include "Data/Struct/UnitEngagementSlotData.h"
 #include "Data/Attribute/StatAttributeSet.h"
+#include "Data/Struct/ComputedEnemyStat.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -79,11 +80,37 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
 	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
 
+	AttackDamage = Data->GetStat(EStatusType::Attack);
+	MaxHP = Data->GetStat(EStatusType::Health);
+	CurrentHP = MaxHP;
+
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
 
 	SkillDataList = InData->GetSkillData();
+	CreateSkillAbility();
+}
+
+void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat)
+{
+	Data = InBaseData;
+	if (!Data) return;
+
+	// 계산된 최종 스탯 적용
+	StatAttributeSet->SetAttack(InComputedStat.Attack);
+	StatAttributeSet->SetDefense(InComputedStat.Defence);
+	StatAttributeSet->SetHealth(InComputedStat.Health);
+	StatAttributeSet->SetMaxHealth(InComputedStat.Health);
+
+	AttackDamage = InComputedStat.Attack;
+	MaxHP = InComputedStat.Health;
+	CurrentHP = MaxHP;
+
+	AttackData = InBaseData->GetAttackData();
+	CreateAttackAbility();
+
+	SkillDataList = InBaseData->GetSkillData();
 	CreateSkillAbility();
 }
 

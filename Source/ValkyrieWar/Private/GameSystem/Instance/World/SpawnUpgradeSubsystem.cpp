@@ -72,14 +72,29 @@ void USpawnUpgradeSubsystem::InitEnemyUnitDataIdsFromSelectedStage()
 {
 	EnemyUnitIdList.Reset();
 
-	FStageInfoDataRow StageRow;
-	if (!TryGetSelectedStageRow(StageRow))
+	UStageModule* StageModule = GetStageModule();
+	UStageInfoModule* StageInfoModule = GetStageInfoModule();
+	if (!StageModule || !StageInfoModule)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[SpawnUpgradeSubsystem] Failed to get selected stage row."));
 		return;
 	}
 
-	ExtractEnemyIdsFromStageRow(StageRow, EnemyUnitIdList);
+	const int32 SelectedStageCode = StageModule->GetSelectedStageCode();
+	if (SelectedStageCode <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SpawnUpgradeSubsystem] Invalid selected stage code."));
+		return;
+	}
+
+	const int32 Chapter = StageModule->GetChapterFromStageCode(SelectedStageCode);
+	const int32 StageNum = StageModule->GetStageFromStageCode(SelectedStageCode);
+
+	if (!StageInfoModule->GetEnemyUnitIdsByChapterAndStage(Chapter, StageNum, EnemyUnitIdList))
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[SpawnUpgradeSubsystem] Failed to get enemy unit ids. Chapter=%d Stage=%d"),
+			Chapter, StageNum);
+	}
 }
 
 void USpawnUpgradeSubsystem::SetupSpawnerEntries(ABaseUnitSpawner* InSpawner)
@@ -118,6 +133,7 @@ void USpawnUpgradeSubsystem::BuildAllyEntries(UUnitModule* InUnitModule, TArray<
 		FSpawnUnitEntry Entry;
 		const int32 SpawnCount = ResolveInitialSpawnCount(ETeamType::Ally, UnitDataId);
 
+		// 현재는 FamilyId == UnitDataId
 		if (MakeSpawnEntry(InUnitModule, UnitDataId, UnitDataId, SpawnCount, Entry))
 		{
 			OutEntries.Add(Entry);
@@ -129,6 +145,8 @@ void USpawnUpgradeSubsystem::BuildEnemyEntries(UUnitModule* InUnitModule, TArray
 {
 	if (!InUnitModule) return;
 
+	const int32 EnemyLevel = ResolveEnemyLevelFromSelectedStage();
+
 	for (int32 UnitDataId : EnemyUnitIdList)
 	{
 		FSpawnUnitEntry Entry;
@@ -137,6 +155,20 @@ void USpawnUpgradeSubsystem::BuildEnemyEntries(UUnitModule* InUnitModule, TArray
 		// 현재는 FamilyId == UnitDataId
 		if (MakeSpawnEntry(InUnitModule, UnitDataId, UnitDataId, SpawnCount, Entry))
 		{
+			Entry.UnitLevel = EnemyLevel;
+
+			// 적 최종 스탯 1회 계산 후 캐시
+			FComputedEnemyStat ComputedStat;
+			if (InUnitModule->BuildComputedEnemyStat(UnitDataId, EnemyLevel, ComputedStat))
+			{
+				Entry.bUseComputedStat = true;
+				Entry.ComputedStat = ComputedStat;
+			}
+			else
+			{
+				Entry.bUseComputedStat = false;
+			}
+
 			OutEntries.Add(Entry);
 		}
 	}
@@ -179,38 +211,31 @@ bool USpawnUpgradeSubsystem::MakeSpawnEntry(
 	return true;
 }
 
-bool USpawnUpgradeSubsystem::TryGetSelectedStageRow(FStageInfoDataRow& OutStageRow) const
+int32 USpawnUpgradeSubsystem::ResolveEnemyLevelFromSelectedStage() const
 {
 	UStageModule* StageModule = GetStageModule();
 	UStageInfoModule* StageInfoModule = GetStageInfoModule();
-	if (!StageModule || !StageInfoModule) return false;
+	if (!StageModule || !StageInfoModule)
+	{
+		return DefaultEnemyLevel;
+	}
 
 	const int32 SelectedStageCode = StageModule->GetSelectedStageCode();
-	if (SelectedStageCode <= 0) return false;
+	if (SelectedStageCode <= 0)
+	{
+		return DefaultEnemyLevel;
+	}
 
 	const int32 Chapter = StageModule->GetChapterFromStageCode(SelectedStageCode);
 	const int32 StageNum = StageModule->GetStageFromStageCode(SelectedStageCode);
 
-	return StageInfoModule->GetStageInfoByChapterAndStage(Chapter, StageNum, OutStageRow);
-}
+	int32 OutEnemyLevel = DefaultEnemyLevel;
+	if (!StageInfoModule->GetEnemyLevelByChapterAndStage(Chapter, StageNum, OutEnemyLevel))
+	{
+		return DefaultEnemyLevel;
+	}
 
-void USpawnUpgradeSubsystem::ExtractEnemyIdsFromStageRow(const FStageInfoDataRow& InRow, TArray<int32>& OutEnemyIds) const
-{
-	OutEnemyIds.Reset();
-
-	auto AddEnemyIfValid = [&OutEnemyIds](int32 InUnitId)
-		{
-			if (InUnitId > 0)
-			{
-				OutEnemyIds.Add(InUnitId);
-			}
-		};
-
-	AddEnemyIfValid(InRow.EnemyUnit1);
-	AddEnemyIfValid(InRow.EnemyUnit2);
-	AddEnemyIfValid(InRow.EnemyUnit3);
-	AddEnemyIfValid(InRow.EnemyUnit4);
-	AddEnemyIfValid(InRow.EnemyUnit5);
+	return FMath::Max(1, OutEnemyLevel);
 }
 
 int32 USpawnUpgradeSubsystem::ResolveInitialSpawnCount(ETeamType InTeam, int32 InFamilyId) const
@@ -249,7 +274,10 @@ void USpawnUpgradeSubsystem::UnbindUpgradeDelegates()
 
 int32 USpawnUpgradeSubsystem::GetSpawnLevel(int32 InFamilyId) const
 {
-	if (InFamilyId <= 0) return 0;
+	if (InFamilyId <= 0)
+	{
+		return 0;
+	}
 
 	if (const int32* Found = SpawnLevels.Find(InFamilyId))
 	{

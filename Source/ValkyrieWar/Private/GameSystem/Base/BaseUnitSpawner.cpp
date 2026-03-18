@@ -229,11 +229,17 @@ void ABaseUnitSpawner::SpawnOne(const FSpawnUnitEntry& Entry)
 
 	if (UUnitData* Data = ResolveUnitDataObject(Entry.UnitDataId))
 	{
-		Unit->SetData(Data);
+		if (Entry.bUseComputedStat)
+		{
+			Unit->SetComputedEnemyData(Data, Entry.ComputedStat);
+		}
+		else
+		{
+			Unit->SetData(Data);
+		}
 	}
 
 	RegisterSpawnedUnit(Unit);
-	BP_OnUnitSpawned(Unit, Entry.FamilyId, Entry.UnitDataId, Entry.PoolType);
 }
 
 UUnitData* ABaseUnitSpawner::ResolveUnitDataObject(int32 DataId) const

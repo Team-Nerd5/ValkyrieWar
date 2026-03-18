@@ -14,6 +14,7 @@ class ABaseUnitSpawner;
 class UUnitBrainComponent;
 class AUnitAIController;
 struct FUnitEngagementSlotData;
+struct FComputedEnemyStat;
 
 /**
  * 
@@ -32,6 +33,8 @@ public:
 
 	//캐릭터 생성 시 데이터 세팅
 	void SetData(UUnitData* InData);
+
+	void SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat);
 
 	inline UUnitBrainComponent* GetBrain() const { return Brain; }
 

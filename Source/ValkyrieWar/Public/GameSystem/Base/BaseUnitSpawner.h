@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseActor.h"
 #include "Data/Enum/CommonEnums.h"
+#include "Data/Struct/ComputedEnemyStat.h"
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "BaseUnitSpawner.generated.h"
 
@@ -35,6 +36,15 @@ struct FSpawnUnitEntry
 	// 매 스폰 주기마다 생성할 수
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta = (ClampMin = "0"))
 	int32 SpawnCount = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 UnitLevel = 1;
+
+	UPROPERTY()
+	bool bUseComputedStat = false;
+
+	UPROPERTY()
+	FComputedEnemyStat ComputedStat;
 };
 
 UCLASS()

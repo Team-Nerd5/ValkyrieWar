@@ -52,6 +52,47 @@ bool UStageInfoModule::GetStageInfoByChapterAndStage(int32 InChapter, int32 InSt
 	return false;
 }
 
+bool UStageInfoModule::GetEnemyUnitIdsByChapterAndStage(int32 InChapter, int32 InStageNum, TArray<int32>& OutUnitIds) const
+{
+	OutUnitIds.Reset();
+
+	FStageInfoDataRow Row;
+	if (!GetStageInfoByChapterAndStage(InChapter, InStageNum, Row))
+	{
+		return false;
+	}
+
+	auto AddIfValid = [&OutUnitIds](int32 InUnitId)
+		{
+			if (InUnitId > 0)
+			{
+				OutUnitIds.Add(InUnitId);
+			}
+		};
+
+	AddIfValid(Row.EnemyUnit1);
+	AddIfValid(Row.EnemyUnit2);
+	AddIfValid(Row.EnemyUnit3);
+	AddIfValid(Row.EnemyUnit4);
+	AddIfValid(Row.EnemyUnit5);
+
+	return true;
+}
+
+bool UStageInfoModule::GetEnemyLevelByChapterAndStage(int32 InChapter, int32 InStageNum, int32& OutEnemyLevel) const
+{
+	OutEnemyLevel = 1;
+
+	FStageInfoDataRow Row;
+	if (!GetStageInfoByChapterAndStage(InChapter, InStageNum, Row))
+	{
+		return false;
+	}
+
+	OutEnemyLevel = FMath::Max(1, Row.EnemyLevel);
+	return true;
+}
+
 void UStageInfoModule::MakeData()
 {
 	if (DataTable)

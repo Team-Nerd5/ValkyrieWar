@@ -21,6 +21,9 @@ public:
 
 	bool GetStageInfoByChapterAndStage(int32 InChapter, int32 InStageNum, FStageInfoDataRow& OutRow) const;
 
+	bool GetEnemyUnitIdsByChapterAndStage(int32 InChapter, int32 InStageNum, TArray<int32>& OutUnitIds) const;
+	bool GetEnemyLevelByChapterAndStage(int32 InChapter, int32 InStageNum, int32& OutEnemyLevel) const;
+
 protected:
 	virtual void MakeData() override;
 private:

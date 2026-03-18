@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "GameSystem/Base/BaseUnitSpawner.h"
-#include "Data/Table/GameData/StageInfoDataRow.h"
 #include "SpawnUpgradeSubsystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -67,20 +66,19 @@ public:
 	void SyncAll();
 
 private:
-	// 초기화 분리
+	// -------------------------
+	// Init Helpers
+	// -------------------------
 	void InitAllyUnitDataIds();
 	void InitEnemyUnitDataIdsFromSelectedStage();
 
-	// 엔트리 구성 분리
+	// -------------------------
+	// Build Entry Helpers
+	// -------------------------
 	void BuildEntriesForTeam(ETeamType InTeam, TArray<FSpawnUnitEntry>& OutEntries);
 	void BuildAllyEntries(UUnitModule* InUnitModule, TArray<FSpawnUnitEntry>& OutEntries);
 	void BuildEnemyEntries(UUnitModule* InUnitModule, TArray<FSpawnUnitEntry>& OutEntries);
 
-	// Stage helper
-	bool TryGetSelectedStageRow(FStageInfoDataRow& OutStageRow) const;
-	void ExtractEnemyIdsFromStageRow(const FStageInfoDataRow& InRow, TArray<int32>& OutEnemyIds) const;
-
-	// 공통 생성 helper
 	bool MakeSpawnEntry(
 		UUnitModule* InUnitModule,
 		int32 InFamilyId,
@@ -91,13 +89,21 @@ private:
 
 	int32 ResolveInitialSpawnCount(ETeamType InTeam, int32 InFamilyId) const;
 
+	// 나중에 적 레벨 스케일링 붙일 때 사용
+	int32 ResolveEnemyLevelFromSelectedStage() const;
+
+	// -------------------------
+	// Upgrade / Cost Helpers
+	// -------------------------
 	void InitFamilyIfNeeded(int32 InFamilyId, int32 InDefaultLevel = 0);
 	int32 CalcCost(int32 FamilyId, int32 CurrentLevel) const;
 	bool CanAfford(int32 Cost) const { return CurrentMana >= Cost; }
 	bool SpendMana(int32 Cost);
 	void BroadcastState(int32 FamilyId);
 
-	// 공통 접근 helper
+	// -------------------------
+	// Module Access Helpers
+	// -------------------------
 	UDataManager* GetDataManager() const;
 	UUnitModule* GetUnitModule() const;
 	UStageModule* GetStageModule() const;
@@ -127,6 +133,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "SpawnUpgrade")
 	int32 DefaultEnemySpawnCount = 1;
+
+	UPROPERTY(EditDefaultsOnly, Category = "SpawnUpgrade")
+	int32 DefaultEnemyLevel = 1;
 
 	UPROPERTY(EditDefaultsOnly, Category = "SpawnUpgrade")
 	int32 DefaultReserveSize = 30;

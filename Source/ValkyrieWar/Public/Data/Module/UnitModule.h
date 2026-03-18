@@ -6,6 +6,7 @@
 #include "GameSystem/Base/BaseModule.h"
 #include "Data/Table/GameData/UnitDataRow.h"
 #include "Data/Game/UnitData.h"
+#include "Data/Struct/ComputedEnemyStat.h"
 #include "UnitModule.generated.h"
 
 /**
@@ -66,6 +67,9 @@ public:
 	{
 		return UnitAddedStats.FindRef(InDataId);
 	}
+
+	bool BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const;
+	bool GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const;
 
 protected:
 	virtual void MakeData() override;

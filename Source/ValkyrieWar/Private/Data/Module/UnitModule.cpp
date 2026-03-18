@@ -17,6 +17,59 @@ void UUnitModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
+bool UUnitModule::BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const
+{
+	OutStat = FComputedEnemyStat{};
+
+	UUnitData* BaseData = OwnUnits.FindRef(InDataId);
+	if (!BaseData)
+	{
+		return false;
+	}
+
+	FStatValueData BonusStat;
+	GetBonusStatByLevel(InDataId, InLevel, BonusStat);
+
+	OutStat.DataId = InDataId;
+	OutStat.Level = FMath::Max(1, InLevel);
+	OutStat.Attack = BaseData->GetStat(EStatusType::Attack) + BonusStat.Attack;
+	OutStat.Defence = BaseData->GetStat(EStatusType::Defence) + BonusStat.Defence;
+	OutStat.Health = BaseData->GetStat(EStatusType::Health) + BonusStat.Health;
+
+	return true;
+}
+
+bool UUnitModule::GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const
+{
+	OutBonusStat = FStatValueData{};
+
+	UUnitData* BaseData = OwnUnits.FindRef(InDataId);
+	if (!BaseData)
+	{
+		return false;
+	}
+
+	if (!GameManager.IsValid())
+	{
+		return false;
+	}
+
+	UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
+	if (!DataManager)
+	{
+		return false;
+	}
+
+	UUnitUpgradeStatModule* UpgradeModule = DataManager->GetUnitUpgradeStatModule();
+	if (!UpgradeModule)
+	{
+		return false;
+	}
+
+	OutBonusStat = UpgradeModule->GetTotalStat(BaseData->GetLevelUpGroupId(), FMath::Max(1, InLevel));
+	return true;
+}
+
 void UUnitModule::MakeData()
 {
 	if (DataTable)
