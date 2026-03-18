@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "Components/Button.h"
 
 #include "Data/Module/UnitUpgradeStatModule.h"
@@ -40,6 +41,8 @@ protected:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UnitType = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> UnitIcon = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UnitLevel = nullptr;
 	UPROPERTY(meta = (BindWidget))

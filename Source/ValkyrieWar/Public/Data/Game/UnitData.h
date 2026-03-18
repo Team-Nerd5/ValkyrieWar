@@ -53,6 +53,7 @@ public:
 	FORCEINLINE uint64 GetUID() { return UID; }
 	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
 	FORCEINLINE int32 GetDataId() { return TableData.DataId; }
+	FORCEINLINE TSoftObjectPtr<UTexture2D> GetIcon() { return TableData.UnitIcon; }
 	FORCEINLINE int32 GetLevelUpGroupId() { return TableData.LevelUpGroupId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }

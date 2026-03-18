@@ -44,6 +44,14 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 		FString EnumString = StaticEnum<EUnitCharacterType>()->GetNameStringByValue((int64)CachedUnitData->GetTableData().UnitType);
 		UnitType->SetText(FText::FromString(EnumString));
 	}
+	if (UnitIcon)
+	{
+		UTexture2D* Icon = CachedUnitData->GetIcon().LoadSynchronous();
+		if (Icon)
+		{
+			UnitIcon->SetBrushFromTexture(Icon);
+		}
+	}
 	if (UnitLevel)
 	{
 		UnitLevel->SetText(FText::AsNumber(CachedUnitData->GetLevel()));
