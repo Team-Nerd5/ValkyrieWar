@@ -24,7 +24,6 @@ public:
 	FORCEINLINE float GetApplyValue() { return TableData.Value; }
 	FORCEINLINE float GetPeriod() { return TableData.Period; }
 	FORCEINLINE FGameplayTagContainer GetGrantedTags() { return TableData.GrantedTags; }
-	FORCEINLINE FGameplayTag GetCueTag() { return TableData.GameplayCueTag; }
 	FORCEINLINE bool UseCalc() { return TableData.bUseDamageCalc; }
 	FORCEINLINE FGameplayAttribute GetTargetAttribute() { return TableData.TargetAttribute; }
 	FORCEINLINE TEnumAsByte<EGameplayModOp::Type> GetOp() { return TableData.Op; }

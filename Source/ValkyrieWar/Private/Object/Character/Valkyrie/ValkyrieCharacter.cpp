@@ -235,6 +235,16 @@ void AValkyrieCharacter::ExecuteAttack()
 
 			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
 
+			TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotify);
+			for (FGameplayCueData Cue : Cues)
+			{
+				//소켓위치? 음...
+				FGameplayCueParameters CueParams;
+				CueParams.Location = GetActorLocation() + Cue.Offset;
+
+				AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+			}
+
 			CurrentComboCount = 1;
 			bIsComboActive = true;
 			bCanNextCombo = false;

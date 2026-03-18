@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Data/Enum/DataEnums.h"
 #include "Data/Enum/CharacterEnums.h"
+#include "Data/Struct/GameplayCueData.h"
 #include "GameplayTagContainer.h"
 #include "SkillDataRow.generated.h"
 
@@ -34,4 +35,6 @@ public:
 	EAttackType AttackType = EAttackType::Melee;
 	UPROPERTY(EditAnywhere)
 	int32 ProjectileId = 0;
+	UPROPERTY(EditAnywhere)
+	TArray<FGameplayCueData> CueData;
 };

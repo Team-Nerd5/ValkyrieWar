@@ -32,9 +32,6 @@ public:
     float Period = 0.0f; // 0보다 크면 도트(Dot) 효과
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FGameplayTag GameplayCueTag;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTagContainer GrantedTags;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

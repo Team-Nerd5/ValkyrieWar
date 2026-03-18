@@ -25,6 +25,16 @@ public:
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
 	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetMontage() { return TableData.Montage; }
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
+	FORCEINLINE TArray<FGameplayCueData> GetCue(EGameplayCueOrder InOrder)
+	{
+		TArray<FGameplayCueData> Data;
+		for (auto data : TableData.CueData)
+		{
+			if (data.CueOrder == InOrder)
+				Data.Add(data);
+		}
+		return Data;
+	}
 	FORCEINLINE FProjectileDataRow* const GetProjectileData()
 	{
 		if (TableData.ProjectileId <= 0) return nullptr;

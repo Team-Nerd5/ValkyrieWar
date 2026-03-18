@@ -28,6 +28,16 @@ public:
 	FORCEINLINE FVector GetLocationOffset() { return TableData.PositionOffset; }
 	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData.RotateOffset); }
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
+	FORCEINLINE TArray<FGameplayCueData> GetCue(EGameplayCueOrder InOrder)
+	{
+		TArray<FGameplayCueData> Data;
+		for (auto data : TableData.CueData)
+		{
+			if (data.CueOrder == InOrder)
+				Data.Add(data);
+		}
+		return Data;
+	}
 	FORCEINLINE FProjectileDataRow* const GetProjectileData()
 	{
 		if (TableData.ProjectileId <= 0) return nullptr;

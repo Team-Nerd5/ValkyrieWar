@@ -88,6 +88,16 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
                 &Payload,
                 *AbilitySystemComponent
             );
+
+            TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotify);
+            for (FGameplayCueData Cue : Cues)
+            {
+                FGameplayCueParameters CueParams;
+                CueParams.Location = GetActorLocation() + Cue.Offset;
+
+                AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+            }
+
             break;
         }
     }

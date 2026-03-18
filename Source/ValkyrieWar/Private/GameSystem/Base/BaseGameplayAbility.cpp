@@ -98,12 +98,6 @@ void UBaseGameplayAbility::UpdateData(FGameplayTag InAbilityTag, TArray<USkillEf
             NewEffect->CachedGrantedTags = EffectData->GetGrantedTags();
         }
 
-        if (EffectData->GetCueTag().IsValid())
-        {
-            FGameplayEffectCue CueInfo(EffectData->GetCueTag(), 0.0f, 0.0f);
-            NewEffect->GameplayCues.Add(CueInfo);
-        }
-
         if (EffectData->UseCalc())
         {
             FGameplayEffectExecutionDefinition ExecDef;
