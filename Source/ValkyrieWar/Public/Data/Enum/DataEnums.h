@@ -36,6 +36,8 @@ enum class EItemType : uint8
 	Wand,				//한손
 	Shield,
 	Bow,				//양손, 화살통 없음
+	Spear,
+	Hammer,
 
 	Helmet,
 	Armor,
@@ -53,12 +55,15 @@ UENUM(BlueprintType)
 enum class EEquipType : uint8
 {
 	None,
-	Sword,
-	Axe,
-	Staff,
-	Wand,
-	Shield,
-	Bow,
+	SwordAndShield,
+	Spear,
+	OneHandSword,
+	TwoHandSword,
+	OneHandAxe,
+	TwoHandAxe,
+	Staff,				//양손
+	Wand,				//한손
+	Bow,				//양손, 화살통 없음
 	Armor,
 	Helmet,
 };

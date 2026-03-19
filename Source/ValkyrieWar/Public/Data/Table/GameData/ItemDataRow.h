@@ -29,7 +29,7 @@ public:
 
 	//장비용
 	UPROPERTY(EditAnywhere)
-	EWeaponType WeaponType;
+	EEquipType EquipType;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)
@@ -44,4 +44,6 @@ public:
 	TSoftObjectPtr<USkeletalMesh> SkeletalMesh = nullptr;
 	UPROPERTY(EditAnywhere)
 	FName SocketName = TEXT("");
+	UPROPERTY(EditAnywhere)
+	int32 SetGroupId = 0;
 };
