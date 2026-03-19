@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Data/Table/GameData/AttackDataRow.h"
 #include "Data/Table/GameData/ProjectileDataRow.h"
+#include "Data/Table/GameData/TargetingDataRow.h"
 #include "Data/Enum/CharacterEnums.h"
 #include "Data/Game/SkillEffectData.h"
 #include "GameSystem/Instance/Game/GameManager.h"
@@ -31,7 +32,7 @@ public:
 	FORCEINLINE TArray<FGameplayCueData> const GetCue(EGameplayCueOrder InOrder)
 	{
 		TArray<FGameplayCueData> OutData;
-		for (const FGameplayCueData Data : TableData.CueData)
+		for (const FGameplayCueData& Data : TableData.CueData)
 		{
 			if (Data.CueOrder == InOrder)
 				OutData.Add(Data);
@@ -44,12 +45,17 @@ public:
 
 		return &ProjectileData;
 	}
+
+	FORCEINLINE FTargetingDataRow const GetTargetingData() { return TargetingData; }
 private:
 	UPROPERTY()
 	FAttackDataRow TableData;
 
 	UPROPERTY()
 	TArray<TObjectPtr<USkillEffectData>> EffectList;
+
+	UPROPERTY()
+	FTargetingDataRow TargetingData;
 
 	UPROPERTY()
 	FProjectileDataRow ProjectileData;

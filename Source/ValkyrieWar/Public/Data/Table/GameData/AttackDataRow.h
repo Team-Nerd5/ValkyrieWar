@@ -32,13 +32,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	FRotator RotateOffset = FRotator::ZeroRotator;
 	UPROPERTY(EditAnywhere)
-	ETargetType TargetType = ETargetType::None;
-	UPROPERTY(EditAnywhere)
-	int32 TargetAmount = 1;
-	UPROPERTY(EditAnywhere)
 	EAttackType AttackType = EAttackType::Melee;
 	UPROPERTY(EditAnywhere)
 	int32 ProjectileId = 0;
 	UPROPERTY(EditAnywhere)
 	TArray<FGameplayCueData> CueData;
+	UPROPERTY(EditAnywhere)
+	float AttackRange = 100.0f;
+	UPROPERTY(EditAnywhere)
+	int32 TargetingDataId = 0;
 };

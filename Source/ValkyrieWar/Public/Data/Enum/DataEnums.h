@@ -98,13 +98,12 @@ enum class ESkillApplyType : uint8
 };
 
 UENUM(BlueprintType)
-enum class ETargetType : uint8
+enum class ETargetingPriority : uint8
 {
-	None,
-	InRange,
-	LowHpInRange,
-	HighHpInRange,
-	Camp,
+	Close,				//기본 가까운 적
+	LowestDef,			//방어력 가장 낮은 적
+	HighestDef,			//방어력 가장 높은 적
+	Basement,			//기지
 };
 
 UENUM(BlueprintType)
@@ -126,6 +125,7 @@ enum class ETableDataType : uint8
 	TopMenu,
 	Projectile,
 	UnitUpgradeStat,
+	Targeting,
 };
 
 UENUM(BlueprintType)

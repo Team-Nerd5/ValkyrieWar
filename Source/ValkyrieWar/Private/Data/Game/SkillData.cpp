@@ -21,6 +21,8 @@ void USkillData::MakeData(const FSkillDataRow InTableData, UGameManager* InGameM
 			{
 				ProjectileData = DataManager->GetProjectileModule()->GetProjectile(TableData.ProjectileId);
 			}
+
+			TargetingData = DataManager->GetTargetingModule()->GetData(TableData.TargetingDataId);
 		}
 	}
 }

@@ -27,7 +27,6 @@ public:
 protected:
 	virtual void MakeData() override;
 
-private:
 	UPROPERTY()
 	TMap<int32, FProjectileDataRow> ProjectileData;
 };

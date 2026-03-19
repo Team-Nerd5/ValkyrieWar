@@ -22,6 +22,8 @@ void UAttackData::MakeData(const FAttackDataRow InTableData, UGameManager* InGam
 			{
 				ProjectileData = DataManager->GetProjectileModule()->GetProjectile(TableData.ProjectileId);
 			}
+
+			TargetingData = DataManager->GetTargetingModule()->GetData(TableData.TargetingDataId);
 		}
 	}
 	

@@ -7,6 +7,7 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "Data/Table/GameData/SkillDataRow.h"
 #include "Data/Table/GameData/ProjectileDataRow.h"
+#include "Data/Table/GameData/TargetingDataRow.h"
 #include "Data/Game/SkillEffectData.h"
 #include "Data/Enum/CharacterEnums.h"
 #include "SkillData.generated.h"
@@ -27,13 +28,13 @@ public:
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
 	FORCEINLINE TArray<FGameplayCueData> GetCue(EGameplayCueOrder InOrder)
 	{
-		TArray<FGameplayCueData> Data;
-		for (auto data : TableData.CueData)
+		TArray<FGameplayCueData> OutData;
+		for (const FGameplayCueData& Data : TableData.CueData)
 		{
-			if (data.CueOrder == InOrder)
-				Data.Add(data);
+			if (Data.CueOrder == InOrder)
+				OutData.Add(Data);
 		}
-		return Data;
+		return OutData;
 	}
 	FORCEINLINE FProjectileDataRow* const GetProjectileData()
 	{
@@ -41,12 +42,16 @@ public:
 
 		return &ProjectileData;
 	}
+	FORCEINLINE FTargetingDataRow const GetTargetingData() { return TargetingData; }
 
 private:
 	UPROPERTY()
 	FSkillDataRow TableData;
 	UPROPERTY()
 	TArray<TObjectPtr<USkillEffectData>> EffectList;
+
+	UPROPERTY()
+	FTargetingDataRow TargetingData;
 	UPROPERTY()
 	FProjectileDataRow ProjectileData;
 };
