@@ -81,6 +81,13 @@ public:
 
 	virtual void OnDeath() override;
 
+protected:
+	// 공격/스킬 관련 가상함수
+
+	virtual void ExecuteAttack() override;
+
+	virtual void ExecuteSkill(int32 InSkillIndex) override;
+
 private:
 	// ---- BattleDirector 연동 ----
 	UBattleDirectorSubsystem* GetBattleDirector() const;
@@ -108,12 +115,9 @@ private:
 	void CellSyncTick();
 	void StopCellUpdate();
 
-protected:
-	// 공격/스킬 관련 가상함수
-
-	virtual void ExecuteAttack() override;
-
-	virtual void ExecuteSkill(int32 InSkillIndex) override;
+	bool FireProjectileAttack();
+	bool GetProjectileSpawnTransform(FVector& OutLocation, FRotator& OutRotation) const;
+	void InitProjectilePoolIfNeeded();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")

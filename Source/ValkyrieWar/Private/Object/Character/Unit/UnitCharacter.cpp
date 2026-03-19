@@ -9,6 +9,7 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
 #include "GameSystem/Base/BaseUnitSpawner.h"
+#include "GameSystem/Base/BaseProjectile.h"
 
 #include "Data/Struct/UnitEngagementSlotData.h"
 #include "Data/Attribute/StatAttributeSet.h"
@@ -90,6 +91,8 @@ void AUnitCharacter::SetData(UUnitData* InData)
 
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
+
+	InitProjectilePoolIfNeeded();
 }
 
 void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat)
@@ -112,6 +115,8 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 
 	SkillDataList = InBaseData->GetSkillData();
 	CreateSkillAbility();
+
+	InitProjectilePoolIfNeeded();
 }
 
 void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
@@ -705,6 +710,136 @@ void AUnitCharacter::StopCellUpdate()
 	}
 }
 
+bool AUnitCharacter::FireProjectileAttack()
+{
+	if (IsDead()) return false;
+	if (!AttackData) return false;
+
+	const FProjectileDataRow* ProjectileData = AttackData->GetProjectileData();
+	if (!ProjectileData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UnitCharacter] AttackType is Projectile but ProjectileData is null."));
+		return false;
+	}
+
+	if (ProjectileData->EPoolTypes == EPoolTypes::None)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UnitCharacter] Projectile PoolType is None."));
+		return false;
+	}
+
+	UObjectPoolSubsystem* Pool = GetPool();
+	if (!Pool)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UnitCharacter] ObjectPoolSubsystem is null."));
+		return false;
+	}
+
+	FVector SpawnLocation;
+	FRotator SpawnRotation;
+	if (!GetProjectileSpawnTransform(SpawnLocation, SpawnRotation))
+	{
+		return false;
+	}
+
+	ABaseProjectile* Projectile = Pool->Get<ABaseProjectile>(
+		ProjectileData->EPoolTypes,
+		SpawnLocation,
+		SpawnRotation
+	);
+
+	if (!Projectile)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UnitCharacter] Failed to get projectile from pool. PoolType=%d"), (int32)ProjectileData->EPoolTypes);
+		return false;
+	}
+
+	Projectile->SetTeam(GetTeamType());
+
+	Projectile->SetActorRotation(SpawnRotation);
+	Projectile->SetOwner(this);
+	Projectile->SetInstigator(this);
+
+	Projectile->SetData(
+		AttackData->GetAbilityTag(),
+		AttackSpec,
+		*ProjectileData
+	);
+
+	ResetStuckCountdown(true);
+	LastAttackTime = GetWorld() ? GetWorld()->GetTimeSeconds() : LastAttackTime;
+
+	return true;
+}
+
+bool AUnitCharacter::GetProjectileSpawnTransform(FVector& OutLocation, FRotator& OutRotation) const
+{
+	OutLocation = GetActorLocation() + GetActorForwardVector() * 70.f + FVector(0.f, 0.f, 80);
+	OutRotation = GetActorRotation();
+
+	// 현재 타깃이 있으면 타깃 방향으로 회전
+	if (CurrentTarget)
+	{
+		const FVector Dir = (CurrentTarget->GetActorLocation() - OutLocation).GetSafeNormal();
+		if (!Dir.IsNearlyZero())
+		{
+			OutRotation = Dir.Rotation();
+		}
+		return true;
+	}
+
+	// 메시에 FirePos 소켓이 있으면 우선 사용
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		static const FName FireSocketName(TEXT("FirePos"));
+
+		if (MeshComp->DoesSocketExist(FireSocketName))
+		{
+			OutLocation = MeshComp->GetSocketLocation(FireSocketName);
+
+			if (CurrentTarget)
+			{
+				const FVector Dir = (CurrentTarget->GetActorLocation() - OutLocation).GetSafeNormal();
+				if (!Dir.IsNearlyZero())
+				{
+					OutRotation = Dir.Rotation();
+				}
+			}
+			else
+			{
+				OutRotation = MeshComp->GetSocketRotation(FireSocketName);
+			}
+			return true;
+		}
+	}
+
+	return true;
+}
+
+void AUnitCharacter::InitProjectilePoolIfNeeded()
+{
+	if (!AttackData) return;
+	if (AttackData->GetAttackType() != EAttackType::Projectile) return;
+
+	const FProjectileDataRow* ProjectileData = AttackData->GetProjectileData();
+	if (!ProjectileData) return;
+	if (ProjectileData->EPoolTypes == EPoolTypes::None) return;
+	if (ProjectileData->SpawnObject.IsNull()) return;
+
+	if (UObjectPoolSubsystem* Pool = GetPool())
+	{
+		UClass* ProjectileClass = ProjectileData->SpawnObject.LoadSynchronous();
+		if (!ProjectileClass)
+		{
+			UE_LOG(LogTemp, Error, TEXT("[UnitCharacter] Projectile class load failed."));
+			return;
+		}
+
+		// 같은 PoolType / 같은 클래스라면 내부에서 중복 방어되도록 ObjectPoolSubsystem 쪽에서 처리하는 게 제일 좋음
+		Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileClass, 10);
+	}
+}
+
 void AUnitCharacter::ExecuteAttack()
 {
 	if (IsDead()) return;
@@ -747,9 +882,22 @@ void AUnitCharacter::ExecuteSkill(int32 InSkillIndex)
 
 void AUnitCharacter::OnAttackNotify()
 {
-	if (CurrentTarget)
+	if (IsDead()) return;
+	if (!AttackData) return;
+
+	switch (AttackData->GetAttackType())
 	{
+	case EAttackType::Melee:
 		ApplyAttack(CurrentTarget);
+		break;
+
+	case EAttackType::Projectile:
+		FireProjectileAttack();
+		break;
+
+	case EAttackType::OnTarget:
+	default:
+		break;
 	}
 }
 
