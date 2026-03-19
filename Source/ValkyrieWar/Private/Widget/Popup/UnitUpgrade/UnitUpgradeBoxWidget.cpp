@@ -110,13 +110,23 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 		NextLevel_Cost->SetText(FText::FromString(FString::Printf(TEXT("0"))));
 	}
 
-	if (CachedUnitData->GetLevel() >= 10)
+	if (!NextLevelData)
 	{
 		if (Btn_UpgradeUnit)
 		{
-			Btn_UpgradeUnit->SetVisibility(ESlateVisibility::Hidden);
+			// 비활성화 색상 설정
+			FButtonStyle ButtonStyle = Btn_UpgradeUnit->GetStyle();
+			ButtonStyle.Disabled.TintColor = FSlateColor(ButtonBackGroundColor);
+			Btn_UpgradeUnit->SetStyle(ButtonStyle);
+
+			Btn_UpgradeUnit->SetIsEnabled(false);
+		}
+		if (ButtonText)
+		{
+			ButtonText->SetText(FText::FromString(FString::Printf(TEXT("최대 레벨"))));
 		}
 	}
+	
 }
 
 void UUnitUpgradeBoxWidget::OnUpgradeUnit()

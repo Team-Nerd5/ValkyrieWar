@@ -59,14 +59,19 @@ protected:
 	TObjectPtr<UTextBlock> NextLevel_Defence = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Cost = nullptr;
-
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_UpgradeUnit = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> ButtonText = nullptr;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting|Color")
+	FLinearColor ButtonBackGroundColor = FLinearColor(0.0f, 0.0f, 0.0f);
 private:
 	UPROPERTY()
 	TObjectPtr<UUnitData> CachedUnitData = nullptr;
 
 	int32 UnitDataId = 0;
+
+	int32 MaxLevel = 10;
 };
