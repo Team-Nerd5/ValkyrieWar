@@ -199,22 +199,15 @@ void AValkyrieCharacter::ExecuteAttack()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("형!! 애님 인스턴스가 없어!! 뼈대에 ABP 연결됐는지 확인해!!"));
-		return; // 에디터 안 터지게 여기서 함수 종료!
+		return;
 	}
 
 	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
 
 	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
 
-	if (AttackMontage == nullptr) // (형이 쓰는 몽타주 변수명으로 바꿔줘)
-	{
-		UE_LOG(LogTemp, Error, TEXT("형!! 공격 몽타주가 텅 비었어!! DT 배달 사고야!!"));
-		return;
-	}
 	if (!AttackMontage)
 		return;
-	UE_LOG(LogTemp, Warning, TEXT("🔥 현재 뇌: %s / 재생할 몽타주: %s"), *AnimInst->GetName(), AttackMontage ? *AttackMontage->GetName() : TEXT("없음(Null)"));
 
 	if (AnimInst && AttackMontage)
 	{
@@ -235,14 +228,16 @@ void AValkyrieCharacter::ExecuteAttack()
 
 			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
 
-			TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotify);
-			for (FGameplayCueData Cue : Cues)
+			TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnExecute);
+			if (Cues.Num() > 0)
 			{
-				//소켓위치? 음...
-				FGameplayCueParameters CueParams;
-				CueParams.Location = GetActorLocation() + Cue.Offset;
+				for (const FGameplayCueData Cue : Cues)
+				{
+					FGameplayCueParameters CueParams;
+					CueParams.Location = GetActorLocation() + Cue.Offset;
 
-				AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+					AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+				}
 			}
 
 			CurrentComboCount = 1;
@@ -297,7 +292,7 @@ void AValkyrieCharacter::OnAttackNotify()
 				}
 			}
 			ABaseProjectile* Projectile = Pool->Get<ABaseProjectile>(AttackData->GetProjectileData()->EPoolTypes, FirePos, GetActorRotation());
-			Projectile->SetData(AttackData->GetAbilityTag(), AttackSpec, *AttackData->GetProjectileData());
+			Projectile->SetData(AttackData->GetAbilityTag(), AttackSpec, *AttackData->GetProjectileData(), AttackData->GetCue(EGameplayCueOrder::InProjectile));
 		}
 	}
 }
@@ -328,6 +323,18 @@ void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)
 
 		AnimInst->Montage_Play(SkillMontage);
 		AnimInst->Montage_SetEndDelegate(EndDelegate, SkillMontage);
+
+		TArray<FGameplayCueData> Cues = UsingSkill->GetCue(EGameplayCueOrder::OnExecute);
+		if (Cues.Num() > 0)
+		{
+			for (const FGameplayCueData Cue : Cues)
+			{
+				FGameplayCueParameters CueParams;
+				CueParams.Location = GetActorLocation() + Cue.Offset;
+
+				AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+			}
+		}
 	}
 }
 

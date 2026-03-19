@@ -10,6 +10,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 
 #include "Data/Table/GameData/ProjectileDataRow.h"
+#include "Data/Struct/GameplayCueData.h"
 
 #include "BaseProjectile.generated.h"
 
@@ -39,7 +40,7 @@ public:
 
 	virtual void OnRelease_Implementation() override;
 
-	void SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData);
+	void SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData, TArray<FGameplayCueData> InCues);
 
 protected:
 	UPROPERTY()
@@ -57,6 +58,8 @@ protected:
 	FGameplayTag AbilityTag;
 
 	EPoolTypes PoolType = EPoolTypes::None;
+
+	TArray<FGameplayCueData> PlayCueOnTarget;
 
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent,

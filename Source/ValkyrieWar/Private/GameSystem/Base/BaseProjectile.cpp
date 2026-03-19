@@ -56,7 +56,7 @@ void ABaseProjectile::OnRelease_Implementation()
 	MovementComponent->Deactivate();
 }
 
-void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData)
+void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData, TArray<FGameplayCueData> InCues)
 {
 	if (AbilitySystemComponent)
 	{		
@@ -73,6 +73,8 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 		MovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * InProjectileData.MoveSpeed);
 		MovementComponent->Activate();
 	}
+
+	PlayCueOnTarget = InCues;
 }
 
 void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -101,6 +103,17 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 				*AbilitySystemComponent
 			);
 			break;
+		}
+	}
+
+	if (PlayCueOnTarget.Num() > 0)
+	{
+		for (FGameplayCueData Cue : PlayCueOnTarget)
+		{
+			FGameplayCueParameters CueParams;
+			CueParams.Location = TargetUnit->GetActorLocation();
+
+			AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
 		}
 	}
 

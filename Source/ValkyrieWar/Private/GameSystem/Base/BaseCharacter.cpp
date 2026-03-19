@@ -90,7 +90,7 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
             );
 
             TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotify);
-            for (FGameplayCueData Cue : Cues)
+            for (const FGameplayCueData Cue : Cues)
             {
                 FGameplayCueParameters CueParams;
                 CueParams.Location = GetActorLocation() + Cue.Offset;
