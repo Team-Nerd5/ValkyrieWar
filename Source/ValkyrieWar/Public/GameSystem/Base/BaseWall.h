@@ -17,11 +17,10 @@ class VALKYRIEWAR_API ABaseWall : public ABaseActor, public IAbilitySystemInterf
 public:
 	ABaseWall();
 
-	UPROPERTY(EditAnywhere, Category = "Team")
-	ETeamType Team = ETeamType::Ally;
-
 	// GAS가 이 액터에서 ASC를 물어보면 "코어의 ASC"를 내준다
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	inline ETeamType GetTeamType() const { return Team; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -30,4 +29,7 @@ protected:
 private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<ACoreWallActor> CachedCore;
+
+	UPROPERTY(EditAnywhere, Category = "Team")
+	ETeamType Team = ETeamType::Ally;
 };

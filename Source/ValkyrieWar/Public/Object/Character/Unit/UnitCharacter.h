@@ -42,7 +42,7 @@ public:
 
 	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
 
-	ETeamType GetTeamType() { return Data ? Data->GetTeamType() : ETeamType::None; }
+	ETeamType GetTeamType() const { return Data ? Data->GetTeamType() : ETeamType::None; }
 
 	// 스포너가 스폰(또는 재사용) 시점에 세팅
 	UFUNCTION(BlueprintCallable, Category = "Pool")
@@ -78,6 +78,8 @@ public:
 	virtual void OnSkillNotify() override;
 
 	virtual void OnDeath() override;
+
+	void CollectAttackTargets(TArray<AActor*>& OutTargets) const;
 
 protected:
 	// 공격/스킬 관련 가상함수
@@ -116,6 +118,9 @@ private:
 	bool FireProjectileAttack();
 	bool GetProjectileSpawnTransform(FVector& OutLocation, FRotator& OutRotation) const;
 	void InitProjectilePoolIfNeeded();
+
+	void CollectSplashTargets(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, TArray<AActor*>& OutTargets) const;
+	bool IsValidAttackTargetActor(const AActor* TargetActor) const;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")

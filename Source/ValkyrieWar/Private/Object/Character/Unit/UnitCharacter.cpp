@@ -3,6 +3,7 @@
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "Object/Unit/Component/UnitBrainComponent.h"
 #include "Object/Unit/AI/Controller/UnitAIController.h"
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 
 #include "GameSystem/Instance/World/BattleDirectorSubsystem.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
@@ -10,6 +11,7 @@
 
 #include "GameSystem/Base/BaseUnitSpawner.h"
 #include "GameSystem/Base/BaseProjectile.h"
+#include "GameSystem/Base/BaseWall.h"
 #include "GameSystem/Base/BaseAnimInstance.h"
 
 #include "Data/Struct/UnitEngagementSlotData.h"
@@ -853,6 +855,137 @@ void AUnitCharacter::InitProjectilePoolIfNeeded()
 	}
 }
 
+void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, TArray<AActor*>& OutTargets) const
+{
+	if (!MainTarget)
+	{
+		return;
+	}
+
+	if (SplashTargetAmount <= 0 || SplashRange <= 0.f)
+	{
+		return;
+	}
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(const_cast<AUnitCharacter*>(this));
+	IgnoreActors.Add(MainTarget);
+
+	TArray<AActor*> OverlapActors;
+
+	const bool bHit = UKismetSystemLibrary::SphereOverlapActors(
+		GetWorld(),
+		MainTarget->GetActorLocation(),
+		SplashRange,
+		ObjectTypes,
+		AUnitCharacter::StaticClass(),
+		IgnoreActors,
+		OverlapActors
+	);
+
+	if (!bHit || OverlapActors.IsEmpty())
+	{
+		return;
+	}
+
+	struct FSplashCandidate
+	{
+		AActor* Target = nullptr;
+		float DistSq = 0.f;
+	};
+
+	TArray<FSplashCandidate> Candidates;
+	Candidates.Reserve(OverlapActors.Num());
+
+	for (AActor* Actor : OverlapActors)
+	{
+		if (!IsValidAttackTargetActor(Actor))
+		{
+			continue;
+		}
+
+		const float DistSq = FVector::DistSquared(
+			MainTarget->GetActorLocation(),
+			Actor->GetActorLocation()
+		);
+
+		Candidates.Add({ Actor, DistSq });
+	}
+
+	if (Candidates.IsEmpty())
+	{
+		return;
+	}
+
+	Candidates.Sort([](const FSplashCandidate& A, const FSplashCandidate& B)
+		{
+			return A.DistSq < B.DistSq;
+		});
+
+	const int32 AddCount = FMath::Min(SplashTargetAmount, Candidates.Num());
+	for (int32 i = 0; i < AddCount; ++i)
+	{
+		OutTargets.Add(Candidates[i].Target);
+	}
+}
+
+bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
+{
+	if (!IsValid(TargetActor))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("!IsValid(TargetActor)"));
+		return false;
+	}
+
+	if (TargetActor == this)
+	{
+		return false;
+	}
+
+	// 1) 유닛인 경우
+	if (const AUnitCharacter* TargetUnit = Cast<AUnitCharacter>(TargetActor))
+	{
+		if (TargetUnit->IsDead())
+		{
+			return false;
+		}
+
+		if (TargetUnit->GetTeamType() == GetTeamType())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	// 2) 플레이어 캐릭터인 경우
+	if (const AValkyrieCharacter* TargetCharacter = Cast<AValkyrieCharacter>(TargetActor))
+	{
+		if (GetTeamType() == ETeamType::Ally)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	// 3) 벽인 경우
+	if (const ABaseWall* TargetWall = Cast<ABaseWall>(TargetActor))
+	{
+		if (TargetWall->GetTeamType() == GetTeamType())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 void AUnitCharacter::ExecuteAttack()
 {
 	if (IsDead()) return;
@@ -901,8 +1034,21 @@ void AUnitCharacter::OnAttackNotify()
 	switch (AttackData->GetAttackType())
 	{
 	case EAttackType::Melee:
-		ApplyAttack(CurrentTarget);
+	{
+		TArray<AActor*> AttackTargets;
+		CollectAttackTargets(AttackTargets);
+
+		for (AActor* Target : AttackTargets)
+		{
+			if (!IsValidAttackTargetActor(Target))
+			{
+				continue;
+			}
+
+			ApplyAttack(Target);
+		}
 		break;
+	}
 
 	case EAttackType::Projectile:
 		FireProjectileAttack();
@@ -923,4 +1069,49 @@ void AUnitCharacter::OnSkillNotify()
 void AUnitCharacter::OnDeath()
 {
 	HandleDeath();
+}
+
+void AUnitCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
+{
+	OutTargets.Reset();
+
+	if (IsDead())
+	{
+		return;
+	}
+
+	if (!AttackData)
+	{
+		return;
+	}
+
+	AActor* MainTarget = CurrentTarget;
+	if (!IsValidAttackTargetActor(MainTarget))
+	{
+		return;
+	}
+
+	// 1. 메인 타겟 추가
+	OutTargets.Add(MainTarget);
+
+	// 2. 스플래시 규칙 확인
+	const FTargetingDataRow& TargetingData = AttackData->GetTargetingData();
+
+	if (TargetingData.SplashTargetAmount <= 0)
+	{
+		return;
+	}
+
+	if (TargetingData.SplashRange <= 0.f)
+	{
+		return;
+	}
+
+	// 3. 주변 타겟 추가 수집
+	CollectSplashTargets(
+		MainTarget,
+		TargetingData.SplashTargetAmount,
+		TargetingData.SplashRange,
+		OutTargets
+	);
 }
