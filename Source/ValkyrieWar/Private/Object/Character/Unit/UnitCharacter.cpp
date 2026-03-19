@@ -763,7 +763,8 @@ bool AUnitCharacter::FireProjectileAttack()
 	Projectile->SetData(
 		AttackData->GetAbilityTag(),
 		AttackSpec,
-		*ProjectileData
+		*ProjectileData,
+		AttackData->GetCue(EGameplayCueOrder::InProjectile)
 	);
 
 	ResetStuckCountdown(true);
