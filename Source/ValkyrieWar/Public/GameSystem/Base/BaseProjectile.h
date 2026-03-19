@@ -42,6 +42,8 @@ public:
 
 	void SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData, TArray<FGameplayCueData> InCues);
 
+	void SetTeam(ETeamType InTeam) { TeamType = InTeam; }
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
@@ -68,4 +70,7 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult);
+
+private:
+	ETeamType TeamType = ETeamType::None;
 };

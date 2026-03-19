@@ -51,6 +51,7 @@ void ABaseProjectile::OnGet_Implementation()
 
 void ABaseProjectile::OnRelease_Implementation()
 {
+	TeamType = ETeamType::None;
 	Effect->SetActive(false);
 	MovementComponent->StopMovementImmediately();
 	MovementComponent->Deactivate();
@@ -85,7 +86,7 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 	const FHitResult& SweepResult)
 {
 	AUnitCharacter* TargetUnit = Cast<AUnitCharacter>(OtherActor);
-	if (!TargetUnit || TargetUnit->IsDead() || TargetUnit->GetTeamType() != ETeamType::Enemy) return;
+	if (!TargetUnit || TargetUnit->IsDead() || TargetUnit->GetTeamType() == TeamType) return;
 
 	FGameplayEventData Payload;
 	Payload.Instigator = this;
