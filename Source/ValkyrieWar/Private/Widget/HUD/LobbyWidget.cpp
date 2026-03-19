@@ -145,11 +145,7 @@ void ULobbyWidget::OnClickLobbyMenu(EUIType InMenuType)
         ShowUnitUpgrade();
         break;
     case EUIType::PopupGacha:
-        if (EventSystem)
-        {
-            //테스트 해보고... 가챠 화면에서 뽑기 했을 때 연출로 레벨 전환.
-            EventSystem->Lobby.OnLoadGacha.Broadcast();
-        }
+        //가챠 팝업
         break;
     }
 }
