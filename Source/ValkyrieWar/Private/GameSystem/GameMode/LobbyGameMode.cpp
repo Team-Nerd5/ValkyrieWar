@@ -6,8 +6,5 @@
 
 void ALobbyGameMode::BeginPlay()
 {
-	if (ALobbyGameState* LobbyState = GetGameState<ALobbyGameState>())
-	{
-		LobbyState->ChangeState(ELobbyState::Init);
-	}
+
 }

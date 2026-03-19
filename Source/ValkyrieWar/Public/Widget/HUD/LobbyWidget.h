@@ -44,5 +44,5 @@ private:
 	void ShowStageInternal();
 
 	UFUNCTION()
-	void OnClickInventory(EUIType InMenuType);
+	void OnClickLobbyMenu(EUIType InMenuType);
 };

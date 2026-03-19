@@ -23,4 +23,18 @@ protected:
 
 	UFUNCTION()
 	void ChageGameState(ELobbyState InState);
+
+	void SetActorCamera(FName InLevelName);
+
+	UFUNCTION()
+	void LoadLobbyLevel();
+
+	UFUNCTION()
+	void LoadGachaLevel();
+
+	UFUNCTION()
+	void OnLobbyLevelLoaded();
+
+	UFUNCTION()
+	void OnGachaLevelLoaded();
 };

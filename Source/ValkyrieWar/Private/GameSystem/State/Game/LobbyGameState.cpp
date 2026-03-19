@@ -4,10 +4,13 @@
 #include "GameSystem/State/Game/LobbyGameState.h"
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Widget/HUD/LobbyWidget.h"
 #include "Widget/HUD/TopMenuWidget.h"
 #include "Widget/Loading/LoadingWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void ALobbyGameState::ChangeState(ELobbyState InState)
 {
@@ -16,12 +19,19 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 	switch (State)
 	{
 	case ELobbyState::Init:
+
+		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			EventSystem->Lobby.OnLoadLobby.Broadcast();
+		}
 		//기본 UI 표기
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
 			UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
 			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
+		//컨트롤러..
+		
 		ChangeState(ELobbyState::Ready);
 		//캐릭터 생성/배치
 		break;

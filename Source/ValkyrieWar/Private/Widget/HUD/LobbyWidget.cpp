@@ -17,6 +17,8 @@
 #include "Widget/Popup/Stage/StageListPanelWidget.h"
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
 
+#include "Kismet/GameplayStatics.h"
+
 void ULobbyWidget::NativeConstruct()
 {
     Super::NativeConstruct();
@@ -56,7 +58,7 @@ void ULobbyWidget::OpenUI()
                 if (NewMenu)
                 {
                     NewMenu->SetData(Data);
-                    NewMenu->OnMenuButtonClicked.AddDynamic(this, &ULobbyWidget::OnClickInventory);
+                    NewMenu->OnMenuButtonClicked.AddDynamic(this, &ULobbyWidget::OnClickLobbyMenu);
 
                     UUniformGridSlot* GridSlot = MenuPanel->AddChildToUniformGrid(NewMenu);
 
@@ -129,7 +131,7 @@ void ULobbyWidget::ShowStageInternal()
     ShowStageListPopup();
 }
 
-void ULobbyWidget::OnClickInventory(EUIType InMenuType)
+void ULobbyWidget::OnClickLobbyMenu(EUIType InMenuType)
 {
     switch (InMenuType)
     {
@@ -141,6 +143,13 @@ void ULobbyWidget::OnClickInventory(EUIType InMenuType)
         break;
     case EUIType::PopupUnitUpgrade:
         ShowUnitUpgrade();
+        break;
+    case EUIType::PopupGacha:
+        if (EventSystem)
+        {
+            //테스트 해보고... 가챠 화면에서 뽑기 했을 때 연출로 레벨 전환.
+            EventSystem->Lobby.OnLoadGacha.Broadcast();
+        }
         break;
     }
 }

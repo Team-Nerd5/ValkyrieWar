@@ -7,6 +7,9 @@
 #include "LobbyEventData.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyStateChanged, ELobbyState, InState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyCameraSet);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLoadLobby);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLoadGacha);
 /**
  * 
  */
@@ -16,4 +19,7 @@ struct VALKYRIEWAR_API FLobbyEventData
 	GENERATED_BODY()
 public:
 	FOnLobbyStateChanged OnLobbyStateChanged;
+	FOnLobbyCameraSet OnLobbyCameraSet;
+	FOnLoadLobby OnLoadLobby;
+	FOnLoadGacha OnLoadGacha;
 };

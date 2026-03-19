@@ -18,7 +18,6 @@ public:
 	void ChangeState(ELobbyState InState);
 
 	FORCEINLINE ELobbyState GetState() const { return State; }
-
 private:
 	ELobbyState State = ELobbyState::Init;
 };
