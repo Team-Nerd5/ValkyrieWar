@@ -6,6 +6,13 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Data/Module/UnitModule.h"
 
+void UUnitUpgradeWidget::OpenUI()
+{
+	UIType = EUIType::PopupUnitUpgrade;
+
+	Super::OpenUI();
+}
+
 void UUnitUpgradeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

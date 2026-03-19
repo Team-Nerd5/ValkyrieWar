@@ -17,9 +17,10 @@ UCLASS()
 class VALKYRIEWAR_API UUnitUpgradeWidget : public UBaseWidget
 {
 	GENERATED_BODY()
+public:
+	virtual void OpenUI() override;
 protected:
 	virtual void NativeConstruct() override;
-
 protected:
 	void InitUpgradeBox();
 
