@@ -21,13 +21,13 @@ void ATestActorSpawner::BeginPlay()
 	if (!SubSystem.IsValid())
 		return;
 
-	SubSystem->InitPool<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, 5);
+	//SubSystem->InitPool<ABaseCharacter>(EPoolTypes::BaseCharacter, TestCharacter, 5);
 
 }
 
 void ATestActorSpawner::SpawnActor()
 {
-	SpawnedActor = SubSystem->Get<ABaseCharacter>(EPoolTypes::BaseCharacter, GetActorLocation(), GetActorRotation());
+	//SpawnedActor = SubSystem->Get<ABaseCharacter>(EPoolTypes::BaseCharacter, GetActorLocation(), GetActorRotation());
 
 }
 

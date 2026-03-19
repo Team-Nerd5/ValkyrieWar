@@ -30,13 +30,13 @@ public:
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
 	FORCEINLINE TArray<FGameplayCueData> const GetCue(EGameplayCueOrder InOrder)
 	{
-		TArray<FGameplayCueData> Data;
-		for (const auto data : TableData.CueData)
+		TArray<FGameplayCueData> OutData;
+		for (const FGameplayCueData Data : TableData.CueData)
 		{
-			if (data.CueOrder == InOrder)
-				Data.Add(data);
+			if (Data.CueOrder == InOrder)
+				OutData.Add(Data);
 		}
-		return Data;
+		return OutData;
 	}
 	FORCEINLINE FProjectileDataRow* const GetProjectileData()
 	{

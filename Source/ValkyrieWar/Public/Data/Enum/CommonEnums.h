@@ -50,15 +50,6 @@ enum class EPoolTypes : uint8
 	// 디폴트(무효)
 	None,
 
-	// 캐릭터
-	BaseCharacter,
-
-	// 폰
-	BasePawn,
-
-	// 액터
-	BaseActor,
-
 	// 아군 유닛 풀타입
 	Ally_Archer,
 	Ally_Sword,

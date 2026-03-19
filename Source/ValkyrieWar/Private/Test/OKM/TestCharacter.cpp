@@ -41,7 +41,7 @@ void ATestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void ATestCharacter::Despawn()
 {
-	SubSystem->Release<ABaseCharacter>(EPoolTypes::BaseCharacter, this);
+	//SubSystem->Release<ABaseCharacter>(EPoolTypes::BaseCharacter, this);
 }
 
 void ATestCharacter::OnGet_Implementation()

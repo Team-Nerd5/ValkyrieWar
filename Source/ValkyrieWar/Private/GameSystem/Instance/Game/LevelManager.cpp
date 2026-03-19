@@ -97,7 +97,7 @@ void ULevelManager::OnDataLoadCompleted()
 	{
 		if (SaveManager->IsNewAccount())
 		{
-			UGameDataFactory::GenerateValkyrie(110001, GetGameInstance());
+			UGameDataFactory::GenerateValkyrie(100201, GetGameInstance());
 		}
 	}
 
