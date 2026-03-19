@@ -31,8 +31,7 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
 	TObjectPtr<class AValkyrieCharacter> OwnerCharacter = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
-	EWeaponAnimType WeaponType = EWeaponAnimType::None;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	FVector Velocity = FVector::ZeroVector;
 

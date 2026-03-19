@@ -20,16 +20,8 @@ class VALKYRIEWAR_API AValkyrieCharacter : public ABaseCharacter
 public:
 	AValkyrieCharacter();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	EWeaponAnimType CurrentWeaponType = EWeaponAnimType::None;
-public:
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void SetWeaponType(EWeaponAnimType InNewType);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ResetCombo();

@@ -17,19 +17,17 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
 	UPROPERTY(EditAnywhere)
+	FString Name;
+	UPROPERTY(EditAnywhere)
 	EGradeType BaseGrade = EGradeType::Common;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
-	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<USkeletalMesh> Mesh = nullptr;
 	UPROPERTY(EditAnywhere)
 	float MoveSpeed = 100.0f;
 	UPROPERTY(EditAnywhere)
 	int32 BaseWeaponId = 0;
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
-	UPROPERTY(EditAnywhere)
-	FString SocketName = TEXT("");
 	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<class AValkyrieCharacter> SpawnClass = nullptr;
 };

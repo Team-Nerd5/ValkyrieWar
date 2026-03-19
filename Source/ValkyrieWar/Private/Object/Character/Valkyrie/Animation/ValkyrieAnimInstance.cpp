@@ -35,5 +35,4 @@ void UValkyrieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = MovementComp->Velocity;
 	GroundSpeed = Velocity.Size2D();
 	bIsMoving = GroundSpeed > 3.0f;
-	WeaponType = OwnerCharacter->CurrentWeaponType;
 }

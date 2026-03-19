@@ -58,11 +58,6 @@ AValkyrieCharacter::AValkyrieCharacter()
 	}
 }
 
-void AValkyrieCharacter::SetWeaponType(EWeaponAnimType InNewType)
-{
-	CurrentWeaponType = InNewType;
-}
-
 void AValkyrieCharacter::ResetCombo()
 {
 	CurrentComboCount = 0;

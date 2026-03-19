@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Data/Enum/CommonEnums.h"
 #include "Data/Enum/CharacterEnums.h"
+#include "Data/Enum/DataEnums.h"
 #include "UnitDataRow.generated.h"
 
 /**
@@ -20,7 +21,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)
-	TSoftObjectPtr<USkeletalMesh> Mesh = nullptr;
+	EGradeType Grade = EGradeType::Common;
 	UPROPERTY(EditAnywhere)
 	float MovSpeed = 0.0f;
 	UPROPERTY(EditAnywhere)

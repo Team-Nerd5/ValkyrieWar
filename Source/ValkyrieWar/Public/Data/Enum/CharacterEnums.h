@@ -30,7 +30,6 @@ enum class EWeaponType : uint8
 	Staff,
 	SwordAndShield,
 	Spear,
-
 };
 
 UENUM(BlueprintType)

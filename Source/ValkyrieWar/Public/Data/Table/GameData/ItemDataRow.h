@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Enum/DataEnums.h"
+#include "Data/Enum/CharacterEnums.h"
 #include "ItemDataRow.generated.h"
 
 /**
@@ -27,6 +28,8 @@ public:
 	int32 SellPrice = 0;
 
 	//장비용
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)
