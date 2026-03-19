@@ -22,6 +22,8 @@ public:
 	FORCEINLINE int32 GetAttack() { return StatData.Attack; }
 	FORCEINLINE int32 GetDefence() { return StatData.Defence; }
 	FORCEINLINE int32 GetHealth() { return StatData.Health; }
+	FORCEINLINE EGoodsType GetUpgradeCostType() { return TableData.UpgradeCostType; }
+	FORCEINLINE int32 GetUpgradeCost() { return TableData.UpgradeCost; }
 protected:
 	UPROPERTY()
 	FUnitUpgradeStatDataRow TableData;

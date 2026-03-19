@@ -24,54 +24,83 @@ class VALKYRIEWAR_API UUnitUpgradeBoxWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 public:
 	UFUNCTION()
 	void Init(int32 InUnitId);
 
+	// UI 정보 업데이트
 	UFUNCTION()
 	void UpdateUpgradeInfo(int32 InUnitId);
 
-	UFUNCTION()
-	FORCEINLINE int32 GetUnitDataId() { return UnitDataId; }
 protected:
+	// 버튼 업테이트 테스트 함수
+	UFUNCTION()
+	void OnTestGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount);
+	
+	// 재화의 변화가 있을 때 바인딩 할 함수(버튼 활성화 여부를 체크)
+	UFUNCTION()
+	void OnGoodsChangedAmount();
+	// 업그레이드 버튼 바인딩 함수
 	UFUNCTION()
 	void OnUpgradeUnit();
 
+private:
+	// 재화의 상태에 따라 버튼 활성화/비활성화 설정 함수
+	UFUNCTION()
+	void CheckEnoughCost();
+	// 버튼 활성화/비활성화 설정 함수
+	UFUNCTION()
+	void SetEnableButton(bool IsActive);
+
 protected:
+	// 유닛 정보
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UnitType = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> UnitIcon = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> UnitLevel = nullptr;
+
+	// 유닛의 현재 스텟
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> CurrentLevel_Attack = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> CurrentLevel_Health = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> CurrentLevel_Defence = nullptr;
+
+	// 다음 레벨에 오를 스텟
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Attack = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Health = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Defence = nullptr;
+
+	// 다음 레벨업 할 때 사용될 재화
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> NextLevel_CostTypeIcon = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> NextLevel_Cost = nullptr;
+
+	// 업그레이드 버튼
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Btn_UpgradeUnit = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> ButtonText = nullptr;
 
 protected:
+	// 버튼 비활성화 색상설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting|Color")
-	FLinearColor ButtonBackGroundColor = FLinearColor(0.0f, 0.0f, 0.0f);
+	FLinearColor ButtonDisableColor = FLinearColor(0.0f, 0.0f, 0.0f);
 private:
 	UPROPERTY()
 	TObjectPtr<UUnitData> CachedUnitData = nullptr;
 
-	int32 UnitDataId = 0;
+	UPROPERTY()
+	TWeakObjectPtr<UUnitUpgradeData> NextLevelData = nullptr;
 
-	int32 MaxLevel = 10;
+	int32 UnitDataId = 0;
 };
