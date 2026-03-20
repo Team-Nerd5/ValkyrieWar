@@ -151,7 +151,11 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 		if (NextLevelData.IsValid())
 			NextLevel_Cost->SetText(FText::AsNumber(NextLevelData->GetUpgradeCost()));
 		else
+		{
 			NextLevel_Cost->SetVisibility(ESlateVisibility::Hidden);
+			if (NextLevel_CostTypeIcon)
+				NextLevel_CostTypeIcon->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 
 	// 다음 레벨이 없다면 버튼 비활성화
