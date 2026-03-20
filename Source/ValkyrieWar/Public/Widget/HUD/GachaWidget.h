@@ -17,16 +17,23 @@ class VALKYRIEWAR_API UGachaWidget : public UBaseWidget
 protected:
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UButton> Btn_Summon_1x;
+    TObjectPtr<class UButton> Btn_Summon_1x; // 1회 소환 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UButton> Btn_Summon_10x;
+    TObjectPtr<class UButton> Btn_Summon_10x; // 10회 소환 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UProgressBar> PB_Pity;
+    TObjectPtr<class UButton> Btn_WhatIs_CeliGacha; // 천장 가챠 시스템 설명 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UTextBlock> Text_PityCount;
+    TObjectPtr<class UProgressBar> PB_GachaCount; // 천장 가챠 프로그레스 바 
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UTextBlock> Text_GachaCount; // 가챠 횟수
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UTextBlock> Text_CurrentTicket;// 현재 유저의 가챠 티켓수
+
 protected:
 
     virtual void NativeConstruct() override;
@@ -38,4 +45,9 @@ protected:
 
     UFUNCTION()
     void OnClickSummon10x();
+
+    UFUNCTION()
+    void OnClickWhatIs_CeliGacha();
+
+    void UpdateGachaData(int32 AddCount);
 };
