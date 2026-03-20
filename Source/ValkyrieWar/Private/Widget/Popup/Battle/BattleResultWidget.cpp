@@ -16,6 +16,8 @@ void UBattleResultWidget::NativeConstruct()
 
 	BindDelegates();
 	RefreshResultUI();
+
+	SetBattleResult(EBattleState::Defeat);
 }
 
 void UBattleResultWidget::NativeDestruct()
@@ -36,6 +38,15 @@ void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
 	RefreshResultUI();
 }
 
+void UBattleResultWidget::SetBattleReward(TArray<int32> InRewardList)
+{
+	// TODO: 받을 보상 세팅(필요시 파라메터 추가)
+
+	// RewardDataRow의 DataId를 받고 표시
+
+	// 추후 플레이어 재화 업데이트 필요
+}
+
 void UBattleResultWidget::HandleBackToLobbyClicked()
 {
 	OnCloseUIRequested.Broadcast(this);
@@ -46,11 +57,22 @@ void UBattleResultWidget::HandleBackToLobbyClicked()
 	}
 }
 
+void UBattleResultWidget::HandleGoToNextLevelClicked()
+{
+	OnCloseUIRequested.Broadcast(this);
+
+	// TODO: 다음 레벨로 이동
+}
+
 void UBattleResultWidget::BindDelegates()
 {
 	if (BackToLobbyButton)
 	{
 		BackToLobbyButton->OnClicked.AddDynamic(this, &UBattleResultWidget::HandleBackToLobbyClicked);
+	}
+	if (GoToNextLevelButton)
+	{
+		GoToNextLevelButton->OnClicked.AddDynamic(this, &UBattleResultWidget::HandleGoToNextLevelClicked);
 	}
 }
 
@@ -60,32 +82,25 @@ void UBattleResultWidget::UnbindDelegates()
 	{
 		BackToLobbyButton->OnClicked.RemoveDynamic(this, &UBattleResultWidget::HandleBackToLobbyClicked);
 	}
+	if (GoToNextLevelButton)
+	{
+		GoToNextLevelButton->OnClicked.RemoveDynamic(this, &UBattleResultWidget::HandleGoToNextLevelClicked);
+	}
 }
 
 void UBattleResultWidget::RefreshResultUI()
 {
-	if (ResultText)
-	{
-		ResultText->SetText(GetHeaderText());
-	}
-}
+	if(VictoryBox)
+		VictoryBox->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	if(LoseBox)
+		LoseBox->SetVisibility(BattleState == EBattleState::Defeat ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
-FText UBattleResultWidget::GetHeaderText() const
-{
-	switch (BattleState)
-	{
-	case EBattleState::Win:
-		return FText::FromString(TEXT("Win"));
+	// 패배 했을 때도 보상이 있다면
+	// -> 보상이 존재 할 때만 보상 목록 표시
 
-	case EBattleState::Defeat:
-		return FText::FromString(TEXT("Defeat"));
-
-	case EBattleState::TimeOver:
-		return FText::FromString(TEXT("Draw"));
-
-	default:
-		return FText::GetEmpty();
-	}
+	if (GoToNextLevelBox)
+		GoToNextLevelButton->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+	
 }
 
 bool UBattleResultWidget::IsValidResultState(EBattleState InState) const
