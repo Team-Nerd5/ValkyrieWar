@@ -45,7 +45,7 @@ AValkyrieCharacter::AValkyrieCharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
-	CurrentComboCount = 0;
+
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AAIController::StaticClass();
@@ -60,11 +60,6 @@ AValkyrieCharacter::AValkyrieCharacter()
 
 void AValkyrieCharacter::ResetCombo()
 {
-	CurrentComboCount = 0;
-	bIsComboActive = false;
-	bIsComboInputOn = false;
-	bCanNextCombo = false;
-	bIsInComboWindow = false;
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 600.f;
@@ -202,6 +197,7 @@ void AValkyrieCharacter::ExecuteAttack()
 		return;
 	}
 
+	//로드해서 들고있는걸로 수정(공격 할때마다 로드하는건 좀...)
 	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
 
 	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
@@ -239,20 +235,9 @@ void AValkyrieCharacter::ExecuteAttack()
 					AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
 				}
 			}
+		}
+	}
 
-			CurrentComboCount = 1;
-			bIsComboActive = true;
-			bCanNextCombo = false;
-			bIsComboInputOn = false;
-		}
-	}
-	else
-	{
-		if (bIsComboActive && bCanNextCombo)
-		{
-			bIsComboInputOn = true;
-		}
-	}
 }
 
 void AValkyrieCharacter::OnAttackNotify()
@@ -416,6 +401,11 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
 
+	//TODO : 무기별 애니메이션 블랜드 가져와서 적용.
+	//이거 그냥... GameManager에 무기별로 박아놓고 가져와서 세팅할까..?
+	//-> 이러면 찾기가 어려운가? 발키리랑 유닛이랑 달라..아 각자 만들면 되겠네
+
+
 	UpdateWeaponMesh();
 }
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -426,59 +416,3 @@ void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInter
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
-void AValkyrieCharacter::BeginComboWindow()
-{
-	bIsInComboWindow = true;
-	bCanNextCombo = true;
-}
-
-void AValkyrieCharacter::EndComboWindow(FName NextSectionName)
-{
-	if (!AttackData) return;
-
-	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
-	auto MotageData = AttackData->GetAnimMontage();
-
-	if (!MotageData.IsValid())
-		return;
-
-	UAnimMontage* AttackMontage = MotageData.LoadSynchronous();
-
-	if (!AnimInst || !AttackMontage) return;
-	if (bIsComboInputOn)
-	{
-		bIsComboInputOn = false;
-		CurrentComboCount++;
-		FVector InputDir = GetCharacterMovement()->GetLastInputVector();
-		if (!InputDir.IsNearlyZero())
-		{
-			SetActorRotation(InputDir.Rotation());
-		}
-		if (CurrentComboCount > 1)
-		{
-			GetCharacterMovement()->MaxWalkSpeed = 0.f;
-			GetCharacterMovement()->StopMovementImmediately();
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-		}
-
-		AnimInst->Montage_JumpToSection(NextSectionName, AttackMontage);
-
-		if (NextSectionName == FName("Finish"))
-		{
-			bIsComboActive = false;
-		}
-	}
-	// 예약된 입력이 없으면 콤보 종료
-	else
-	{
-		CurrentComboCount = 0;
-		bIsComboActive = false;
-		ResetCombo();
-	}
-}
-
-//AActor* AValkyrieCharacter::FindTarget()
-//{
-//
-//	return nullptr;
-//}

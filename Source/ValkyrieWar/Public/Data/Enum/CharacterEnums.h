@@ -24,6 +24,20 @@ enum class EAttackType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	SwordAndShield,		//유닛 전용
+	Spear,				//양손
+	OneHandSword,		//한손
+	TwoHandSword,		//양손
+	Claymore,			//대검
+	Axe,				//양손도끼
+	Hammer,				//양손 망치
+	Staff,				//양손 무기
+	Bow,				//양손, 화살통 없음
+};
+
+UENUM(BlueprintType)
 enum class EStatusType : uint8
 {
 	Attack,

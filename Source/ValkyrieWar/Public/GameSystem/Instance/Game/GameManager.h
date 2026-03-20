@@ -8,6 +8,7 @@
 #include "Engine/DataTable.h"
 #include "Data/Enum/CommonEnums.h"
 #include "Data/Enum/DataEnums.h"
+#include "Data/Enum/CharacterEnums.h"
 
 #include "GameSystem/Base/BaseWidget.h"
 #include "GameManager.generated.h"
@@ -31,6 +32,8 @@ public:
 
 	UValkyrieData* const GetSelectedValkyrie();
 
+	UBlendSpace* GetValkyrieBlendSpace(EWeaponType InWeaponType);
+
 	// 게임 인스턴트 초기화 함수
 	virtual void Init() override;
 
@@ -45,6 +48,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Data|Table")
 	TMap<ETableDataType, TObjectPtr<UDataTable>> GameDataTables;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Data|BlendSpace")
+	TMap<EWeaponType, TObjectPtr<UBlendSpace>> ValkyrieBlendSpace;
 
 private:
 	uint64 SelectedValkyrieUID = 0;

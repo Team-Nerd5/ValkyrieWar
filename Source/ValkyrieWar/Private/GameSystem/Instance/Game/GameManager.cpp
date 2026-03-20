@@ -98,6 +98,11 @@ UValkyrieData* const UGameManager::GetSelectedValkyrie()
     return nullptr;
 }
 
+UBlendSpace* UGameManager::GetValkyrieBlendSpace(EWeaponType InWeaponType)
+{
+    return nullptr;
+}
+
 void UGameManager::Init()
 {
     Super::Init();

@@ -75,20 +75,4 @@ protected:
 	TObjectPtr<UValkyrieData> Data = nullptr;
 
 	EValkyrieModeType ValkyrieMode = EValkyrieModeType::None;
-
-public:// 나중에 삭제할것들
-	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
-	void BeginComboWindow();
-
-	UFUNCTION(BlueprintCallable, Category = "Combat|Combo")
-	void EndComboWindow(FName NextSectionName);
-
-	
-private: // 나중에 삭제할것들
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	int32 CurrentComboCount; // 현 콤보수
-	bool bCanNextCombo = false; // 콤보 이어지나
-	bool bIsComboActive = false;
-	bool bIsComboInputOn = false; // 타이머안에 클릭은 했냐
-	bool bIsInComboWindow = false;
 };

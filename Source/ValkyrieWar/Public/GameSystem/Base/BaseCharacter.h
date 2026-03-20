@@ -66,6 +66,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ability")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent = nullptr;
 
+	inline UBlendSpace* GetLocomotionBS() const { return LocomotionBS; }
+
 protected:
 	UPROPERTY()
 	TObjectPtr<UItemData> EquippedWeapon = nullptr;
@@ -88,8 +90,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
 	TObjectPtr<class UStatAttributeSet> StatAttributeSet = nullptr;
 
+	UPROPERTY()
 	int32 UsingSkillIndex = 0;
 
+	UPROPERTY()
 	FGameplayAbilitySpec AttackSpec;
+	UPROPERTY()
 	TArray<FGameplayAbilitySpec> SkillSpecs;
+
+	UPROPERTY()
+	TObjectPtr<UBlendSpace> LocomotionBS = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> AttackMontage = nullptr;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UAnimMontage>> SkillMontageList;
 };

@@ -73,9 +73,7 @@ public:
 
 	// 공격 성공 시 호출해서 카운트다운 리셋
 	void ResetStuckCountdown(bool bAlsoClearBB = true);
-
-	inline UBlendSpace* GetLocomotionBS() const { return LocomotionBS; }
-
+	
 	virtual void OnAttackNotify() override;
 	virtual void OnSkillNotify() override;
 
@@ -198,13 +196,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pool")
 	EPoolTypes MyPoolType = EPoolTypes::None;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
-	TObjectPtr<UBlendSpace> LocomotionBS = nullptr;
-
-	//TODO : Base로 합쳐도 될 것 같음
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation|Combat")
-	TObjectPtr<UAnimMontage> AttackMontage;
 
 	UPROPERTY()
 	TObjectPtr<UUnitData> Data = nullptr;
