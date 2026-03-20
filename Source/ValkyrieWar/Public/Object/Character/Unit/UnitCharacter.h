@@ -88,6 +88,10 @@ protected:
 
 	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
+	void DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const;
+	void DrawDebugSplashCandidate(AActor* TargetActor, const FVector& Center, bool bSelected, int32 Rank, float DistSq) const;
+	void DrawDebugSplashSummary(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, int32 CandidateCount, int32 SelectedCount) const;
+
 private:
 	// ---- BattleDirector 연동 ----
 	UBattleDirectorSubsystem* GetBattleDirector() const;
@@ -138,7 +142,7 @@ protected:
 	EUnitCombatType CombatType = EUnitCombatType::Melee;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	int32 MaxEngagementSlots = 2;
+	int32 MaxEngagementSlots = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float AttackRange = 160.f;
@@ -162,7 +166,7 @@ protected:
 	TObjectPtr<UUnitBrainComponent> Brain;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
-	bool bDrawDebug = false;
+	bool bDrawDebug = true;
 
 	// ===== Speed tuning =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")

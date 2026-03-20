@@ -867,6 +867,16 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 		return;
 	}
 
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const FVector Center = MainTarget->GetActorLocation();
+
+	DrawDebugSplashRange(Center, SplashRange, MainTarget);
+
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
@@ -877,8 +887,8 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 	TArray<AActor*> OverlapActors;
 
 	const bool bHit = UKismetSystemLibrary::SphereOverlapActors(
-		GetWorld(),
-		MainTarget->GetActorLocation(),
+		World,
+		Center,
 		SplashRange,
 		ObjectTypes,
 		AUnitCharacter::StaticClass(),
@@ -888,6 +898,7 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 
 	if (!bHit || OverlapActors.IsEmpty())
 	{
+		DrawDebugSplashSummary(MainTarget, SplashTargetAmount, SplashRange, 0, 0);
 		return;
 	}
 
@@ -904,19 +915,28 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 	{
 		if (!IsValidAttackTargetActor(Actor))
 		{
+			if (bDrawDebug && Actor)
+			{
+				DrawDebugSphere(
+					World,
+					Actor->GetActorLocation() + FVector(0.f, 0.f, 30.f),
+					25.f,
+					12,
+					FColor::Red,
+					false,
+					2.0f
+				);
+			}
 			continue;
 		}
 
-		const float DistSq = FVector::DistSquared(
-			MainTarget->GetActorLocation(),
-			Actor->GetActorLocation()
-		);
-
+		const float DistSq = FVector::DistSquared(Center, Actor->GetActorLocation());
 		Candidates.Add({ Actor, DistSq });
 	}
 
 	if (Candidates.IsEmpty())
 	{
+		DrawDebugSplashSummary(MainTarget, SplashTargetAmount, SplashRange, 0, 0);
 		return;
 	}
 
@@ -926,10 +946,21 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 		});
 
 	const int32 AddCount = FMath::Min(SplashTargetAmount, Candidates.Num());
-	for (int32 i = 0; i < AddCount; ++i)
+
+	for (int32 i = 0; i < Candidates.Num(); ++i)
 	{
-		OutTargets.Add(Candidates[i].Target);
+		const bool bSelected = i < AddCount;
+		AActor* TargetActor = Candidates[i].Target;
+
+		DrawDebugSplashCandidate(TargetActor, Center, bSelected, i, Candidates[i].DistSq);
+
+		if (bSelected)
+		{
+			OutTargets.Add(TargetActor);
+		}
 	}
+
+	DrawDebugSplashSummary(MainTarget, SplashTargetAmount, SplashRange, Candidates.Num(), AddCount);
 }
 
 bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
@@ -945,7 +976,7 @@ bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
 		return false;
 	}
 
-	// 1) 유닛인 경우
+	// 유닛인 경우
 	if (const AUnitCharacter* TargetUnit = Cast<AUnitCharacter>(TargetActor))
 	{
 		if (TargetUnit->IsDead())
@@ -961,7 +992,7 @@ bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
 		return true;
 	}
 
-	// 2) 플레이어 캐릭터인 경우
+	// 플레이어 캐릭터인 경우
 	if (const AValkyrieCharacter* TargetCharacter = Cast<AValkyrieCharacter>(TargetActor))
 	{
 		if (GetTeamType() == ETeamType::Ally)
@@ -972,7 +1003,7 @@ bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
 		return true;
 	}
 
-	// 3) 벽인 경우
+	// 벽인 경우
 	if (const ABaseWall* TargetWall = Cast<ABaseWall>(TargetActor))
 	{
 		if (TargetWall->GetTeamType() == GetTeamType())
@@ -1024,6 +1055,135 @@ void AUnitCharacter::ExecuteAttack()
 void AUnitCharacter::ExecuteSkill(int32 InSkillIndex)
 {
 	//스킬 몽타주 실행
+}
+
+void AUnitCharacter::DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const
+{
+	if (!bDrawDebug)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	// 스플래시 범위
+	DrawDebugSphere(
+		World,
+		Center,
+		Radius,
+		24,
+		FColor::Yellow,
+		false,
+		2.0f,
+		0,
+		2.0f
+	);
+
+	// 메인 타겟 강조
+	if (MainTarget)
+	{
+		DrawDebugSphere(
+			World,
+			MainTarget->GetActorLocation() + FVector(0.f, 0.f, 80.f),
+			45.f,
+			16,
+			FColor::Orange,
+			false,
+			2.0f,
+			0,
+			3.0f
+		);
+
+		DrawDebugString(
+			World,
+			MainTarget->GetActorLocation() + FVector(0.f, 0.f, 120.f),
+			TEXT("MainTarget"),
+			nullptr,
+			FColor::Orange,
+			2.0f,
+			false
+		);
+	}
+}
+
+void AUnitCharacter::DrawDebugSplashCandidate(AActor* TargetActor, const FVector& Center, bool bSelected, int32 Rank, float DistSq) const
+{
+	if (!bDrawDebug)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World || !TargetActor)
+	{
+		return;
+	}
+
+	const FVector TargetLoc = TargetActor->GetActorLocation();
+	const FVector DebugLoc = TargetLoc + FVector(0.f, 0.f, 50.f);
+	const float Dist = FMath::Sqrt(DistSq);
+
+	const FColor DebugColor = bSelected ? FColor::Green : FColor::Red;
+	const float DebugRadius = bSelected ? 35.f : 28.f;
+	const int32 Segments = bSelected ? 16 : 12;
+	const float Thickness = bSelected ? 2.5f : 1.5f;
+
+	DrawDebugSphere(
+		World,
+		DebugLoc,
+		DebugRadius,
+		Segments,
+		DebugColor,
+		false,
+		2.0f,
+		0,
+		Thickness
+	);
+
+	if (bSelected)
+	{
+		DrawDebugLine(
+			World,
+			Center,
+			TargetLoc,
+			FColor::Blue,
+			false,
+			2.0f,
+			0,
+			1.5f
+		);
+	}
+
+	DrawDebugString(
+		World,
+		TargetLoc + FVector(0.f, 0.f, 100.f),
+		FString::Printf(TEXT("Rank:%d Dist:%.0f %s"), Rank, Dist, bSelected ? TEXT("[Selected]") : TEXT("[Rejected]")),
+		nullptr,
+		DebugColor,
+		2.0f,
+		false
+	);
+}
+
+void AUnitCharacter::DrawDebugSplashSummary(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, int32 CandidateCount, int32 SelectedCount) const
+{
+	if (!bDrawDebug)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log,
+		TEXT("[SplashDebug] Main=%s SplashAmount=%d SplashRange=%.1f CandidateCount=%d SelectedCount=%d"),
+		*GetNameSafe(MainTarget),
+		SplashTargetAmount,
+		SplashRange,
+		CandidateCount,
+		SelectedCount
+	);
 }
 
 void AUnitCharacter::OnAttackNotify()
@@ -1091,10 +1251,10 @@ void AUnitCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
 		return;
 	}
 
-	// 1. 메인 타겟 추가
+	// 메인 타겟 추가
 	OutTargets.Add(MainTarget);
 
-	// 2. 스플래시 규칙 확인
+	// 스플래시 규칙 확인
 	const FTargetingDataRow& TargetingData = AttackData->GetTargetingData();
 
 	if (TargetingData.SplashTargetAmount <= 0)
@@ -1107,7 +1267,7 @@ void AUnitCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
 		return;
 	}
 
-	// 3. 주변 타겟 추가 수집
+	// 주변 타겟 추가 수집
 	CollectSplashTargets(
 		MainTarget,
 		TargetingData.SplashTargetAmount,
