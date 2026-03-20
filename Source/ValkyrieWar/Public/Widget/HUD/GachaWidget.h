@@ -4,11 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
+#include "Engine/DataTable.h"
 #include "GachaWidget.generated.h"
 
-/**
- * 
- */
+USTRUCT(BlueprintType)
+struct FTestItemData : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UTexture2D* ItemIcon;
+};
+
 UCLASS()
 class VALKYRIEWAR_API UGachaWidget : public UBaseWidget
 {
@@ -34,6 +41,15 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UTextBlock> Text_CurrentTicket;// 현재 유저의 가챠 티켓수
 
+protected: // 테스트 용 나중에 지우기 
+    // 🧺 띄워줄 팝업창 WBP 클래스
+    UPROPERTY(EditAnywhere, Category = "Gacha Test")
+    TSubclassOf<class UGachaResultWidget> PopupWidgetClass;
+
+    // 📖 테스트용 데이터 테이블
+    UPROPERTY(EditAnywhere, Category = "Gacha Test")
+    class UDataTable* TestDataTable;
+
 protected:
 
     virtual void NativeConstruct() override;
@@ -50,4 +66,6 @@ protected:
     void OnClickWhatIs_CeliGacha();
 
     void UpdateGachaData(int32 AddCount);
+
+    void SimulateGacha(int32 PullCount);
 };
