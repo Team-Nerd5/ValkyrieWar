@@ -21,6 +21,8 @@
 #include "Data/Module/StageInfoModule.h"
 #include "Data/Module/GachaRandomModule.h"
 #include "Data/Module/TargetingModule.h"
+#include "Data/Module/RewardModule.h"
+#include "Data/Module/StageRewardModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -54,7 +56,8 @@ public:
 	FORCEINLINE UStageInfoModule* GetStageInfoModule() const { return StageInfoModule; }
 	FORCEINLINE UGachaRandomModule* GetGachaRandomModule() const { return GachaRandomModule; }
 	FORCEINLINE UTargetingModule* GetTargetingModule() const { return TargetingModule; }
-
+	FORCEINLINE URewardModule* GetRewardModule() const { return RewardModule; }
+	FORCEINLINE UStageRewardModule* GetStageRewardModule() const { return StageRewardModule; }
 private:
 	template<typename T>
 	void InitializeData(TObjectPtr<T>& InVal);
@@ -91,7 +94,10 @@ private:
 	TObjectPtr<UGachaRandomModule> GachaRandomModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UTargetingModule> TargetingModule = nullptr;
-
+	UPROPERTY()
+	TObjectPtr<URewardModule> RewardModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UStageRewardModule> StageRewardModule = nullptr;
 
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;

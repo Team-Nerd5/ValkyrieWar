@@ -1,7 +1,9 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "Data/Module/StageInfoModule.h"
 
-
-#include "Data/Module/StageInfoModule.h"
+int64 UStageInfoModule::MakeChapterStageKey(int32 InChapter, int32 InStageNum)
+{
+	return (static_cast<int64>(InChapter) << 32) | static_cast<uint32>(InStageNum);
+}
 
 void UStageInfoModule::Initialize(UGameManager* InGameManager)
 {
@@ -16,15 +18,15 @@ void UStageInfoModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-TMap<int32, FStageInfoDataRow> UStageInfoModule::GetChapterStageInfo(int32 InChapter)
+TMap<int32, FStageInfoDataRow> UStageInfoModule::GetChapterStageInfo(int32 InChapter) const
 {
 	TMap<int32, FStageInfoDataRow> OutData;
 
-	for (auto Data : TableDataByDataId)
+	for (const TPair<int32, FStageInfoDataRow>& Pair : TableDataByDataId)
 	{
-		if (Data.Value.ChapterNum == InChapter)
+		if (Pair.Value.ChapterNum == InChapter)
 		{
-			OutData.Add(Data.Value.StageNum, Data.Value);
+			OutData.Add(Pair.Value.StageNum, Pair.Value);
 		}
 	}
 
@@ -38,18 +40,14 @@ bool UStageInfoModule::GetStageInfoByChapterAndStage(int32 InChapter, int32 InSt
 		return false;
 	}
 
-	for (const TPair<int32, FStageInfoDataRow>& Pair : TableDataByDataId)
+	const FStageInfoDataRow* Found = TableDataByChapterStageKey.Find(MakeChapterStageKey(InChapter, InStageNum));
+	if (!Found)
 	{
-		const FStageInfoDataRow& Row = Pair.Value;
-
-		if (Row.ChapterNum == InChapter && Row.StageNum == InStageNum)
-		{
-			OutRow = Row;
-			return true;
-		}
+		return false;
 	}
 
-	return false;
+	OutRow = *Found;
+	return true;
 }
 
 bool UStageInfoModule::GetEnemyUnitIdsByChapterAndStage(int32 InChapter, int32 InStageNum, TArray<int32>& OutUnitIds) const
@@ -93,18 +91,41 @@ bool UStageInfoModule::GetEnemyLevelByChapterAndStage(int32 InChapter, int32 InS
 	return true;
 }
 
+bool UStageInfoModule::GetRewardGroupIdByChapterAndStage(int32 InChapter, int32 InStageNum, int32& OutRewardGroupId) const
+{
+	OutRewardGroupId = 0;
+
+	FStageInfoDataRow Row;
+	if (!GetStageInfoByChapterAndStage(InChapter, InStageNum, Row))
+	{
+		return false;
+	}
+
+	OutRewardGroupId = Row.RewardGroupId;
+	return OutRewardGroupId > 0;
+}
+
 void UStageInfoModule::MakeData()
 {
-	if (DataTable)
+	TableDataByDataId.Empty();
+	TableDataByChapterStageKey.Empty();
+
+	if (!DataTable)
 	{
-		TArray<FStageInfoDataRow*> AllRows;
-		DataTable->GetAllRows<FStageInfoDataRow>(TEXT("StageModule_Init"), AllRows);
+		return;
+	}
 
-		for (FStageInfoDataRow* Item : AllRows)
+	TArray<FStageInfoDataRow*> AllRows;
+	DataTable->GetAllRows<FStageInfoDataRow>(TEXT("StageInfoModule_Init"), AllRows);
+
+	for (FStageInfoDataRow* Item : AllRows)
+	{
+		if (!Item)
 		{
-			if (!Item) continue;
-
-			TableDataByDataId.Add(Item->DataId, *Item);
+			continue;
 		}
+
+		TableDataByDataId.Add(Item->DataId, *Item);
+		TableDataByChapterStageKey.Add(MakeChapterStageKey(Item->ChapterNum, Item->StageNum), *Item);
 	}
 }
