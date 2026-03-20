@@ -197,11 +197,6 @@ void AValkyrieCharacter::ExecuteAttack()
 		return;
 	}
 
-	//로드해서 들고있는걸로 수정(공격 할때마다 로드하는건 좀...)
-	TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
-
-	UAnimMontage* AttackMontage = MontageData.LoadSynchronous();
-
 	if (!AttackMontage)
 		return;
 
@@ -387,6 +382,9 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 			UClass* NewAnimClass = AnimClass.LoadSynchronous(); 
 			GetMesh()->SetAnimInstanceClass(NewAnimClass);      
 		}
+
+		TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
+		AttackMontage = MontageData.LoadSynchronous();
 	}
 
 	//데이터 풀 타입 있는지도 체크...

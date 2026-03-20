@@ -12,7 +12,7 @@ void UANS_ComboWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequen
 	{
 		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
 		{
-			Character->BeginComboWindow();
+			//Character->BeginComboWindow();
 		}
 	}
 }
@@ -24,7 +24,7 @@ void UANS_ComboWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequence
 	{
 		if (AValkyrieCharacter* Character = Cast<AValkyrieCharacter>(MeshComp->GetOwner()))
 		{
-			Character->EndComboWindow(NextSectionName);
+			//Character->EndComboWindow(NextSectionName);
 		}
 	}
 }

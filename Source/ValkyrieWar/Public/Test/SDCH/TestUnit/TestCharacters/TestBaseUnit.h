@@ -109,9 +109,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pool")
 	EPoolTypes MyPoolType = EPoolTypes::None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Animation")
-	TObjectPtr<UAnimMontage> AttackMontage;
-
 	int32 FindSlotOfAttacker(AActor* Attacker) const;
 	int32 FindFirstFreeSlot() const;
 

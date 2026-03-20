@@ -98,10 +98,10 @@ protected:
 	UPROPERTY()
 	TArray<FGameplayAbilitySpec> SkillSpecs;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UBlendSpace> LocomotionBS = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> AttackMontage = nullptr;
 
 	UPROPERTY()
