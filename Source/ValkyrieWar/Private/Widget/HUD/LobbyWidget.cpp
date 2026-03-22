@@ -16,6 +16,7 @@
 #include "Widget/Popup/Inventory/InventoryWidget.h"
 #include "Widget/Popup/Stage/StageListPanelWidget.h"
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
+#include "Widget/Popup/Gacha/GachaWidget.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -126,6 +127,16 @@ void ULobbyWidget::ShowUnitUpgrade()
     }
 }
 
+void ULobbyWidget::ShowGacha()
+{
+    if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+    {
+         UGachaWidget* Widget = UIManager->OpenUI<UGachaWidget>(EUIType::PopupGacha);
+
+        //위젯 초기화
+    }
+}
+
 void ULobbyWidget::ShowStageInternal()
 {
     ShowStageListPopup();
@@ -146,6 +157,7 @@ void ULobbyWidget::OnClickLobbyMenu(EUIType InMenuType)
         break;
     case EUIType::PopupGacha:
         //가챠 팝업
+        ShowGacha();
         break;
     }
 }

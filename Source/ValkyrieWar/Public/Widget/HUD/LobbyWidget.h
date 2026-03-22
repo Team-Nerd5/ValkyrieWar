@@ -39,6 +39,7 @@ private:
 	void ShowStageListPopup();
 
 	void ShowUnitUpgrade();
+	void ShowGacha();
 
 	UFUNCTION()
 	void ShowStageInternal();
