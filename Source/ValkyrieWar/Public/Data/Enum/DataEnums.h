@@ -28,7 +28,6 @@ enum class EItemType : uint8
 	None,
 
 	Weapon,
-	Bow,
 	Helmet,
 	Armor,
 

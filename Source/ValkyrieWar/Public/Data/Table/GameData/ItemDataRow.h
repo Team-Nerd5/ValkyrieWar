@@ -26,10 +26,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int32 SellPrice = 0;
-
+	 
 	//장비용
 	UPROPERTY(EditAnywhere)
-	EEquipType EquipType;
+	EWeaponType WeaponType;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)
