@@ -26,6 +26,7 @@ enum class EAttackType : uint8
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
+	None,
 	SwordAndShield,		//유닛 전용
 	Spear,				//양손
 	OneHandSword,		//한손

@@ -22,7 +22,6 @@ class VALKYRIEWAR_API UAttackData : public UObject
 public:
 	void MakeData(const FAttackDataRow InTableData, UGameManager* InGameManager);
 
-	FORCEINLINE TSoftClassPtr<UAnimInstance> GetAnimInstance() { return TableData.AnimInstance; }
 	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetAnimMontage() { return TableData.AnimMontage; }
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }

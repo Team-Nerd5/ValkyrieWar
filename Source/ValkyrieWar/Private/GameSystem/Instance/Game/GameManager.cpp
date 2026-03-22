@@ -100,6 +100,10 @@ UValkyrieData* const UGameManager::GetSelectedValkyrie()
 
 UBlendSpace* UGameManager::GetValkyrieBlendSpace(EWeaponType InWeaponType)
 {
+    if (ValkyrieBlendSpace.Contains(InWeaponType))
+    {
+        return ValkyrieBlendSpace.FindRef(InWeaponType);
+    }
     return nullptr;
 }
 

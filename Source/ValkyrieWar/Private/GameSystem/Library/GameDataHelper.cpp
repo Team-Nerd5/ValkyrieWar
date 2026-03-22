@@ -25,20 +25,12 @@ EEquipGroup UGameDataHelper::GetEquipGroup(EItemType InItemType)
 {
 	switch (InItemType)
 	{
-	case EItemType::Bow:
-	case EItemType::OneHandSword:
-	case EItemType::TwoHandSword:
-	case EItemType::OneHandAxe:
-	case EItemType::TwoHandAxe:
-	case EItemType::Staff:
-	case EItemType::Wand:
-	case EItemType::Shield:
+	case EItemType::Weapon:
 		return EEquipGroup::Weapon;
 	case EItemType::Armor:
 		return EEquipGroup::Armor;
 	case EItemType::Helmet:
 		return EEquipGroup::Helmet;
-
 	default:
 		return EEquipGroup::None;
 	}

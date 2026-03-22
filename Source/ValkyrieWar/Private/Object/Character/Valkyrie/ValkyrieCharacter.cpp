@@ -76,18 +76,20 @@ void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 		if (InEquip)
 		{
 			EquippedWeapon = InEquip;
+
+
 			if (UAttackModule* AttackModule = DataManager->GetAttackModule())
 			{
 				AttackData = AttackModule->GetAttackData(EquippedWeapon->GetAttackID());
 
 				if (IsValid(AttackData))
 				{
-					TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
-					if (AnimClass.IsValid())
+					if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
 					{
-						UClass* NewAnimClass = AnimClass.LoadSynchronous();
+						UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
+						if (NewBS)
+							LocomotionBS = NewBS;
 					}
-
 					UpdateWeaponMesh();
 
 					if ( FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
@@ -140,6 +142,16 @@ void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
 			if (EquippedWeapon && DataManager->GetAttackModule())
 			{
 				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());;
+			}
+
+			if (EquippedWeapon)
+			{
+				if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+				{
+					UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
+					if (NewBS)
+						LocomotionBS = NewBS;
+				}
 			}
 		}
 	}
@@ -376,13 +388,6 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	CreateAttackAbility();
 	if (AttackData)
 	{
-		TSoftClassPtr<UAnimInstance> AnimClass = AttackData->GetAnimInstance();
-		if (AnimClass.IsValid()) 
-		{
-			UClass* NewAnimClass = AnimClass.LoadSynchronous(); 
-			GetMesh()->SetAnimInstanceClass(NewAnimClass);      
-		}
-
 		TSoftObjectPtr<UAnimMontage> MontageData = AttackData->GetAnimMontage();
 		AttackMontage = MontageData.LoadSynchronous();
 	}
@@ -398,11 +403,6 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
-
-	//TODO : 무기별 애니메이션 블랜드 가져와서 적용.
-	//이거 그냥... GameManager에 무기별로 박아놓고 가져와서 세팅할까..?
-	//-> 이러면 찾기가 어려운가? 발키리랑 유닛이랑 달라..아 각자 만들면 되겠네
-
 
 	UpdateWeaponMesh();
 }

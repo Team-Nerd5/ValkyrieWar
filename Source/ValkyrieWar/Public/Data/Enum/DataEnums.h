@@ -27,18 +27,8 @@ enum class EItemType : uint8
 {
 	None,
 
-	//무기
-	OneHandSword,
-	TwoHandSword,
-	OneHandAxe,
-	TwoHandAxe,
-	Staff,				//양손
-	Wand,				//한손
-	Shield,
-	Bow,				//양손, 화살통 없음
-	Spear,
-	Hammer,
-
+	Weapon,
+	Bow,
 	Helmet,
 	Armor,
 

@@ -24,6 +24,7 @@ public:
 	FORCEINLINE EItemType GetItemType() { return TableData.ItemType; }
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
 	FORCEINLINE EEquipGroup GetEquipGroup() { return EquipGroup; }
+	FORCEINLINE EWeaponType GetWeaponType() { return TableData.WeaponType; }
 	FORCEINLINE int32 GetAmount() { return Amount; }
 	FORCEINLINE int32 GetAttackID() { return TableData.AttackId; }
 	FORCEINLINE TArray<int32> GetSkillID() { return TableData.SkillId; }
