@@ -10,6 +10,7 @@
 
 #include "GameSystem/Base/BaseUnitSpawner.h"
 #include "GameSystem/Base/BaseProjectile.h"
+#include "GameSystem/Base/BaseAnimInstance.h"
 
 #include "Data/Struct/UnitEngagementSlotData.h"
 #include "Data/Attribute/StatAttributeSet.h"
@@ -109,6 +110,17 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 	AttackDamage = InComputedStat.Attack;
 	MaxHP = InComputedStat.Health;
 	CurrentHP = MaxHP;
+
+	if (LocomotionBS)
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
+			{
+				BaseInstance->SetInstacne(LocomotionBS, this);
+			}
+		}
+	}
 
 	AttackData = InBaseData->GetAttackData();
 	CreateAttackAbility();

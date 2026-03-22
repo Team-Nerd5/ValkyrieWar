@@ -57,6 +57,12 @@ enum class EPoolTypes : uint8
 	Ally_Spear,
 	Ally_Wizard,
 
+	Ally_Archer_Uncommon,
+	Ally_Sword_Uncommon,
+	Ally_General_Uncommon,
+	Ally_Spear_Uncommon,
+	Ally_Wizard_Uncommon,
+
 	// 적 유닛 풀타입
 	Enemy_Sword,
 	Enemy_Knight,

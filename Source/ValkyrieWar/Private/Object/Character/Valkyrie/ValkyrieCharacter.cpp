@@ -17,6 +17,7 @@
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
 #include "GameSystem/Base/BaseProjectile.h"
+#include "GameSystem/Base/BaseAnimInstance.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -229,12 +230,12 @@ void AValkyrieCharacter::ExecuteAttack()
 			AnimInst->Montage_Play(AttackMontage);
 			AnimInst->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 
-			AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
+			//AnimInst->Montage_JumpToSection(FName("Combo1"), AttackMontage);
 
 			TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnExecute);
 			if (Cues.Num() > 0)
 			{
-				for (const FGameplayCueData Cue : Cues)
+				for (const FGameplayCueData& Cue : Cues)
 				{
 					FGameplayCueParameters CueParams;
 					CueParams.Location = GetActorLocation() + Cue.Offset;
@@ -382,6 +383,29 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
 	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
 	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+
+	EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
+
+	if (EquippedWeapon)
+	{
+		if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+		{
+			UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
+			if (NewBS)
+			{
+				LocomotionBS = NewBS;
+
+				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+				if (AnimInstance)
+				{
+					if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
+					{
+						BaseInstance->SetInstacne(LocomotionBS, this);
+					}					
+				}
+			}
+		}
+	}
 
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();

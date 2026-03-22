@@ -74,6 +74,11 @@ public:
 			return EquippedItem.FindChecked(InType);
 		}
 		else
-			return nullptr;
+		{
+			if (InType == EEquipGroup::Weapon)
+				return BaseWeapon;
+			else
+				return nullptr;
+		}
 	}
 };
