@@ -11,15 +11,4 @@ void UGachaResultWidget::ShowGachaResults(const TArray<int32>& ItemIDs, const TA
 
 	WrapBox_Result->ClearChildren();
 
-	for (int32 i = 0; i < ItemIDs.Num(); ++i)
-	{
-		FItemDataRow* RandomItem = TestDataTable->FindRow<FItemDataRow>(RowNames[RandomIndex], TEXT("GachaTest"));
-
-		if (NewItem)
-		{
-			NewItem->SetItemData(nullptr, ItemCounts[i]);
-
-			WrapBox_Result->AddChildToWrapBox(NewItem);
-		}
-	}
 }
