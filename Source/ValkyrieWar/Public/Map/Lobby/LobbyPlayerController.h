@@ -43,6 +43,8 @@ protected:
 	UFUNCTION()
 	void OnLobbyLevelShown();
 
+	void ShowLobbyCharacter();
+
 	//가챠
 	void SetGachaResult(int32 InAmount, int32 InGachaGroupId);
 
@@ -53,6 +55,19 @@ protected:
 	UFUNCTION()
 	void ShowNextGacha();
 
+	//캐릭터 정보
+	UFUNCTION()
+	void StartCharacterInfoCamMove();
+
+	UFUNCTION()
+	void OnMovedCharacterInfo();
+
+	UFUNCTION()
+	void StartLobbyCamMove();
+
+	UFUNCTION()
+	void ONMovedLobby();
+
 private:
 	int32 CurrentGachaIndex = 0;
 
@@ -61,4 +76,12 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UGachaResultWidget> GachaResultWidget = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ACameraActor> CurrentCamera = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<ACameraActor> CharacterInfoCamera = nullptr;
+
+	FTimerHandle CameraBlendTimerHandle;
 };

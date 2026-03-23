@@ -17,6 +17,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSelected, UItemData*
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGoodsUpdate, EGoodsType, InGoodsType, uint64, InAmount);
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterInfoWidgetOpened);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterInfoWidgetClosed);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHiddenInventoryPopup);
 
@@ -39,6 +42,9 @@ public:
 
 	FOnGoodsUpdate OnGoodsUpdate;
 
+	//캐릭터 정보창 오픈/클로즈 연출
+	FOnCharacterInfoWidgetOpened OnCharacterInfoWidgetOpened;
+	FOnCharacterInfoWidgetClosed OnCharacterInfoWidgetClosed;
 
 	//-----------------------------삭제 예정---------------------------
 	// 인벤토리 아이템 선택 취소용

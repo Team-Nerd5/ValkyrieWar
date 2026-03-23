@@ -25,6 +25,7 @@
 #include "Widget/Popup/Gacha/GachaResultWidget.h"
 #include "Widget/Popup/Gacha/GachaWidget.h"
 #include "Widget/Loading/LoadingWidget.h"
+#include "Widget/Popup/CharacterInfo/CharacterInfoWidget.h"
 
 #include "Object/Cheat/LobbyCheatManager.h"
 
@@ -44,7 +45,8 @@ void ALobbyPlayerController::BeginPlay()
 		EventSystem->Lobby.OnLoadLobby.AddDynamic(this, &ALobbyPlayerController::LoadLobbyLevel);
 		EventSystem->Lobby.OnLoadGacha.AddDynamic(this, &ALobbyPlayerController::LoadGachaLevel);
 		EventSystem->Lobby.OnShowNextGacha.AddDynamic(this, &ALobbyPlayerController::ShowNextGacha);
-
+		EventSystem->Widget.OnCharacterInfoWidgetOpened.AddDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
+		EventSystem->Widget.OnCharacterInfoWidgetClosed.AddDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
 	}	
 	ChangeGameState(ELobbyState::Init);
 }
@@ -58,6 +60,8 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		EventSystem->Lobby.OnLoadLobby.RemoveDynamic(this, &ALobbyPlayerController::LoadLobbyLevel);
 		EventSystem->Lobby.OnLoadGacha.RemoveDynamic(this, &ALobbyPlayerController::LoadGachaLevel);
 		EventSystem->Lobby.OnShowNextGacha.RemoveDynamic(this, &ALobbyPlayerController::ShowNextGacha);
+		EventSystem->Widget.OnCharacterInfoWidgetOpened.RemoveDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
+		EventSystem->Widget.OnCharacterInfoWidgetClosed.RemoveDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
 	}
 
 }
@@ -72,6 +76,8 @@ void ALobbyPlayerController::ChangeGameState(ELobbyState InState)
 
 void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 {
+	CurrentCamera = nullptr;
+
 	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), InLevelName);
 
 	if (StreamingLevel && StreamingLevel->IsLevelLoaded())
@@ -89,11 +95,17 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 					// 2. 그 다음 클래스를 확인하고 캐스팅합니다.
 					if (Actor->IsA(ACameraActor::StaticClass()))
 					{
-						ACameraActor* MyCam = Cast<ACameraActor>(Actor);
-						// MyCam 사용
+						if (Actor->ActorHasTag("CharacterInfo"))
+						{
+							CharacterInfoCamera = Cast<ACameraActor>(Actor);
+						}
+						else
+						{
+							CurrentCamera = Cast<ACameraActor>(Actor);
+							// MyCam 사용
 
-						SetViewTargetWithBlend(MyCam, 0.0f);
-						break;
+							SetViewTargetWithBlend(CurrentCamera, 0.0f);
+						}
 					}
 				}
 			}
@@ -135,6 +147,8 @@ void ALobbyPlayerController::OnLobbyLevelLoaded()
 
 void ALobbyPlayerController::OnLobbyLevelShown()
 {
+	ShowLobbyCharacter();
+
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
 		ALobbyGameState* State = GetWorld()->GetGameState<ALobbyGameState>();
@@ -146,9 +160,24 @@ void ALobbyPlayerController::OnLobbyLevelShown()
 		{
 			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
-	}	
+	}
 
 	ChangeGameState(ELobbyState::Ready);
+}
+
+void ALobbyPlayerController::ShowLobbyCharacter()
+{
+	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+	{
+		if (UValkyrieData* Valkyrie = GameManager->GetSelectedValkyrie())
+		{
+			AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+			if (ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(GameMode))
+			{
+				LobbyGameMode->SpawnValkyire(Valkyrie, this, TEXT("LobbyStart"));
+			}
+		}		
+	}
 }
 
 void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId)
@@ -300,5 +329,45 @@ void ALobbyPlayerController::ShowNextGacha()
 	else
 	{
 		ShowGachaCharacter();
+	}
+}
+
+void ALobbyPlayerController::StartCharacterInfoCamMove()
+{
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
+	}
+
+	if (CharacterInfoCamera && CurrentCamera)
+	{
+		SetViewTargetWithBlend(CharacterInfoCamera, 1.0f, VTBlend_Cubic);
+		GetWorldTimerManager().SetTimer(CameraBlendTimerHandle, this, &ALobbyPlayerController::OnMovedCharacterInfo, 1.0f, false);
+	}
+}
+
+void ALobbyPlayerController::OnMovedCharacterInfo()
+{
+	//UI켜줌
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->OpenUI<UCharacterInfoWidget>(EUIType::PopupCharacterInfo);
+	}
+}
+
+void ALobbyPlayerController::StartLobbyCamMove()
+{
+	if (CharacterInfoCamera && CurrentCamera)
+	{
+		SetViewTargetWithBlend(CurrentCamera, 1.0f, VTBlend_Cubic);
+		GetWorldTimerManager().SetTimer(CameraBlendTimerHandle, this, &ALobbyPlayerController::ONMovedLobby, 1.0f, false);
+	}
+}
+
+void ALobbyPlayerController::ONMovedLobby()
+{
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
 	}
 }

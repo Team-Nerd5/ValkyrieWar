@@ -36,6 +36,8 @@ void UInventoryWidget::NativeDestruct()
 
 void UInventoryWidget::NativeOnInitialized()
 {
+	Super::NativeOnInitialized();
+
 	CurrentFilterType = EInventoryFilterType::All;
 
 	if (ItemListWidget)

@@ -17,6 +17,7 @@
 #include "Widget/Popup/Stage/StageListPanelWidget.h"
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
 #include "Widget/Popup/Gacha/GachaWidget.h"
+#include "Widget/Popup/CharacterInfo/CharacterInfoWidget.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -99,13 +100,10 @@ void ULobbyWidget::ShowInventory()
 
 void ULobbyWidget::ShowCharacterInfo()
 {
-    if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+    //이벤트 날리고, 카메라 이동되면 UI켜주기?
+    if (EventSystem)
     {
-        //캐릭터창 켜주고
-        
-        //캐릭터창은 로비 UI를 꺼준다
-        UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
-
+        EventSystem->Widget.OnCharacterInfoWidgetOpened.Broadcast();
     }
 }
 
@@ -147,10 +145,10 @@ void ULobbyWidget::OnClickLobbyMenu(EUIType InMenuType)
     switch (InMenuType)
     {
     case EUIType::PopupInventory:
-            ShowInventory();
-            break;
+        ShowInventory();
+        break;
     case EUIType::PopupCharacterInfo:
-
+        ShowCharacterInfo();
         break;
     case EUIType::PopupUnitUpgrade:
         ShowUnitUpgrade();
