@@ -10,22 +10,20 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 
-#include "BattleRewardWidget.generated.h"
+#include "BattleRewardItemWIdget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UBattleRewardWidget : public UUserWidget
+class VALKYRIEWAR_API UBattleRewardItemWIdget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	void SetReward(EGoodsType InGoodsType, int32 InGoodsAmount);
+	void SetRewardItem(int32 InItemDataId);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> GoodsIcon = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> GoodAmount = nullptr;
+	TObjectPtr<UImage> ItemIcon = nullptr;
 };

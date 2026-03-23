@@ -1,11 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Widget/Popup/Battle/BattleRewardWidget.h"
+#include "Widget/Popup/Battle/BattleRewardGoodsWidget.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "Data/Module/GoodsModule.h"
 
-void UBattleRewardWidget::SetReward(EGoodsType InGoodsType, int32 InGoodsAmount)
+void UBattleRewardGoodsWidget::SetRewardGoods(EGoodsType InGoodsType, int32 InGoodsAmount)
 {
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
@@ -22,9 +22,8 @@ void UBattleRewardWidget::SetReward(EGoodsType InGoodsType, int32 InGoodsAmount)
 			GoodsIcon->SetBrushFromTexture(Icon);
 		}
 	}
-	if (GoodAmount)
+	if (GoodsAmount)
 	{
-		GoodAmount->SetText(FText::AsNumber(InGoodsAmount));
+		GoodsAmount->SetText(FText::AsNumber(InGoodsAmount));
 	}
-
 }

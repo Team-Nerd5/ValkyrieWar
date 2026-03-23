@@ -2,10 +2,16 @@
 
 
 #include "Widget/Popup/Battle/BattleResultWidget.h"
+
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+
 #include "GameSystem/State/Game/BattleGameState.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+
+#include "Data/Module/StageRewardModule.h"
+
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
 void UBattleResultWidget::NativeConstruct()
@@ -17,7 +23,7 @@ void UBattleResultWidget::NativeConstruct()
 	BindDelegates();
 	RefreshResultUI();
 
-	SetBattleResult(EBattleState::Defeat);
+	TestRewardWidget(EBattleState::Win);
 }
 
 void UBattleResultWidget::NativeDestruct()
@@ -35,16 +41,40 @@ void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
 	}
 
 	BattleState = InBattleState;
+
 	RefreshResultUI();
 }
 
-void UBattleResultWidget::SetBattleReward(TArray<int32> InRewardList)
+void UBattleResultWidget::SetBattleReward(TMap<EGoodsType, int32> InRewardGoods, int32 InStageRewardGroupId)
 {
-	// TODO: 받을 보상 세팅(필요시 파라메터 추가)
+	// TODO: 현재 StageGoodsReward 관련 모듈 및 데이터가 없어 추후 생긴다면 코드 수정 필요
 
-	// RewardDataRow의 DataId를 받고 표시
+	if (Widget_Win)
+	{
+		Widget_Win->SetReward(InRewardGoods, InStageRewardGroupId);
+	}
+}
 
-	// 추후 플레이어 재화 업데이트 필요
+void UBattleResultWidget::TestRewardWidget(EBattleState InBattleState)
+{
+	if (!IsValidResultState(InBattleState))
+		return;
+
+	// 테스트용
+	BattleState = InBattleState;
+
+	TMap<EGoodsType, int32> TestRewardGoods;
+	TestRewardGoods.Add(EGoodsType::Gold, 30);
+	TestRewardGoods.Add(EGoodsType::Gem, 0);
+	TestRewardGoods.Add(EGoodsType::Ticket, 50);
+
+	int32 StageRewardGroupId = 500001;
+
+	if (Widget_Win)
+	{
+		Widget_Win->SetReward(TestRewardGoods, StageRewardGroupId);
+	}
+	RefreshResultUI();
 }
 
 void UBattleResultWidget::HandleBackToLobbyClicked()
@@ -90,16 +120,13 @@ void UBattleResultWidget::UnbindDelegates()
 
 void UBattleResultWidget::RefreshResultUI()
 {
-	if(VictoryBox)
-		VictoryBox->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	if(LoseBox)
-		LoseBox->SetVisibility(BattleState == EBattleState::Defeat ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-
-	// 패배 했을 때도 보상이 있다면
-	// -> 보상이 존재 할 때만 보상 목록 표시
+	if(Widget_Win)
+		Widget_Win->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+	if(Widget_Defeat)
+		Widget_Defeat->SetVisibility(BattleState == EBattleState::Defeat ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 
 	if (GoToNextLevelBox)
-		GoToNextLevelButton->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+		GoToNextLevelBox->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 	
 }
 

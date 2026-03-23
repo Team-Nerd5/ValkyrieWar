@@ -3,12 +3,13 @@
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
 #include "Data/Enum/StateEnums.h"
+#include "Data/Table/GameData/RewardDataRow.h"
 
-#include "Components/TextBlock.h"
+#include "Widget/Popup/Battle/BattleWinWidget.h"
+#include "Widget/Popup/Battle/BattleDefeatWidget.h"
+
 #include "Components/Button.h"
 #include "Components/SizeBox.h"
-
-#include "Widget/Popup/Battle/BattleRewardWidget.h"
 
 #include "BattleResultWidget.generated.h"
 
@@ -26,24 +27,25 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BattleResult")
 	void SetBattleResult(EBattleState InBattleState);
-	UFUNCTION(BlueprintCallable, Category = "BattleResult")
-	void SetBattleReward(TArray<int32> InRewardList);
+
+	void SetBattleReward(TMap<EGoodsType, int32> InRewardGoods, int32 InStageRewardGroupId);
+
+	void TestRewardWidget(EBattleState InBattleState);
 
 protected:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBattleWinWidget> Widget_Win = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UBattleDefeatWidget> Widget_Defeat = nullptr;
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> BackToLobbyButton = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> GoToNextLevelButton = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USizeBox> VictoryBox = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USizeBox> LoseBox = nullptr;
-	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USizeBox> BackToLobbyBox = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USizeBox> GoToNextLevelBox = nullptr;
-
 
 private:
 	UPROPERTY()
@@ -59,5 +61,5 @@ private:
 	void UnbindDelegates();
 	void RefreshResultUI();
 
-	bool IsValidResultState(EBattleState InState) const;
+	bool IsValidResultState(EBattleState InState) const;	
 };
