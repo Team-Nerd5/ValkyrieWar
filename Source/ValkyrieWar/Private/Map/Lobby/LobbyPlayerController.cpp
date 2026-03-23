@@ -10,6 +10,8 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Widget/HUD/LobbyWidget.h"
+
 #include "Object/Cheat/LobbyCheatManager.h"
 
 #include "Camera/CameraActor.h"
@@ -86,7 +88,7 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 
 void ALobbyPlayerController::LoadLobbyLevel()
 {
-	
+	GachaAmount = 0;
 
 	// 스트리밍 레벨 객체를 먼저 가져옵니다.
 	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("Lobby"));
@@ -101,9 +103,9 @@ void ALobbyPlayerController::LoadLobbyLevel()
 	}
 }
 
-void ALobbyPlayerController::LoadGachaLevel()
+void ALobbyPlayerController::LoadGachaLevel(int32 InAmount)
 {
-	
+	GachaAmount = InAmount;
 
 	// 스트리밍 레벨 객체를 먼저 가져옵니다.
 	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap"));
@@ -120,6 +122,12 @@ void ALobbyPlayerController::LoadGachaLevel()
 
 void ALobbyPlayerController::OnLobbyLevelLoaded()
 {
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->CloseTopPopupUI();
+		UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
+	}
+
 	if (ULevelStreaming* GachaLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap")))
 	{
 		UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("GachaMap"), FLatentActionInfo(), false);
@@ -132,6 +140,12 @@ void ALobbyPlayerController::OnGachaLevelLoaded()
 	if (ULevelStreaming* LobbyLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("Lobby")))
 	{
 		UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("Lobby"), FLatentActionInfo(), false);
+	}
+
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		UIManager->CloseTopPopupUI();
+		UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
 	}
 	SetActorCamera(FName("GachaMap"));
 }

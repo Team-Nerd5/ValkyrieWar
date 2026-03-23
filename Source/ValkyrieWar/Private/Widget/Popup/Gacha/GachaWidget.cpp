@@ -5,13 +5,11 @@
 #include "Widget/Popup/Gacha/GachaResultWidget.h"
 #include "Engine/DataTable.h"
 
-
 #include "Components/Button.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
-#include "GameSystem/Instance/Game/UIManager.h"
-#include "GameSystem/Instance/Game/SaveManager.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 
 
 void UGachaWidget::NativeConstruct()
@@ -28,7 +26,7 @@ void UGachaWidget::NativeConstruct()
     }
     if (Btn_WhatIs_CeliGacha)
     {
-        Btn_Summon_10x->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_WhatIs_CeliGacha->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
 }
 
@@ -46,7 +44,7 @@ void UGachaWidget::NativeDestruct()
     }
     if (Btn_WhatIs_CeliGacha)
     {
-        Btn_Summon_10x->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_WhatIs_CeliGacha->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
 }
 
@@ -59,10 +57,18 @@ void UGachaWidget::OpenUI()
 
 void UGachaWidget::OnClickSummon1x()
 {
+    if (EventSystem)
+    {
+        EventSystem->Lobby.OnLoadGacha.Broadcast(1);
+    }
 }
 
 void UGachaWidget::OnClickSummon10x()
 {
+    if (EventSystem)
+    {
+        EventSystem->Lobby.OnLoadGacha.Broadcast(10);
+    }
 }
 
 void UGachaWidget::OnClickWhatIs_CeliGacha()

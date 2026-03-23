@@ -30,11 +30,14 @@ protected:
 	void LoadLobbyLevel();
 
 	UFUNCTION()
-	void LoadGachaLevel();
+	void LoadGachaLevel(int32 InAmount);
 
 	UFUNCTION()
 	void OnLobbyLevelLoaded();
 
 	UFUNCTION()
 	void OnGachaLevelLoaded();
+
+private:
+	int32 GachaAmount = 0;
 };

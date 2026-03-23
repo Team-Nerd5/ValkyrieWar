@@ -60,7 +60,7 @@ void ULobbyWidget::OpenUI()
                 {
                     NewMenu->SetData(Data);
                     NewMenu->OnMenuButtonClicked.AddDynamic(this, &ULobbyWidget::OnClickLobbyMenu);
-
+                     
                     UUniformGridSlot* GridSlot = MenuPanel->AddChildToUniformGrid(NewMenu);
 
                     if (GridSlot)
