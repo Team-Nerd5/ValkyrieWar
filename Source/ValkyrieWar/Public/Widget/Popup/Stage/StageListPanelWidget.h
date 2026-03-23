@@ -10,6 +10,14 @@ class UTextBlock;
 class UUniformGridPanel;
 class UStageItemWidget;
 class UStageModule;
+class UStageInfoModule;
+class UStageRewardModule;
+class UUnitModule;
+class UItemModule;
+class UStageDetailPopupWidget;
+struct FStageDetailViewData;
+struct FStageEnemyViewData;
+struct FRewardViewData;
 
 UCLASS()
 class VALKYRIEWAR_API UStageListPanelWidget : public UBaseWidget
@@ -40,9 +48,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stage")
 	TSubclassOf<UStageItemWidget> StageItemWidgetClass = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> Button_StartStage = nullptr;
-
 	UFUNCTION()
 	void HandlePrevChapter();
 
@@ -52,16 +57,30 @@ protected:
 	UFUNCTION()
 	void HandleStageItemClicked(int32 InChapter, int32 InStageNum);
 
-	UFUNCTION()
-	void StartStage();
-
 	void RefreshChapterHeader();
 	void RefreshChapterButtons();
 	void RebuildStageItems();
-	void RefreshStartButton();
 	void ClearStageItems();
 
 	UStageModule* GetStageModule() const;
+	UStageInfoModule* GetStageInfoModule() const;
+	UStageRewardModule* GetStageRewardModule() const;
+	UUnitModule* GetUnitModule() const;
+	UItemModule* GetItemModule() const;
+
+private:
+	bool BuildStageEnemyViewData(
+		int32 InChapter,
+		int32 InStageNum,
+		TArray<FStageEnemyViewData>& OutEnemies,
+		int32& OutEnemyLevel) const;
+
+	bool BuildStageRewardData(
+		int32 InChapter,
+		int32 InStageNum,
+		TArray<FRewardViewData>& OutRewards) const;
+
+	void OpenStageDetailPopup(const FStageDetailViewData& InDetailViewData);
 
 private:
 	int32 CurrentChapter = 0;

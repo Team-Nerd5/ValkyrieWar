@@ -1,5 +1,6 @@
 ﻿#include "Widget/Popup/Stage/StageListPanelWidget.h"
 #include "Widget/Popup/Stage/StageItemWidget.h"
+#include "Widget/Popup/Stage/StageDetailPopupWidget.h"
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
@@ -10,9 +11,12 @@
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+#include "GameSystem/Instance/Game/UIManager.h"
 
 #include "Data/Module/StageModule.h"
+#include "Data/Module/StageInfoModule.h"
 #include "Data/Struct/StageEntryData.h"
+#include "Data/Struct/StageDetailViewData.h"
 
 void UStageListPanelWidget::NativeConstruct()
 {
@@ -27,12 +31,6 @@ void UStageListPanelWidget::NativeConstruct()
 	{
 		Button_NextChapter->OnClicked.AddDynamic(this, &UStageListPanelWidget::HandleNextChapter);
 	}
-
-	if (Button_StartStage)
-	{
-		Button_StartStage->OnClicked.AddDynamic(this, &UStageListPanelWidget::StartStage);
-
-	}
 }
 
 void UStageListPanelWidget::NativeDestruct()
@@ -45,12 +43,6 @@ void UStageListPanelWidget::NativeDestruct()
 	if (Button_NextChapter)
 	{
 		Button_NextChapter->OnClicked.RemoveDynamic(this, &UStageListPanelWidget::HandleNextChapter);
-	}
-
-	if (Button_StartStage)
-	{
-		Button_StartStage->OnClicked.RemoveDynamic(this, &UStageListPanelWidget::StartStage);
-
 	}
 
 	SpawnedStageItems.Empty();
@@ -87,7 +79,6 @@ void UStageListPanelWidget::RefreshUI()
 	RefreshChapterHeader();
 	RefreshChapterButtons();
 	RebuildStageItems();
-	RefreshStartButton();
 }
 
 UStageModule* UStageListPanelWidget::GetStageModule() const
@@ -101,6 +92,166 @@ UStageModule* UStageListPanelWidget::GetStageModule() const
 	}
 
 	return nullptr;
+}
+
+UStageInfoModule* UStageListPanelWidget::GetStageInfoModule() const
+{
+	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+	{
+		if (UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>())
+		{
+			return DataManager->GetStageInfoModule();
+		}
+	}
+
+	return nullptr;
+}
+
+UStageRewardModule* UStageListPanelWidget::GetStageRewardModule() const
+{
+	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+	{
+		if (UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>())
+		{
+			return DataManager->GetStageRewardModule();
+		}
+	}
+
+	return nullptr;
+}
+
+UUnitModule* UStageListPanelWidget::GetUnitModule() const
+{
+	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+	{
+		if (UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>())
+		{
+			return DataManager->GetUnitModule();
+		}
+	}
+
+	return nullptr;
+}
+
+UItemModule* UStageListPanelWidget::GetItemModule() const
+{
+	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+	{
+		if (UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>())
+		{
+			return DataManager->GetItemModule();
+		}
+	}
+
+	return nullptr;
+}
+
+bool UStageListPanelWidget::BuildStageEnemyViewData(
+	int32 InChapter,
+	int32 InStageNum,
+	TArray<FStageEnemyViewData>& OutEnemies,
+	int32& OutEnemyLevel) const
+{
+	OutEnemies.Reset();
+	OutEnemyLevel = 1;
+
+	UStageInfoModule* StageInfoModule = GetStageInfoModule();
+	UUnitModule* UnitModule = GetUnitModule();
+	if (!StageInfoModule || !UnitModule)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[StageEnemyBuild] Missing module"));
+		return false;
+	}
+
+	TArray<int32> EnemyUnitIds;
+	if (!StageInfoModule->GetEnemyUnitIdsByChapterAndStage(InChapter, InStageNum, EnemyUnitIds))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[StageEnemyBuild] Failed to get enemy ids. Chapter=%d Stage=%d"), InChapter, InStageNum);
+		return false;
+	}
+
+	StageInfoModule->GetEnemyLevelByChapterAndStage(InChapter, InStageNum, OutEnemyLevel);
+
+	for (int32 UnitId : EnemyUnitIds)
+	{
+		FUnitDataRow UnitRow;
+		if (!UnitModule->GetUnitDataRow(UnitId, UnitRow))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[StageEnemyBuild] Failed to get unit row. UnitId=%d"), UnitId);
+			continue;
+		}
+
+		FStageEnemyViewData EnemyData;
+		EnemyData.UnitId = UnitId;
+		EnemyData.UnitIcon = UnitRow.UnitIcon;
+		EnemyData.Grade = UnitRow.Grade;
+		EnemyData.UnitType = UnitRow.UnitType;
+		EnemyData.TeamType = UnitRow.TeamType;
+		EnemyData.Level = OutEnemyLevel;
+
+		OutEnemies.Add(EnemyData);
+	}
+
+	return OutEnemies.Num() > 0;
+}
+
+bool UStageListPanelWidget::BuildStageRewardData(
+	int32 InChapter,
+	int32 InStageNum,
+	TArray<FRewardViewData>& OutRewards) const
+{
+	OutRewards.Reset();
+
+	UStageInfoModule* StageInfoModule = GetStageInfoModule();
+	UStageRewardModule* StageRewardModule = GetStageRewardModule();
+	if (!StageInfoModule || !StageRewardModule)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[StageRewardBuild] Missing module"));
+		return false;
+	}
+
+	int32 RewardGroupId = 0;
+	if (!StageInfoModule->GetRewardGroupIdByChapterAndStage(InChapter, InStageNum, RewardGroupId))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[StageRewardBuild] Failed to get reward group id. Chapter=%d Stage=%d"), InChapter, InStageNum);
+		return false;
+	}
+
+	TArray<FRewardDataRow> RewardRows;
+	const bool bResult = StageRewardModule->GetRewardRowsByStageRewardGroupId(RewardGroupId, RewardRows);
+	if (!bResult)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[StageRewardBuild] No rewards found. RewardGroupId=%d"), RewardGroupId);
+		return false;
+	}
+
+	for (const FRewardDataRow& RewardRow : RewardRows)
+	{
+		FRewardViewData RewardViewData;
+		RewardViewData.ItemType = RewardRow.ItemType;
+		RewardViewData.DataId = RewardRow.DataId;
+		RewardViewData.Amount = RewardRow.Amount;
+		RewardViewData.Icon = GetItemModule()->GetTableDataById(RewardViewData.DataId).Icon;
+		RewardViewData.DisplayName = FText::FromString(
+			GetItemModule()->GetTableDataById(RewardViewData.DataId).Name
+		);
+
+		OutRewards.Add(RewardViewData);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[StageRewardBuild] RewardGroupId=%d RewardCount=%d"), RewardGroupId, OutRewards.Num());
+	return OutRewards.Num() > 0;
+}
+
+void UStageListPanelWidget::OpenStageDetailPopup(const FStageDetailViewData& InDetailViewData)
+{
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		if (UStageDetailPopupWidget* StageDetailWidget = UIManager->OpenUI<UStageDetailPopupWidget>(EUIType::PopupStageDetail))
+		{
+			StageDetailWidget->SetStageDetail(InDetailViewData);
+		}
+	}
 }
 
 void UStageListPanelWidget::RefreshChapterHeader()
@@ -190,18 +341,6 @@ void UStageListPanelWidget::RebuildStageItems()
 	}
 }
 
-void UStageListPanelWidget::RefreshStartButton()
-{
-	if (!Button_StartStage)
-	{
-		return;
-	}
-
-	const bool bHasSelection = (SelectedChapter > 0 && SelectedStageNum > 0);
-
-	Button_StartStage->SetIsEnabled(bHasSelection);
-}
-
 void UStageListPanelWidget::HandlePrevChapter()
 {
 	if (UStageModule* StageModule = GetStageModule())
@@ -235,19 +374,27 @@ void UStageListPanelWidget::HandleStageItemClicked(int32 InChapter, int32 InStag
 
 	if (UStageModule* StageModule = GetStageModule())
 	{
-		int32 Code = StageModule->MakeStageCode(SelectedChapter, SelectedStageNum);
+		const int32 Code = StageModule->MakeStageCode(SelectedChapter, SelectedStageNum);
 		StageModule->SetSelectedStage(Code);
 	}
 
+	FStageDetailViewData DetailViewData;
+	DetailViewData.ChapterNum = SelectedChapter;
+	DetailViewData.StageNum = SelectedStageNum;
+
+	BuildStageEnemyViewData(
+		SelectedChapter,
+		SelectedStageNum,
+		DetailViewData.Enemies,
+		DetailViewData.EnemyLevel
+	);
+
+	BuildStageRewardData(
+		SelectedChapter,
+		SelectedStageNum,
+		DetailViewData.Rewards
+	);
+
+	OpenStageDetailPopup(DetailViewData);
 	RefreshUI();
-}
-
-void UStageListPanelWidget::StartStage()
-{
-	if (SelectedChapter <= 0 || SelectedStageNum <= 0) return;
-
-	if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
-	{
-		LevelManager->LoadMap(EMapType::Battle, true);
-	}
 }

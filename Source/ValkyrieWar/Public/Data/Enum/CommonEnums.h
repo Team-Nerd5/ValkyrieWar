@@ -29,6 +29,7 @@ enum class EUIType : uint8
 	PopupUnitUpgrade,
 
 	PopupStageList,
+	PopupStageDetail,
 
 	// Battle Popup
 	PopupBattleResult,

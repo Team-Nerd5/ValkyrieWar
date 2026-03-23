@@ -68,6 +68,8 @@ public:
 		return UnitAddedStats.FindRef(InDataId);
 	}
 
+	bool GetUnitDataRow(int32 InDataId, FUnitDataRow& OutRow) const;
+
 	bool BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const;
 	bool GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const;
 

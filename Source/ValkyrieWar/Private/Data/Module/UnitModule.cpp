@@ -17,6 +17,18 @@ void UUnitModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
+bool UUnitModule::GetUnitDataRow(int32 InDataId, FUnitDataRow& OutRow) const
+{
+	const FUnitDataRow* Found = TableDataByDataId.Find(InDataId);
+	if (!Found)
+	{
+		return false;
+	}
+
+	OutRow = *Found;
+	return true;
+}
+
 bool UUnitModule::BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const
 {
 	OutStat = FComputedEnemyStat{};
