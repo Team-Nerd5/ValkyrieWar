@@ -23,7 +23,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION()
-	void ChageGameState(ELobbyState InState);
+	void ChangeGameState(ELobbyState InState);
 
 	void SetActorCamera(FName InLevelName);
 
@@ -40,6 +40,8 @@ protected:
 	void OnGachaLevelLoaded();
 	UFUNCTION()
 	void OnGachaLevelShown();
+	UFUNCTION()
+	void OnLobbyLevelShown();
 
 	//가챠
 	void SetGachaResult(int32 InAmount, int32 InGachaGroupId);

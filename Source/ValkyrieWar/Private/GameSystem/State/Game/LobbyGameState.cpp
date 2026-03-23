@@ -28,7 +28,6 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
 			UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
-			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
 		//컨트롤러..
 		
@@ -37,6 +36,9 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		break;
 	case ELobbyState::Ready:
 		//그냥 로비 표기상태..
+		break;
+	case ELobbyState::Gacha:
+
 		break;
 	case ELobbyState::MoveToStage:
 		//UI 지워주고 스테이지로 레벨전환

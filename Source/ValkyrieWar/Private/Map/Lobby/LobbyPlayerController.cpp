@@ -24,6 +24,7 @@
 #include "Widget/HUD/LobbyWidget.h"
 #include "Widget/Popup/Gacha/GachaResultWidget.h"
 #include "Widget/Popup/Gacha/GachaWidget.h"
+#include "Widget/Loading/LoadingWidget.h"
 
 #include "Object/Cheat/LobbyCheatManager.h"
 
@@ -39,13 +40,13 @@ void ALobbyPlayerController::BeginPlay()
 {
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		EventSystem->Lobby.OnLobbyStateChanged.AddDynamic(this, &ALobbyPlayerController::ChageGameState);
+		EventSystem->Lobby.OnLobbyStateChanged.AddDynamic(this, &ALobbyPlayerController::ChangeGameState);
 		EventSystem->Lobby.OnLoadLobby.AddDynamic(this, &ALobbyPlayerController::LoadLobbyLevel);
 		EventSystem->Lobby.OnLoadGacha.AddDynamic(this, &ALobbyPlayerController::LoadGachaLevel);
 		EventSystem->Lobby.OnShowNextGacha.AddDynamic(this, &ALobbyPlayerController::ShowNextGacha);
 
 	}	
-	ChageGameState(ELobbyState::Init);
+	ChangeGameState(ELobbyState::Init);
 }
 
 void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -53,7 +54,7 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		EventSystem->Lobby.OnLobbyStateChanged.RemoveDynamic(this, &ALobbyPlayerController::ChageGameState);
+		EventSystem->Lobby.OnLobbyStateChanged.RemoveDynamic(this, &ALobbyPlayerController::ChangeGameState);
 		EventSystem->Lobby.OnLoadLobby.RemoveDynamic(this, &ALobbyPlayerController::LoadLobbyLevel);
 		EventSystem->Lobby.OnLoadGacha.RemoveDynamic(this, &ALobbyPlayerController::LoadGachaLevel);
 		EventSystem->Lobby.OnShowNextGacha.RemoveDynamic(this, &ALobbyPlayerController::ShowNextGacha);
@@ -61,7 +62,7 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 }
 
-void ALobbyPlayerController::ChageGameState(ELobbyState InState)
+void ALobbyPlayerController::ChangeGameState(ELobbyState InState)
 {
 	if (ALobbyGameState* State = GetWorld()->GetGameState<ALobbyGameState>())
 	{
@@ -111,37 +112,9 @@ void ALobbyPlayerController::LoadLobbyLevel()
 	{
 		// 레벨 로드가 완료되었을 때 실행될 함수를 델리게이트에 연결합니다.
 		StreamingLevel->OnLevelLoaded.AddUniqueDynamic(this, &ALobbyPlayerController::OnLobbyLevelLoaded);
+		StreamingLevel->OnLevelShown.AddUniqueDynamic(this, &ALobbyPlayerController::OnLobbyLevelShown);
 		// 비동기 로드 시작
 		UGameplayStatics::LoadStreamLevel(GetWorld(), FName("Lobby"), true, false, FLatentActionInfo());
-	}
-}
-
-void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId)
-{
-	CurrentGachaIndex = 0;
-	GachaResultWidget = nullptr;
-
-	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
-	{
-		//우선은 급해서 그냥 차감.. 테이블로 해야할지는 고민..
-		SaveManager->AddGoods(EGoodsType::Gem, InAmount * 100);
-	}
-
-	SetGachaResult(InAmount, InGachaGroupId);
-
-	//미리 뽑기는 완료함
-
-	// 스트리밍 레벨 객체를 먼저 가져옵니다.
-	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap"));
-
-	if (StreamingLevel)
-	{
-		// 레벨 로드가 완료되었을 때 실행될 함수를 델리게이트에 연결합니다.
-		StreamingLevel->OnLevelLoaded.AddDynamic(this, &ALobbyPlayerController::OnGachaLevelLoaded);
-		StreamingLevel->OnLevelShown.AddDynamic(this, &ALobbyPlayerController::OnGachaLevelShown);
-
-		// 비동기 로드 시작
-		UGameplayStatics::LoadStreamLevel(GetWorld(), FName("GachaMap"), true, false, FLatentActionInfo());
 	}
 }
 
@@ -160,12 +133,63 @@ void ALobbyPlayerController::OnLobbyLevelLoaded()
 	SetActorCamera(FName("Lobby"));
 }
 
+void ALobbyPlayerController::OnLobbyLevelShown()
+{
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+	{
+		ALobbyGameState* State = GetWorld()->GetGameState<ALobbyGameState>();
+		if (State->GetState() == ELobbyState::Gacha)
+		{
+			UIManager->OpenUI<UGachaWidget>(EUIType::PopupGacha);
+		}
+		else
+		{
+			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
+		}
+	}	
+
+	ChangeGameState(ELobbyState::Ready);
+}
+
+void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId)
+{
+	CurrentGachaIndex = 0;
+	GachaResultWidget = nullptr;
+	GachaResultData.Empty();
+
+	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+	{
+		//우선은 급해서 그냥 차감.. 테이블로 해야할지는 고민..
+		SaveManager->AddGoods(EGoodsType::Gem, InAmount * 100);
+	}
+
+	SetGachaResult(InAmount, InGachaGroupId);
+
+	//미리 뽑기는 완료함
+
+	// 스트리밍 레벨 객체를 먼저 가져옵니다.
+	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap"));
+
+	if (StreamingLevel)
+	{
+		// 레벨 로드가 완료되었을 때 실행될 함수를 델리게이트에 연결합니다.
+		StreamingLevel->OnLevelLoaded.AddUniqueDynamic(this, &ALobbyPlayerController::OnGachaLevelLoaded);
+		StreamingLevel->OnLevelShown.AddUniqueDynamic(this, &ALobbyPlayerController::OnGachaLevelShown);
+
+		// 비동기 로드 시작
+		UGameplayStatics::LoadStreamLevel(GetWorld(), FName("GachaMap"), true, false, FLatentActionInfo());
+	}
+}
+
 void ALobbyPlayerController::OnGachaLevelLoaded()
 {
 	if (ULevelStreaming* LobbyLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("Lobby")))
 	{
 		UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("Lobby"), FLatentActionInfo(), false);
-	}	
+	}
+
+	ChangeGameState(ELobbyState::Gacha);
+
 	SetActorCamera(FName("GachaMap"));
 }
 
