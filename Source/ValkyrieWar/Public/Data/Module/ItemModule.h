@@ -53,6 +53,8 @@ public:
 	}
 
 	FItemDataRow GetTableDataById(int32 InDataId);
+
+	FItemDataRow GetMasteryItem(EWeaponType InWeaponType);
 protected:
 	virtual void MakeData() override;
 

@@ -27,14 +27,14 @@ bool UValkyrieModule::HasValkyrie(int32 InDataId)
 	return false;
 }
 
-uint64 UValkyrieModule::CreateValkyrie(int32 InDataId)
+UValkyrieData* UValkyrieModule::CreateValkyrie(int32 InDataId)
 {
 	UValkyrieData* NewValkyrie = NewObject<UValkyrieData>(this);
 	NewValkyrie->Initialize(*TableDataByDataId.Find(InDataId), GameManager.Get());
 
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
 
-	return NewValkyrie->GetUID();
+	return NewValkyrie;
 }
 
 void UValkyrieModule::LoadData(uint64 InUID, int32 InDataId)

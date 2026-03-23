@@ -29,6 +29,9 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UTextBlock> Text_GachaCount; // 가챠 횟수
 
+
+    int32 SelectedGroupId = 0;
+
 protected:
 
     virtual void NativeConstruct() override;

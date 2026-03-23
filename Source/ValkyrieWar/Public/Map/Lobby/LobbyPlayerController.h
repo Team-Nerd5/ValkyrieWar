@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Data/Enum/StateEnums.h"
+#include "Data/Enum/DataEnums.h"
 #include "LobbyPlayerController.generated.h"
 
 /**
@@ -30,14 +31,32 @@ protected:
 	void LoadLobbyLevel();
 
 	UFUNCTION()
-	void LoadGachaLevel(int32 InAmount);
+	void LoadGachaLevel(int32 InAmount, int32 InGachaGroupId);
 
 	UFUNCTION()
 	void OnLobbyLevelLoaded();
 
 	UFUNCTION()
 	void OnGachaLevelLoaded();
+	UFUNCTION()
+	void OnGachaLevelShown();
+
+	//가챠
+	void SetGachaResult(int32 InAmount, int32 InGachaGroupId);
+
+	int32 GetMasteryItemAmount(EGradeType InGrade);
+
+	void ShowGachaCharacter();
+
+	UFUNCTION()
+	void ShowNextGacha();
 
 private:
-	int32 GachaAmount = 0;
+	int32 CurrentGachaIndex = 0;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UObject>> GachaResultData;
+
+	UPROPERTY()
+	TObjectPtr<class UGachaResultWidget> GachaResultWidget = nullptr;
 };

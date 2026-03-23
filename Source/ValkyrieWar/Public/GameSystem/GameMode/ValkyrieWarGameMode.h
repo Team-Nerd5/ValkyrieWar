@@ -19,8 +19,8 @@ public:
 
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Game|Player")
-	AValkyrieCharacter* SpawnValkyrie(AController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn);
+	UFUNCTION(BlueprintCallable)
+	AValkyrieCharacter* SpawnValkyrie(AController* InController, TSubclassOf<APawn> PawnClassToSpawn);
 };
 
 

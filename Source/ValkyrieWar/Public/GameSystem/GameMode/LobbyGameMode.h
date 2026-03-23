@@ -7,6 +7,8 @@
 #include "Data/Enum/StateEnums.h"
 #include "LobbyGameMode.generated.h"
 
+class UValkyrieData;
+class AValkyrieCharacter;
 /**
  * 
  */
@@ -15,6 +17,12 @@ class VALKYRIEWAR_API ALobbyGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void BeginPlay() override;
+public:
+	ALobbyGameMode();
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	AValkyrieCharacter* SpawnValkyire(UValkyrieData* InData, AController* InController, FName InTag);
+
+private:
+	FName PlayerStartTag;
 };

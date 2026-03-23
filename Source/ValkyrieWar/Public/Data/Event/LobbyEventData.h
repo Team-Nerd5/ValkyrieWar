@@ -9,7 +9,9 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLobbyStateChanged, ELobbyState, InState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyCameraSet);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLoadLobby);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoadGacha, int32, InAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoadGacha, int32, InAmount, int32, InGachaGroupId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShowNextGacha);
+
 /**
  * 
  */
@@ -22,4 +24,5 @@ public:
 	FOnLobbyCameraSet OnLobbyCameraSet;
 	FOnLoadLobby OnLoadLobby;
 	FOnLoadGacha OnLoadGacha;
+	FOnShowNextGacha OnShowNextGacha;
 };

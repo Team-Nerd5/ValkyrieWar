@@ -16,6 +16,16 @@ void ULobbyMenuWidget::NativeConstruct()
 	}
 }
 
+void ULobbyMenuWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	if (MenuButton)
+	{
+		MenuButton->OnClicked.RemoveDynamic(this, &ULobbyMenuWidget::OnClickMenu);
+	}
+}
+
 void ULobbyMenuWidget::SetData(FContentsDataRow InTableData)
 {
 	if (InTableData.Icon.IsValid())

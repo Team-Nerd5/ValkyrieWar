@@ -10,7 +10,7 @@ void UGachaRandomModule::Initialize(UGameManager* InGameManager)
 
 	if (GameManager.IsValid())
 	{
-		DataTable = GameManager->GetGameData(ETableDataType::Goods);
+		DataTable = GameManager->GetGameData(ETableDataType::GachaRandom);
 		MakeData();
 	}
 

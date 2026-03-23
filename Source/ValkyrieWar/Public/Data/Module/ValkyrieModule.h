@@ -35,10 +35,17 @@ public:
 		else
 			return nullptr;
 	}
+	FORCEINLINE FValkyrieDataRow GetTableData(int32 InDataId)
+	{
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindRef(InDataId);
+		else
+			return FValkyrieDataRow();
+	}
 
 	bool HasValkyrie(int32 InDataId);
 
-	uint64 CreateValkyrie(int32 InDataId);
+	UValkyrieData* CreateValkyrie(int32 InDataId);
 
 	void LoadData(uint64 InUID, int32 InDataId);
 

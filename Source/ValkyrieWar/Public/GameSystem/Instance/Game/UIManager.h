@@ -206,8 +206,10 @@ T* UUIManager::OpenUI(EUIType InUIType)
     {
         return OpenUIInternal(TargetClass);
     }
-
-    return nullptr;
+    else
+    {
+        return nullptr;
+    }
 }
 
 template<typename T>

@@ -32,6 +32,7 @@ public:
 
 public:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	void SetData(FContentsDataRow InTableData);
 

@@ -144,3 +144,15 @@ FItemDataRow UItemModule::GetTableDataById(int32 InDataId)
 
 	return FItemDataRow();
 }
+
+FItemDataRow UItemModule::GetMasteryItem(EWeaponType InWeaponType)
+{
+	for (auto Data : TableDataByDataId)
+	{
+		if (Data.Value.ItemType == EItemType::WeaponMasteryPiece && Data.Value.WeaponType == InWeaponType)
+		{
+			return Data.Value;
+		}
+	}
+	return FItemDataRow();
+}

@@ -2,7 +2,6 @@
 
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "AbilitySystemComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"

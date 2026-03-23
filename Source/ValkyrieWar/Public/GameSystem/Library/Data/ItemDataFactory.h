@@ -16,9 +16,7 @@ class VALKYRIEWAR_API UItemDataFactory : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-public:
-
-	
+public:	
 	//id 기반으로 아이템 데이터 생성
 	static UItemData* Make(int32 InDataId, int32 Amount);
 };

@@ -31,6 +31,7 @@ enum class EItemType : uint8
 	Helmet,
 	Armor,
 
+	WeaponMasteryPiece,
 	//성장 아이템
 	BowMasteryPiece,		//활 업글 아이템
 	SwordMasteryPiece,		//검 업글 아이템
@@ -120,6 +121,7 @@ enum class ETableDataType : uint8
 	Projectile,
 	UnitUpgradeStat,
 	Targeting,
+	GachaRandom,
 };
 
 UENUM(BlueprintType)

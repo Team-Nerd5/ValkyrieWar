@@ -53,13 +53,16 @@ void UGachaWidget::OpenUI()
     UIType = EUIType::PopupGacha;
 
     Super::OpenUI();
+
+    //임시 처리(원래 소환 열어주면서 세팅.. 가챠 테이블 데이터가 있어야 하는데...)
+    SelectedGroupId = 70001;
 }
 
 void UGachaWidget::OnClickSummon1x()
 {
     if (EventSystem)
     {
-        EventSystem->Lobby.OnLoadGacha.Broadcast(1);
+        EventSystem->Lobby.OnLoadGacha.Broadcast(1, SelectedGroupId);
     }
 }
 
@@ -67,7 +70,7 @@ void UGachaWidget::OnClickSummon10x()
 {
     if (EventSystem)
     {
-        EventSystem->Lobby.OnLoadGacha.Broadcast(10);
+        EventSystem->Lobby.OnLoadGacha.Broadcast(10, SelectedGroupId);
     }
 }
 
@@ -78,4 +81,5 @@ void UGachaWidget::OnClickWhatIs_CeliGacha()
 
 void UGachaWidget::UpdateGachaData(int32 AddCount)
 {
+    //??
 }

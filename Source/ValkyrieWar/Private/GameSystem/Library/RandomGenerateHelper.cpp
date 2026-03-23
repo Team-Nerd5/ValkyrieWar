@@ -75,7 +75,7 @@ bool URandomGenerateHelper::IsGachaDataValid(TMap<EGradeType, FGachaRandomDataRo
 
 int32 URandomGenerateHelper::GetRandomValkyrieInGrade(UDataManager* InDataManager, EGradeType InGrade)
 {
-	TArray<int32> AllData = InDataManager->GetValkyrieModule()->GetAllByGrade(EGradeType::Legend);
+	TArray<int32> AllData = InDataManager->GetValkyrieModule()->GetAllByGrade(InGrade);
 	if (AllData.Num() == 0)
 		return 0;
 

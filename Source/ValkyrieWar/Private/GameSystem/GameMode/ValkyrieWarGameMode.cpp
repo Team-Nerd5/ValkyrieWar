@@ -51,21 +51,20 @@ void AValkyrieWarGameMode::RestartPlayer(AController* NewPlayer)
 		}
 	}
 }
-
-AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(AController* NewPlayer, TSubclassOf<APawn> PawnClassToSpawn)
+AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(AController* InController, TSubclassOf<APawn> PawnClassToSpawn)
 {
-    if (!IsValid(NewPlayer) || !IsValid(PawnClassToSpawn))
+    if (!IsValid(InController) || !IsValid(PawnClassToSpawn))
     {
         return nullptr;
     }
 
-    if (APawn* OldPawn = NewPlayer->GetPawn())
+    if (APawn* OldPawn = InController->GetPawn())
     {
-        NewPlayer->UnPossess();
+        InController->UnPossess();
         OldPawn->Destroy();
     }
 
-    AActor* StartSpot = ChoosePlayerStart(NewPlayer); // 기존에 작성하신 함수 그대로 사용
+    AActor* StartSpot = ChoosePlayerStart(InController);
     FTransform SpawnTransform = StartSpot ? StartSpot->GetActorTransform() : FTransform::Identity;
 
     FActorSpawnParameters SpawnParams;
@@ -75,8 +74,7 @@ AValkyrieCharacter* AValkyrieWarGameMode::SpawnValkyrie(AController* NewPlayer, 
 
     if (IsValid(SpawnedCharacter))
     {
-        // 여기서 빙의를 시켜주면, 엔진이 알아서 이 캐릭터를 뷰 타겟(View Target)으로 완벽하게 고정합니다.
-        NewPlayer->Possess(SpawnedCharacter);
+        InController->Possess(SpawnedCharacter);
     }
 
     return SpawnedCharacter;

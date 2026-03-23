@@ -6,6 +6,8 @@
 #include "GameSystem/Base/BaseWidget.h"
 #include "GachaResultWidget.generated.h"
 
+class UWrapBox;
+class UButton;
 /**
  * 
  */
@@ -15,14 +17,31 @@ class VALKYRIEWAR_API UGachaResultWidget : public UBaseWidget
 	GENERATED_BODY()
 
 protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+
+	virtual void OpenUI() override;
+
+	UFUNCTION()
+	void OnClickNextCharacter();
+
+	UFUNCTION()
+	void OnClickCloseGacha();
+
+protected:
+	//원시 포인터좀 제발 쓰지 말아주세요.
 	UPROPERTY(meta = (BindWidget))
-	class UWrapBox* WrapBox_Result;
+	TObjectPtr<UPanelWidget> WrapBox_Result = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gacha")
-	TSubclassOf<class UGachaResultItemWidget> ItemWidgetClass;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> NextCharacterButton = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> CloseButton = nullptr;
+
+	TArray<TObjectPtr<UObject>> ResultData;
 public:
-	UFUNCTION(BlueprintCallable)
-	void ShowGachaResults(const TArray<int32>& ItemIDs, const TArray<int32>& ItemCounts);
-	
+	void ShowGachaResults();
+
+	void SetResultData(TArray<UObject*> InResultData);
 };

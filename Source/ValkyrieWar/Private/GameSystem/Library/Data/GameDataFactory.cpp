@@ -6,33 +6,23 @@
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
+//만들기 전에 DataId 존재하는지 체크해서 있으면 아이템 생성해야 함...
 UValkyrieData* UGameDataFactory::GenerateValkyrie(int32 InDataId, UGameInstance* InGameInstance)
 {
+	UValkyrieData* NewValkyrie = nullptr;
 	if (InGameInstance)
 	{
 		if (UDataManager* DataManager = InGameInstance->GetSubsystem<UDataManager>())
 		{
 			if (UValkyrieModule* Module = DataManager->GetValkyrieModule())
 			{
-				if (Module->HasValkyrie(InDataId))
+				NewValkyrie = Module->CreateValkyrie(InDataId);
+				if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(InGameInstance))
 				{
-					//발키리 테이블 데이터에서 조각 데이터 아이디 호출
-					//조각 아이템 생성
-					// 
-					//DataManager->GetItemModule()->AddItem(InDataId);
-					//아이템 생성되었다고 이벤트..
+					EventSystem->Module.OnValkyrieGenerated.Broadcast(NewValkyrie->GetUID(), NewValkyrie);
 				}
-				else
-				{
-					int64 UID = Module->CreateValkyrie(InDataId);
-					if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(InGameInstance))
-					{
-						EventSystem->Module.OnValkyrieGenerated.Broadcast(UID, Module->GetExistValkyrie(UID));
-					}
-				}
-
 			}
 		}
 	}
-	return nullptr;
+	return NewValkyrie;
 }
