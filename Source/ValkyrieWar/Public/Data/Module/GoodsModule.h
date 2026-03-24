@@ -17,11 +17,14 @@ class VALKYRIEWAR_API UGoodsModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
+	FGoodsDataRow GetTableDataById(int32 InDataId);
 	FGoodsDataRow GetTableData(EGoodsType InKey);
 protected:
 	virtual void MakeData() override;
 
 private:
+	UPROPERTY()
+	TMap<int32, FGoodsDataRow> TableDataById;
 	UPROPERTY()
 	TMap<EGoodsType, FGoodsDataRow> TableDataByType;
 };

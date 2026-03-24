@@ -23,7 +23,9 @@ void UBattleResultWidget::NativeConstruct()
 	BindDelegates();
 	RefreshResultUI();
 
-	TestRewardWidget(EBattleState::Win);
+	// 테스트용
+	SetBattleResult(EBattleState::Win);
+	SetBattleReward(100101);
 }
 
 void UBattleResultWidget::NativeDestruct()
@@ -45,36 +47,21 @@ void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
 	RefreshResultUI();
 }
 
-void UBattleResultWidget::SetBattleReward(TMap<EGoodsType, int32> InRewardGoods, int32 InStageRewardGroupId)
+void UBattleResultWidget::SetBattleReward(int32 InStageRewardGroupId)
 {
-	// TODO: 현재 StageGoodsReward 관련 모듈 및 데이터가 없어 추후 생긴다면 코드 수정 필요
-
-	if (Widget_Win)
-	{
-		Widget_Win->SetReward(InRewardGoods, InStageRewardGroupId);
-	}
-}
-
-void UBattleResultWidget::TestRewardWidget(EBattleState InBattleState)
-{
-	if (!IsValidResultState(InBattleState))
+	UDataManager* Datamanager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
+	if (!Datamanager)
+		return;
+	UStageRewardModule* StageRewardModule = Datamanager->GetStageRewardModule();
+	if (!StageRewardModule)
 		return;
 
-	// 테스트용
-	BattleState = InBattleState;
-
-	TMap<EGoodsType, int32> TestRewardGoods;
-	TestRewardGoods.Add(EGoodsType::Gold, 30);
-	TestRewardGoods.Add(EGoodsType::Gem, 0);
-	TestRewardGoods.Add(EGoodsType::Ticket, 50);
-
-	int32 StageRewardGroupId = 500001;
-
+	InRewardList.Empty();
 	if (Widget_Win)
 	{
-		Widget_Win->SetReward(TestRewardGoods, StageRewardGroupId);
+		StageRewardModule->GetRewardRowsByStageRewardGroupId(InStageRewardGroupId, InRewardList);
+		Widget_Win->SetReward(InRewardList);
 	}
-	RefreshResultUI();
 }
 
 void UBattleResultWidget::HandleBackToLobbyClicked()
@@ -93,7 +80,8 @@ void UBattleResultWidget::HandleGoToNextLevelClicked()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		// TODO: 다음 레벨로 이동
+		// TODO: 다음 레벨로 이동 -> 레벨 변경 구현 필요
+		WorldEventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::MoveToNextLevel);
 	}
 }
 

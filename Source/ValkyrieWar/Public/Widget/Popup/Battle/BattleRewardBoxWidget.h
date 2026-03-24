@@ -6,29 +6,29 @@
 #include "Blueprint/UserWidget.h"
 
 #include "Data/Enum/DataEnums.h"
+#include "Data/Table/GameData/RewardDataRow.h"
 
 #include "Components/Image.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 
-#include "BattleRewardItemWIdget.generated.h"
+#include "BattleRewardBoxWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class VALKYRIEWAR_API UBattleRewardItemWIdget : public UUserWidget
+class VALKYRIEWAR_API UBattleRewardBoxWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	void SetRewardItem(int32 InItemDataId, int32 InAmount);
+	void SetRewardItem(FRewardDataRow InRewardDataRow);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> ItemIcon = nullptr;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USizeBox> RewardAmountBox = nullptr;
+	TObjectPtr<UImage> RewardIcon = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> RewardAmount = nullptr;
+
 };

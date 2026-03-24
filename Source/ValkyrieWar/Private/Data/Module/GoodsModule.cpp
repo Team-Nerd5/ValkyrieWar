@@ -16,6 +16,11 @@ void UGoodsModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
+FGoodsDataRow UGoodsModule::GetTableDataById(int32 InDataId)
+{
+	return TableDataById.FindChecked(InDataId);
+}
+
 FGoodsDataRow UGoodsModule::GetTableData(EGoodsType InKey)
 {
 	return TableDataByType.FindChecked(InKey);
@@ -31,6 +36,7 @@ void UGoodsModule::MakeData()
 		{
 			if (!Item) continue;
 
+			TableDataById.Add(Item->DataId, *Item);
 			TableDataByType.Add(Item->GoodsType, *Item);
 		}
 	}

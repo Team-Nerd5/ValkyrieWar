@@ -75,6 +75,8 @@ void ABattleGameState::ChangeState(EBattleState InState)
 			//레벨 전환으로 가야할 듯..
 		}
 		break;
+	case EBattleState::MoveToNextLevel:
+		break;
 
 	default:
 		break;

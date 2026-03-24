@@ -28,11 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BattleResult")
 	void SetBattleResult(EBattleState InBattleState);
 
-	void SetBattleReward(TMap<EGoodsType, int32> InRewardGoods, int32 InStageRewardGroupId);
-
-private:
-	// 위젯 테스트용
-	void TestRewardWidget(EBattleState InBattleState);
+	void SetBattleReward(int32 InStageRewardGroupId);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -52,6 +48,8 @@ protected:
 private:
 	UPROPERTY()
 	EBattleState BattleState = EBattleState::Init;
+	UPROPERTY()
+	TArray<FRewardDataRow> InRewardList;
 
 private:
 	UFUNCTION()

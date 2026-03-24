@@ -29,6 +29,7 @@ enum class EBattleState : uint8
 	Defeat,		//전투 패배로 종료
 	TimeOver,	//시간초과로 종료(패배)
 	MoveToLobby,//로비로 이동
+	MoveToNextLevel,// 다음레벨로 이동
 };
 
 UENUM(BlueprintType)
