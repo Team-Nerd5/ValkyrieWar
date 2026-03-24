@@ -5,11 +5,9 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 
-#include "Data/Enum/DataEnums.h"
 #include "Data/Table/GameData/RewardDataRow.h"
 
 #include "Components/Image.h"
-#include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 
 #include "BattleRewardBoxWidget.generated.h"

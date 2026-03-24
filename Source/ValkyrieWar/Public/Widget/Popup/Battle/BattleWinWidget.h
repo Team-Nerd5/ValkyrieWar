@@ -10,7 +10,6 @@
 #include "Widget/Popup/Battle/BattleRewardBoxWidget.h"
 
 #include "Data/Table/GameData/RewardDataRow.h"
-#include "Data/Table/GameData/GoodsDataRow.h"
 
 #include "BattleWinWidget.generated.h"
 
@@ -32,6 +31,4 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI|WidgetClass")
 	TSubclassOf<UBattleRewardBoxWidget> RewardBoxWidgetClass = nullptr;
-
-	TMap<EGoodsType, int32> CachedGoodsAmount;
 };

@@ -22,10 +22,6 @@ void UBattleResultWidget::NativeConstruct()
 
 	BindDelegates();
 	RefreshResultUI();
-
-	// 테스트용
-	SetBattleResult(EBattleState::Win);
-	SetBattleReward(100101);
 }
 
 void UBattleResultWidget::NativeDestruct()
