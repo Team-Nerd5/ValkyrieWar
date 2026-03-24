@@ -80,7 +80,7 @@ void UStageDetailPopupWidget::RefreshUI()
 		{
 			for (const FStageEnemyViewData& EnemyData : CachedDetailData.Enemies)
 			{
-				UEnemyInfoCardWidget* EnemyCard = CreateWidget<UEnemyInfoCardWidget>(GetWorld(), EnemyInfoCardWidgetClass);
+				UEnemyInfoCardWidget* EnemyCard = CreateWidget<UEnemyInfoCardWidget>(this, EnemyInfoCardWidgetClass);
 				if (!EnemyCard)
 				{
 					continue;
@@ -100,7 +100,7 @@ void UStageDetailPopupWidget::RefreshUI()
 		{
 			for (const FRewardViewData& RewardData : CachedDetailData.Rewards)
 			{
-				URewardInfoCardWidget* RewardCard = CreateWidget<URewardInfoCardWidget>(GetWorld(), RewardInfoCardWidgetClass);
+				URewardInfoCardWidget* RewardCard = CreateWidget<URewardInfoCardWidget>(this, RewardInfoCardWidgetClass);
 				if (!RewardCard)
 				{
 					continue;

@@ -217,26 +217,11 @@ bool UStageListPanelWidget::BuildStageRewardData(
 		return false;
 	}
 
-	TArray<FRewardDataRow> RewardRows;
-	const bool bResult = StageRewardModule->GetRewardRowsByStageRewardGroupId(RewardGroupId, RewardRows);
+	const bool bResult = StageRewardModule->GetRewardViewDataByStageRewardGroupId(RewardGroupId, OutRewards);
 	if (!bResult)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[StageRewardBuild] No rewards found. RewardGroupId=%d"), RewardGroupId);
 		return false;
-	}
-
-	for (const FRewardDataRow& RewardRow : RewardRows)
-	{
-		FRewardViewData RewardViewData;
-		RewardViewData.ItemType = RewardRow.ItemType;
-		RewardViewData.DataId = RewardRow.DataId;
-		RewardViewData.Amount = RewardRow.Amount;
-		RewardViewData.Icon = GetItemModule()->GetTableDataById(RewardViewData.DataId).Icon;
-		RewardViewData.DisplayName = FText::FromString(
-			GetItemModule()->GetTableDataById(RewardViewData.DataId).Name
-		);
-
-		OutRewards.Add(RewardViewData);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("[StageRewardBuild] RewardGroupId=%d RewardCount=%d"), RewardGroupId, OutRewards.Num());

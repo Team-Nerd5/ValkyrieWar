@@ -4,6 +4,8 @@
 #include "Data/Enum/DataEnums.h"
 #include "RewardViewData.generated.h"
 
+class UTexture2D;
+
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FRewardViewData
 {
@@ -11,17 +13,23 @@ struct VALKYRIEWAR_API FRewardViewData
 
 public:
 	UPROPERTY(BlueprintReadOnly)
-	EItemType ItemType = EItemType::None;
+	ERewardType RewardType = ERewardType::None;
 
 	UPROPERTY(BlueprintReadOnly)
-	int32 DataId = 0;
+	int32 RewardId = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 RewardDataId = 0;
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 Amount = 0;
 
 	UPROPERTY(BlueprintReadOnly)
-	TSoftObjectPtr<UTexture2D> Icon = nullptr;
+	int32 RewardRate = 0; // 만분율
 
 	UPROPERTY(BlueprintReadOnly)
-	FText DisplayName;
+	FString Name = TEXT("");
+
+	UPROPERTY(BlueprintReadOnly)
+	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 };

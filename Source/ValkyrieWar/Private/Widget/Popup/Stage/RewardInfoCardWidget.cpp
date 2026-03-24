@@ -22,7 +22,7 @@ void URewardInfoCardWidget::RefreshUI()
 {
 	if (Text_Name)
 	{
-		Text_Name->SetText(CachedRewardData.DisplayName);
+		Text_Name->SetText(FText::FromString(CachedRewardData.Name));
 	}
 
 	if (Image_RewardIcon)
