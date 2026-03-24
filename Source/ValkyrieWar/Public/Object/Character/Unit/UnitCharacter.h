@@ -36,6 +36,8 @@ public:
 
 	void SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat);
 
+	void SetLocomotionBlendSpace();
+
 	inline UUnitBrainComponent* GetBrain() const { return Brain; }
 
 	bool IsDead() const { return bDead; }

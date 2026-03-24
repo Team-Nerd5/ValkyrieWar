@@ -83,6 +83,8 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
 	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
 
+	SetLocomotionBlendSpace();
+
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
@@ -104,6 +106,19 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 	StatAttributeSet->SetHealth(InComputedStat.Health);
 	StatAttributeSet->SetMaxHealth(InComputedStat.Health);
 
+	SetLocomotionBlendSpace();
+
+	AttackData = InBaseData->GetAttackData();
+	CreateAttackAbility();
+
+	SkillDataList = InBaseData->GetSkillData();
+	CreateSkillAbility();
+
+	InitProjectilePoolIfNeeded();
+}
+
+void AUnitCharacter::SetLocomotionBlendSpace()
+{
 	if (LocomotionBS)
 	{
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
@@ -114,14 +129,6 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 			}
 		}
 	}
-
-	AttackData = InBaseData->GetAttackData();
-	CreateAttackAbility();
-
-	SkillDataList = InBaseData->GetSkillData();
-	CreateSkillAbility();
-
-	InitProjectilePoolIfNeeded();
 }
 
 void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
