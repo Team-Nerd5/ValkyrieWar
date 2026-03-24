@@ -56,12 +56,7 @@ public:
 
 	bool HasFreeSlot() const;
 
-	bool CanAttackNow(float Now) const;
-
 	inline float GetAttackRange() const { return AttackRange; }
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	bool PerformAttack(AActor* Target);
 
 	void HandleDeath();
 
@@ -147,18 +142,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float AttackRange = 160.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float AttackCooldown = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float AttackDamage = 10.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	float MaxHP = 100.f;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	float CurrentHP = 0.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	float DestroyDelay = 1.0f;
 
@@ -215,8 +198,6 @@ private:
 
 	UPROPERTY()
 	TWeakObjectPtr<ABaseUnitSpawner> OwnerSpawner;
-
-	float LastAttackTime = -1000.f;
 
 	FTimerHandle DestroyTimerHandle;
 

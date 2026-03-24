@@ -48,7 +48,6 @@ void AUnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentHP = MaxHP;
 	bDead = false;
 }
 
@@ -84,10 +83,6 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
 	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
 
-	AttackDamage = Data->GetStat(EStatusType::Attack);
-	MaxHP = Data->GetStat(EStatusType::Health);
-	CurrentHP = MaxHP;
-
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
 	CreateAttackAbility();
@@ -108,10 +103,6 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 	StatAttributeSet->SetDefense(InComputedStat.Defence);
 	StatAttributeSet->SetHealth(InComputedStat.Health);
 	StatAttributeSet->SetMaxHealth(InComputedStat.Health);
-
-	AttackDamage = InComputedStat.Attack;
-	MaxHP = InComputedStat.Health;
-	CurrentHP = MaxHP;
 
 	if (LocomotionBS)
 	{
@@ -163,50 +154,6 @@ int32 AUnitCharacter::FindFirstFreeSlot() const
 bool AUnitCharacter::HasFreeSlot() const
 {
 	return FindFirstFreeSlot() != INDEX_NONE;
-}
-
-bool AUnitCharacter::CanAttackNow(float Now) const
-{
-	// Attack Cooldown은 BT에서 Wait Task로 대체(2s ~ 3s)
-	return true;
-}
-
-bool AUnitCharacter::PerformAttack(AActor* Target)
-{
-	if (!Target || IsDead()) return false;
-
-	UWorld* World = GetWorld();
-	if (!World) return false;
-
-	const float Now = World->GetTimeSeconds();
-	if (!CanAttackNow(Now)) return false; // 쿨타임 체크 활성화
-
-	//이게 몽타주 등 AnimNotify에서 공격 시점에 수행해야 데미지 적용
-	ApplyAttack(Target);
-
-	// 2. 애니메이션 재생
-	if (AttackMontage)
-	{
-		// PlayAnimMontage는 내부적으로 AnimInstance를 찾아 실행해줍니다.
-		float Duration = PlayAnimMontage(AttackMontage);
-		if (Duration > 0.f)
-		{
-			LastAttackTime = Now;
-
-			// 공격 성공 => 정체 카운트다운 리셋(오탐 방지)
-			ResetStuckCountdown(true);
-
-			return true;
-		}
-	}
-
-	// 몽타주가 없을 경우를 대비한 Fallback (즉시 공격)
-	LastAttackTime = Now;
-
-	// 몽타주 없어도 공격 성공으로 간주하니 리셋
-	ResetStuckCountdown(true);
-
-	return true;
 }
 
 //TODO : Attributte에서 사망 시 호출로 변경
@@ -489,9 +436,7 @@ UObjectPoolSubsystem* AUnitCharacter::GetPool() const
 void AUnitCharacter::ResetForReuse()
 {
 	// 상태 리셋
-	CurrentHP = MaxHP;
 	bDead = false;
-	LastAttackTime = -1000.f;
 
 	// 죽음 타이머 제거
 	if (UWorld* World = GetWorld())
@@ -782,7 +727,6 @@ bool AUnitCharacter::FireProjectileAttack()
 	);
 
 	ResetStuckCountdown(true);
-	LastAttackTime = GetWorld() ? GetWorld()->GetTimeSeconds() : LastAttackTime;
 
 	return true;
 }
@@ -1025,7 +969,6 @@ void AUnitCharacter::ExecuteAttack()
 	if (!World) return;
 
 	const float Now = World->GetTimeSeconds();
-	if (!CanAttackNow(Now)) return; // 쿨타임 체크 활성화
 
 	//성현우[TODO] : 쿨타임 테이블 추가 및 어빌리티에 설정하는게 맞을 것 같다.
 	
@@ -1036,17 +979,12 @@ void AUnitCharacter::ExecuteAttack()
 		float Duration = PlayAnimMontage(AttackMontage);
 		if (Duration > 0.f)
 		{
-			LastAttackTime = Now;
-
 			// 공격 성공 => 정체 카운트다운 리셋(오탐 방지)
 			ResetStuckCountdown(true);
 
 			return;
 		}
 	}
-
-	// 몽타주가 없을 경우를 대비한 Fallback (즉시 공격)
-	LastAttackTime = Now;
 
 	// 몽타주 없어도 공격 성공으로 간주하니 리셋
 	ResetStuckCountdown(true);
