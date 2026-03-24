@@ -378,10 +378,13 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 {
 	Data = InData;
 
-	StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
-	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
-	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
-	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+	if (StatAttributeSet)
+	{
+		StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
+		StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
+		StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
+		StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+	}
 
 	EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
 

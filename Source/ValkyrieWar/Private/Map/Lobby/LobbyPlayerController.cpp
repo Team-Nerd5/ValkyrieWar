@@ -197,10 +197,10 @@ void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId
 	GachaResultWidget = nullptr;
 	GachaResultData.Empty();
 
-	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
 		//우선은 급해서 그냥 차감.. 테이블로 해야할지는 고민..
-		SaveManager->AddGoods(EGoodsType::Gem, InAmount * 100);
+		DataManager->GetGoodsModule()->Add(EGoodsType::Gem, -InAmount * 100);
 	}
 
 	SetGachaResult(InAmount, InGachaGroupId);

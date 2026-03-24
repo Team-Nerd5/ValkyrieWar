@@ -6,7 +6,7 @@
 #include "Data/Game/ValkyrieData.h"
 #include "ModuleEventData.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnValkyrieGenerated, int64, InUID, UValkyrieData*, InData);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnValkyrieGenerated, int64, InUID, UValkyrieData*, InData);
 /**
  * 
  */
@@ -15,5 +15,5 @@ struct VALKYRIEWAR_API FModuleEventData
 {
 	GENERATED_BODY()
 public:
-	FOnValkyrieGenerated OnValkyrieGenerated;
+	//FOnValkyrieGenerated OnValkyrieGenerated;
 };

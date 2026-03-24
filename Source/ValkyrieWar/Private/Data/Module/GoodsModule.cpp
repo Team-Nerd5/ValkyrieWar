@@ -25,6 +25,42 @@ FGoodsDataRow UGoodsModule::GetTableData(EGoodsType InKey)
 {
 	return TableDataByType.FindChecked(InKey);
 }
+void UGoodsModule::Add(EGoodsType InType, int64 InAmount)
+{
+	if (InAmount < 0 && !IsEnough(InType, InAmount))
+	{
+		//빼야하는데 부족함..
+		return;
+	}
+
+	uint64* Amount = GoodsAmount.Find(InType);
+	if (Amount)
+	{
+		*Amount += InAmount;
+	}
+	else
+	{
+		if(InAmount > 0)
+			GoodsAmount.Add(InType, InAmount);
+	}
+
+	if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+	{
+		SaveManager->AddGoods(InType, InAmount);
+	}
+}
+
+bool UGoodsModule::IsEnough(EGoodsType InType, uint64 InCheckAmount)
+{
+	uint64* Amount = GoodsAmount.Find(InType);
+	if (Amount)
+	{
+		return *Amount >= InCheckAmount;
+	}
+	
+	return false;
+}
+
 void UGoodsModule::MakeData()
 {
 	if (DataTable)

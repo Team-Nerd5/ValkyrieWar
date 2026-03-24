@@ -73,8 +73,8 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 {
 	FItemDataRow TableData = GetTableDataById(InDataId);
-		
-	if (uint64 ItemUID = GetExistItemUID(InDataId) > 0)
+	uint64 ItemUID = GetExistItemUID(InDataId);
+	if (ItemUID > 0)
 	{
 		UItemData* Item = GetItem(ItemUID);
 		if(Item->GetItemGroup() == EItemGroup::Equip)
@@ -111,10 +111,21 @@ bool UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
 	if (TargetItem->GetAmount() <= 0)
 	{
 		OwnItems.Remove(InUID);
+
+		if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+		{
+			SaveManager->RemoveSaveItem(InUID);
+		}
+
 		SetList();
 		return false;
 	}
 
+	//Save하면 개수 변화도 가능
+	if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+	{
+		SaveManager->AddSaveItem(TargetItem);
+	}
 	return true;
 }
 UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
@@ -128,6 +139,11 @@ UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 
 		OwnItems.Add(UID, NewItem);
 		SetList();
+
+		if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+		{
+			SaveManager->AddSaveItem(NewItem);
+		}
 
 		return NewItem;
 	}

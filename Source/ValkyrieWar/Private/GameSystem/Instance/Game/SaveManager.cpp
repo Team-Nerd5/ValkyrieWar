@@ -149,11 +149,6 @@ void USaveManager::InitAllData()
 			InitDataInternal(Type, Data);
 		}
 	}
-
-	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		EventSystem->Module.OnValkyrieGenerated.AddDynamic(this, &USaveManager::OnValkyrieGenerated);
-	}
 }
 
 int32 USaveManager::LoadAllData()
@@ -196,24 +191,24 @@ void USaveManager::OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESav
 }
 
 
-void USaveManager::OnValkyrieGenerated(int64 InUID, UValkyrieData* InData)
+void USaveManager::SaveValkyrie(UValkyrieData* InData)
 {
 	if (Valkyrie)
 	{
 		FValkyrieSaveData ValkyrieSave;
 		ValkyrieSave.DataId = InData->GetDataID();
 
-		Valkyrie->ValkyrieData.Add(InUID, ValkyrieSave);
+		Valkyrie->ValkyrieData.Add(InData->GetUID(), ValkyrieSave);
 
 		if (bIsNewAccount)
 		{
 			//캐릭터가 새로 생성되었는데, 신규계정 상태이면 계정 생성임
 			if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
 			{
-				GameManager->SelectVakyrie(InUID);
+				GameManager->SelectVakyrie(InData->GetUID());
 			}
 
-			Account->SelectedValkyrie = InUID;
+			Account->SelectedValkyrie = InData->GetUID();
 			SaveInternal(ESaveType::Account);
 		}
 
@@ -222,11 +217,24 @@ void USaveManager::OnValkyrieGenerated(int64 InUID, UValkyrieData* InData)
 }
 
 #pragma region Add save data
-void USaveManager::UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter)
+void USaveManager::AddSaveItem(UItemData* InItem)
 {
-
+	if (Item)
+	{
+		Item->AddItem(InItem);
+	}
 	SaveInternal(ESaveType::Item);
 }
+
+void USaveManager::RemoveSaveItem(uint64 InUID)
+{
+	if (Item)
+	{
+		Item->RemoveItem(InUID);
+	}
+	SaveInternal(ESaveType::Item);
+}
+
 #pragma endregion
 
 
@@ -330,36 +338,30 @@ void USaveManager::SaveData(ESaveType InSaveType)
 
 uint64 USaveManager::GetNextItemUID()
 {
+	uint64 UID = 0;
+
 	if (CheckAccount)
 	{
-		CheckAccount->GetItemUID();
+		UID = CheckAccount->GetItemUID();
 
 		SaveInternal(ESaveType::CheckAccount);
 	}
 
-	return 0;
+	return UID;
 }
 
 uint64 USaveManager::GetNextValkyrieUID()
 {
+	uint64 UID = 0;
+
 	if (CheckAccount)
 	{
-		CheckAccount->GetValkyrieUID();
+		UID = CheckAccount->GetValkyrieUID();
 
 		SaveInternal(ESaveType::CheckAccount);
 	}
 
-	return 0;
-}
-
-bool USaveManager::IsGoodsEnough(EGoodsType InGoodsType, uint64 InPrice)
-{
-	if (Goods)
-	{
-		return GetGoodsValue(InGoodsType) >= InPrice;
-	}
-
-	return false;
+	return UID;
 }
 
 uint64 USaveManager::GetGoodsValue(EGoodsType InGoodsType)
@@ -372,7 +374,7 @@ uint64 USaveManager::GetGoodsValue(EGoodsType InGoodsType)
 	return 0;
 }
 
-void USaveManager::AddGoods(EGoodsType InGoodsType, uint64 InAmount)
+void USaveManager::AddGoods(EGoodsType InGoodsType, int64 InAmount)
 {
 	if (Goods)
 	{

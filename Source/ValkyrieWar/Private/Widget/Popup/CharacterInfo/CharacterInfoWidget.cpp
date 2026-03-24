@@ -171,6 +171,6 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 
 	if (MainValkyrieIcon)
 	{
-		MainValkyrieIcon->SetVisibility(SelectedValkyrie != MainValkyrie ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		MainValkyrieIcon->SetVisibility(SelectedValkyrie == MainValkyrie ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }

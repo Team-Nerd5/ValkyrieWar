@@ -20,7 +20,7 @@ public:
 	FORCEINLINE FTargetingDataRow const GetData(int32 InDataId)
 	{
 		if (TargetingData.Contains(InDataId))
-			return TargetingData.FindRef(InDataId);
+			return TargetingData.FindChecked(InDataId);
 		else
 			return FTargetingDataRow();
 	}

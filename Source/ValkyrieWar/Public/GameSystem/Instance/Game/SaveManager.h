@@ -11,6 +11,7 @@
 
 class USaveGame;
 class UValkyrieData;
+class UItemData;
 /**
  * 
  */
@@ -77,16 +78,15 @@ protected:
 	//데이터 생성 후 저장용 Delgate 처리부분
 	UFUNCTION()
 	void OnDataLoaded(USaveGame* LoadedSaveGame, bool bIsSuccess, ESaveType InSaveType);
-	UFUNCTION()
-	void OnValkyrieGenerated(int64 InUID, UValkyrieData* InData);
+
 public:
 	void InitAllData();
 	int32 LoadAllData();
 
 	bool IsAcountExist();
 
-	void UpdateItem(uint64 InUID, int32 InAmount, uint64 InEquipCharacter);
-
+	void AddSaveItem(UItemData* InItem);
+	void RemoveSaveItem(uint64 InUID);
 
 	void CreateAccount(FString& InNickname);
 
@@ -96,7 +96,9 @@ public:
 	uint64 GetNextItemUID();
 	uint64 GetNextValkyrieUID();
 
-	bool IsGoodsEnough(EGoodsType InGoodsType, uint64 InPrice);
+	//이벤트로 해야하는데...인스턴스에선 안되서
 	uint64 GetGoodsValue(EGoodsType InGoodsType);
-	void AddGoods(EGoodsType InGoodsType, uint64 InAmount);
+	void AddGoods(EGoodsType InGoodsType, int64 InAmount);
+
+	void SaveValkyrie(UValkyrieData* InData);
 };

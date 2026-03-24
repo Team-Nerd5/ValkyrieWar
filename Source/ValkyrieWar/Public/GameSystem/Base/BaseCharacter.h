@@ -72,7 +72,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UItemData> EquippedWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data|Attack")
 	TObjectPtr<UAttackData> AttackData = nullptr;
 
 	UPROPERTY()
@@ -87,8 +87,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentTarget = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat")
-	TObjectPtr<class UStatAttributeSet> StatAttributeSet = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data|CharacterStat")
+	TObjectPtr<class UStatAttributeSet> StatAttributeSet;
 
 	UPROPERTY()
 	int32 UsingSkillIndex = 0;

@@ -33,33 +33,33 @@ bool UUnitModule::BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FCompute
 {
 	OutStat = FComputedEnemyStat{};
 
-	UUnitData* BaseData = OwnUnits.FindRef(InDataId);
-	if (!BaseData)
+	if (OwnUnits.Contains(InDataId))
 	{
-		return false;
+		UUnitData* BaseData = OwnUnits.FindChecked(InDataId);
+
+		if (!BaseData)
+		{
+			return false;
+		}
+
+		FStatValueData BonusStat;
+		GetBonusStatByLevel(InDataId, InLevel, BonusStat);
+
+		OutStat.DataId = InDataId;
+		OutStat.Level = FMath::Max(1, InLevel);
+		OutStat.Attack = BaseData->GetStat(EStatusType::Attack) + BonusStat.Attack;
+		OutStat.Defence = BaseData->GetStat(EStatusType::Defence) + BonusStat.Defence;
+		OutStat.Health = BaseData->GetStat(EStatusType::Health) + BonusStat.Health;
+
+		return true;
 	}
 
-	FStatValueData BonusStat;
-	GetBonusStatByLevel(InDataId, InLevel, BonusStat);
-
-	OutStat.DataId = InDataId;
-	OutStat.Level = FMath::Max(1, InLevel);
-	OutStat.Attack = BaseData->GetStat(EStatusType::Attack) + BonusStat.Attack;
-	OutStat.Defence = BaseData->GetStat(EStatusType::Defence) + BonusStat.Defence;
-	OutStat.Health = BaseData->GetStat(EStatusType::Health) + BonusStat.Health;
-
-	return true;
+	return false;
 }
 
 bool UUnitModule::GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const
 {
 	OutBonusStat = FStatValueData{};
-
-	UUnitData* BaseData = OwnUnits.FindRef(InDataId);
-	if (!BaseData)
-	{
-		return false;
-	}
 
 	if (!GameManager.IsValid())
 	{
@@ -72,14 +72,25 @@ bool UUnitModule::GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueD
 		return false;
 	}
 
-	UUnitUpgradeStatModule* UpgradeModule = DataManager->GetUnitUpgradeStatModule();
-	if (!UpgradeModule)
+	if (OwnUnits.Contains(InDataId))
 	{
-		return false;
+		UUnitData* BaseData = OwnUnits.FindChecked(InDataId);
+		if (!BaseData)
+		{
+			return false;
+		}
+
+		UUnitUpgradeStatModule* UpgradeModule = DataManager->GetUnitUpgradeStatModule();
+		if (!UpgradeModule)
+		{
+			return false;
+		}
+
+		OutBonusStat = UpgradeModule->GetTotalStat(BaseData->GetLevelUpGroupId(), FMath::Max(1, InLevel));
+		return true;
 	}
 
-	OutBonusStat = UpgradeModule->GetTotalStat(BaseData->GetLevelUpGroupId(), FMath::Max(1, InLevel));
-	return true;
+	return false;
 }
 
 void UUnitModule::MakeData()
@@ -105,23 +116,29 @@ void UUnitModule::MakeData()
 
 void UUnitModule::UnitLevelUpStat(int32 InDataId)
 {
-	UUnitData* TargetUnitData = OwnUnits.FindRef(InDataId);
-	if (!TargetUnitData)
-		return;
-	UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
-	if (!DataManager)
-		return;
+	if (OwnUnits.Contains(InDataId))
+	{
+		UUnitData* TargetUnitData = OwnUnits.FindChecked(InDataId);
 
-	// 유닛 레벨업
-	TargetUnitData->LevelUp();
+		if (!TargetUnitData)
+			return;
 
-	UUnitUpgradeData* UpgradeData = DataManager->GetUnitUpgradeStatModule()->GetNextLevelData(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
+		UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
+		if (!DataManager)
+			return;
 
-	//UnitData의 테이블 데이터를 코드로 바꿔버리는데 이러면 큰일납니다.
-	//데이터 자체를 바꿔버리는거에요. 게임 돌때마다 테이블이 바뀌는 일이 발생합니다.
+		// 유닛 레벨업
+		TargetUnitData->LevelUp();
 
-	FStatValueData BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
+		UUnitUpgradeData* UpgradeData = DataManager->GetUnitUpgradeStatModule()->GetNextLevelData(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
 
-	// 증가한 스텟 저장
-	UnitAddedStats.Add(TargetUnitData->GetDataId(), BonusStatData);
+		//UnitData의 테이블 데이터를 코드로 바꿔버리는데 이러면 큰일납니다.
+		//데이터 자체를 바꿔버리는거에요. 게임 돌때마다 테이블이 바뀌는 일이 발생합니다.
+
+		FStatValueData BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
+
+		// 증가한 스텟 저장
+		UnitAddedStats.Add(TargetUnitData->GetDataId(), BonusStatData);
+	}
+	
 }

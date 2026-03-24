@@ -21,7 +21,10 @@ public:
 
 	FORCEINLINE UUnitData* GetUnitDataById(int32 InDataId) const
 	{
-		return OwnUnits.FindRef(InDataId);
+		if (OwnUnits.Contains(InDataId))
+			return OwnUnits.FindChecked(InDataId);
+		else
+			return nullptr;
 	}
 
 	FORCEINLINE void GetOwnedUnitIds(TArray<int32>& OutIds) const
@@ -45,27 +48,42 @@ public:
 
 	FORCEINLINE TSubclassOf<class AUnitCharacter> GetSpawnUnitClass(int32 InDataId)
 	{
-		return TableDataByDataId.FindRef(InDataId).SpawnClass;
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindChecked(InDataId).SpawnClass;
+		else
+			return nullptr;
 	}
 
 	FORCEINLINE ETeamType GetUnitTeam(int32 InDataId)
 	{
-		return TableDataByDataId.FindRef(InDataId).TeamType;
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindChecked(InDataId).TeamType;
+		else
+			return ETeamType::None;
 	}
 
 	FORCEINLINE EPoolTypes GetUnitPoolType(int32 InDataId)
 	{
-		return TableDataByDataId.FindRef(InDataId).PoolType;
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindChecked(InDataId).PoolType;
+		else
+			return EPoolTypes::None;
 	}
 
 	FORCEINLINE TSoftObjectPtr<UTexture2D> GetUnitIcon(int32 InDataId)
 	{
-		return TableDataByDataId.FindRef(InDataId).UnitIcon;
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindChecked(InDataId).UnitIcon;
+		else
+			return nullptr;
 	}
 
 	FORCEINLINE FStatValueData GetUnitStat(int32 InDataId)
 	{
-		return UnitAddedStats.FindRef(InDataId);
+		if (TableDataByDataId.Contains(InDataId))
+			return UnitAddedStats.FindChecked(InDataId);
+		else
+			return FStatValueData();
 	}
 
 	bool GetUnitDataRow(int32 InDataId, FUnitDataRow& OutRow) const;

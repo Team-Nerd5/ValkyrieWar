@@ -102,7 +102,7 @@ UBlendSpace* UGameManager::GetValkyrieBlendSpace(EWeaponType InWeaponType)
 {
     if (ValkyrieBlendSpace.Contains(InWeaponType))
     {
-        return ValkyrieBlendSpace.FindRef(InWeaponType);
+        return ValkyrieBlendSpace.FindChecked(InWeaponType);
     }
     return nullptr;
 }
@@ -111,7 +111,6 @@ void UGameManager::Init()
 {
     Super::Init();
 
-    //엑셀데이터 읽어오기
     if (UDataManager* DataManager = GetSubsystem<UDataManager>())
     {
         DataManager->CreateData();
@@ -120,12 +119,5 @@ void UGameManager::Init()
 
 void UGameManager::SelectVakyrie(int64 InValkyrieUID)
 {
-    if (UDataManager* DataManager = GetSubsystem<UDataManager>())
-    {
-        SelectedValkyrieUID = InValkyrieUID;
-        //SelectedValkyrie = DataManager->GetValkyrieModule()->GetExistValkyrie(InValkyrieUID);
-
-        //만약에 존재하지 않으면
-        //보유한것중에 앞에꺼 하나를 그냥 세팅해야할듯 하긴한데...
-    }
+    SelectedValkyrieUID = InValkyrieUID;
 }

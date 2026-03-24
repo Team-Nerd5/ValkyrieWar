@@ -33,7 +33,6 @@ UValkyrieData* UValkyrieModule::CreateValkyrie(int32 InDataId)
 	NewValkyrie->Initialize(*TableDataByDataId.Find(InDataId), GameManager.Get());
 
 	OwnValkyries.Add(NewValkyrie->GetUID(), NewValkyrie);
-
 	return NewValkyrie;
 }
 

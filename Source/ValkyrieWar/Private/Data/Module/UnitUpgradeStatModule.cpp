@@ -26,10 +26,9 @@ UUnitUpgradeData* const UUnitUpgradeStatModule::GetNextLevelData(int32 InGroupId
 		{
 			if (UnitUpgradeData->UpgradeDataList.Contains(InNextLevel))
 			{
-				return UnitUpgradeData->UpgradeDataList.FindRef(InNextLevel);
+				return UnitUpgradeData->UpgradeDataList.FindChecked(InNextLevel);
 			}
 		}
-		//return  UpgradeData.FindRef(InGroupId).UpgradeDataList.FindChecked(InNextLevel);
 	}
 	return nullptr;
 }
@@ -37,13 +36,17 @@ UUnitUpgradeData* const UUnitUpgradeStatModule::GetNextLevelData(int32 InGroupId
 FStatValueData const UUnitUpgradeStatModule::GetTotalStat(int32 InGroupId, int32 InTargetLevel)
 {
 	FStatValueData TotalStat;
-	for (auto Data : UpgradeData.FindRef(InGroupId).UpgradeDataList)
+	if (UpgradeData.Contains(InGroupId))
 	{
-		if (Data.Key > InTargetLevel)
-			break;
+		for (auto Data : UpgradeData.FindChecked(InGroupId).UpgradeDataList)
+		{
+			if (Data.Key > InTargetLevel)
+				break;
 
-		TotalStat.Add(Data.Value->GetAttack(), Data.Value->GetDefence(), Data.Value->GetHealth());
+			TotalStat.Add(Data.Value->GetAttack(), Data.Value->GetDefence(), Data.Value->GetHealth());
+		}
 	}
+
 	return TotalStat;
 }
 

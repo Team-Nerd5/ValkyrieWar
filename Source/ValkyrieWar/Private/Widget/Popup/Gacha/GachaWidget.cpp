@@ -10,6 +10,7 @@
 #include "Components/TextBlock.h"
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Instance/Game/DataManager.h"
 
 
 void UGachaWidget::NativeConstruct()
@@ -26,7 +27,7 @@ void UGachaWidget::NativeConstruct()
     }
     if (Btn_WhatIs_CeliGacha)
     {
-        Btn_WhatIs_CeliGacha->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
+        //Btn_WhatIs_CeliGacha->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
 }
 
@@ -44,7 +45,7 @@ void UGachaWidget::NativeDestruct()
     }
     if (Btn_WhatIs_CeliGacha)
     {
-        Btn_WhatIs_CeliGacha->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
+        //Btn_WhatIs_CeliGacha->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
 }
 
@@ -56,6 +57,17 @@ void UGachaWidget::OpenUI()
 
     //임시 처리(원래 소환 열어주면서 세팅.. 가챠 테이블 데이터가 있어야 하는데...)
     SelectedGroupId = 70001;
+
+    int64 GachaPrice = 100;
+    //가챠 가격 정보를 안만들어서... 우선 숫자 입력
+    if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+    {
+        if (Btn_Summon_1x)
+            Btn_Summon_1x->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice));
+
+        if (Btn_Summon_10x)
+            Btn_Summon_10x->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice * 10));
+    }
 }
 
 void UGachaWidget::OnClickSummon1x()
@@ -76,10 +88,6 @@ void UGachaWidget::OnClickSummon10x()
 
 void UGachaWidget::OnClickWhatIs_CeliGacha()
 {
+    //???설명인데 무슨 버튼을?
     UE_LOG(LogTemp, Warning, TEXT("천장 가챠 설명 버튼 바인딩"));
-}
-
-void UGachaWidget::UpdateGachaData(int32 AddCount)
-{
-    //??
 }

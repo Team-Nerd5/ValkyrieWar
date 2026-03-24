@@ -38,7 +38,7 @@ public:
 	FORCEINLINE FValkyrieDataRow GetTableData(int32 InDataId)
 	{
 		if (TableDataByDataId.Contains(InDataId))
-			return TableDataByDataId.FindRef(InDataId);
+			return TableDataByDataId.FindChecked(InDataId);
 		else
 			return FValkyrieDataRow();
 	}

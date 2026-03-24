@@ -19,6 +19,20 @@ public:
 
 	FGoodsDataRow GetTableDataById(int32 InDataId);
 	FGoodsDataRow GetTableData(EGoodsType InKey);
+
+	void Add(EGoodsType InType, int64 InAmount);
+	bool IsEnough(EGoodsType InType, uint64 InCheckAmount);
+
+	FORCEINLINE uint64 Get(EGoodsType InType)
+	{
+		if (GoodsAmount.Contains(InType))
+			return GoodsAmount.FindChecked(InType);
+		else
+		{
+			GoodsAmount.Add(InType, 0);
+			return 0;
+		}
+	}
 protected:
 	virtual void MakeData() override;
 
@@ -27,4 +41,7 @@ private:
 	TMap<int32, FGoodsDataRow> TableDataById;
 	UPROPERTY()
 	TMap<EGoodsType, FGoodsDataRow> TableDataByType;
+
+	UPROPERTY()
+	TMap<EGoodsType, uint64> GoodsAmount;
 };

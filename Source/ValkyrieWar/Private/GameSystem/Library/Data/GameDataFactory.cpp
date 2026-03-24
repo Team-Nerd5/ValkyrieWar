@@ -17,9 +17,9 @@ UValkyrieData* UGameDataFactory::GenerateValkyrie(int32 InDataId, UGameInstance*
 			if (UValkyrieModule* Module = DataManager->GetValkyrieModule())
 			{
 				NewValkyrie = Module->CreateValkyrie(InDataId);
-				if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(InGameInstance))
+				if (USaveManager* SaveManager = InGameInstance->GetSubsystem<USaveManager>())
 				{
-					EventSystem->Module.OnValkyrieGenerated.Broadcast(NewValkyrie->GetUID(), NewValkyrie);
+					SaveManager->SaveValkyrie(NewValkyrie);
 				}
 			}
 		}

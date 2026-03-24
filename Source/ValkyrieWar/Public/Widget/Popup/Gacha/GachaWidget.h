@@ -29,7 +29,6 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class UTextBlock> Text_GachaCount; // 가챠 횟수
 
-
     int32 SelectedGroupId = 0;
 
 protected:
@@ -47,6 +46,4 @@ protected:
 
     UFUNCTION()
     void OnClickWhatIs_CeliGacha();
-
-    void UpdateGachaData(int32 AddCount);
 };

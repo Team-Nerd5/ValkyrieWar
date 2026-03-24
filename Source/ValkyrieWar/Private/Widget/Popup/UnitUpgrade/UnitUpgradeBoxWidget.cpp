@@ -196,7 +196,7 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 		return;
 
 	// TODO: 재화 소모 추가 및 처리
-	SaveManager->AddGoods(NextLevelData->GetUpgradeCostType(), -NextLevelData->GetUpgradeCost());
+	DataManager->GetGoodsModule()->Add(NextLevelData->GetUpgradeCostType(), -NextLevelData->GetUpgradeCost());
 
 	DataManager->GetUnitModule()->UnitLevelUpStat(UnitDataId);
 
@@ -206,13 +206,13 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 
 void UUnitUpgradeBoxWidget::CheckEnoughCost()
 {
-	USaveManager* SaveManager = GetWorld()->GetGameInstance()->GetSubsystem<USaveManager>();
-	if (!SaveManager)
+	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
+	if (!DataManager)
 		return;
 
 	if (NextLevelData.IsValid())
 	{
-		if (SaveManager->IsGoodsEnough(NextLevelData->GetUpgradeCostType(), NextLevelData->GetUpgradeCost()))
+		if (DataManager->GetGoodsModule()->IsEnough(NextLevelData->GetUpgradeCostType(), NextLevelData->GetUpgradeCost()))
 		{
 			SetEnableButton(true);
 		}

@@ -199,10 +199,7 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 
 	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
 
-	if (USaveManager* Save = GetGameInstance()->GetSubsystem<USaveManager>())
-	{
-		Save->AddGoods(EGoodsType::Gold, Price * InAmount);
-	}
+	DataManager->GetGoodsModule()->Add(EGoodsType::Gold, Price * InAmount);
 
 	//인벤토리 업데이트
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))

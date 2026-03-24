@@ -25,7 +25,7 @@ public:
 
 		return 0;
 	}
-	FORCEINLINE void AddGoods(EGoodsType InGoodsType, uint64 InAmount)
+	FORCEINLINE void AddGoods(EGoodsType InGoodsType, int64 InAmount)
 	{
 		Goods.FindOrAdd(InGoodsType) += InAmount;
 	}

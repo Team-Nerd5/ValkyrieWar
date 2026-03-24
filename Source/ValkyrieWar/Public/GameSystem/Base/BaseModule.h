@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "GameSystem/Instance/Game/GameManager.h"
+#include "GameSystem/Instance/Game/SaveManager.h"
 #include "BaseModule.generated.h"
 
 /**
