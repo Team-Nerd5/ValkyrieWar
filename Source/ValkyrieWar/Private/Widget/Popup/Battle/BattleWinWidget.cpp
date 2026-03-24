@@ -28,7 +28,7 @@ void UBattleWinWidget::SetReward(TMap<EGoodsType, int32> InRewardGoods, int32 In
 		{
 			if (UBattleRewardItemWIdget* RewardWidget = CreateWidget<UBattleRewardItemWIdget>(GetWorld(), RewardItemWidgetClass))
 			{
-				RewardWidget->SetRewardItem(RewardRow.DataId);
+				RewardWidget->SetRewardItem(RewardRow.DataId, RewardRow.Amount);
 				RewardListBox->AddChild(RewardWidget);
 			}
 		}

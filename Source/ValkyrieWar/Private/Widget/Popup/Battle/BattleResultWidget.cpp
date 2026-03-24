@@ -91,7 +91,10 @@ void UBattleResultWidget::HandleGoToNextLevelClicked()
 {
 	OnCloseUIRequested.Broadcast(this);
 
-	// TODO: 다음 레벨로 이동
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		// TODO: 다음 레벨로 이동
+	}
 }
 
 void UBattleResultWidget::BindDelegates()
@@ -122,12 +125,12 @@ void UBattleResultWidget::RefreshResultUI()
 {
 	if(Widget_Win)
 		Widget_Win->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-	if(Widget_Defeat)
-		Widget_Defeat->SetVisibility(BattleState == EBattleState::Defeat ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+	if (Widget_Defeat)
+		Widget_Defeat->SetVisibility(
+			BattleState == EBattleState::Defeat || BattleState == EBattleState::TimeOver ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 
 	if (GoToNextLevelBox)
-		GoToNextLevelBox->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-	
+		GoToNextLevelBox->SetVisibility(BattleState == EBattleState::Win ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);	
 }
 
 bool UBattleResultWidget::IsValidResultState(EBattleState InState) const

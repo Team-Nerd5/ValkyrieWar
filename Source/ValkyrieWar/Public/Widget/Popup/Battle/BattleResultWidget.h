@@ -30,6 +30,8 @@ public:
 
 	void SetBattleReward(TMap<EGoodsType, int32> InRewardGoods, int32 InStageRewardGroupId);
 
+private:
+	// 위젯 테스트용
 	void TestRewardWidget(EBattleState InBattleState);
 
 protected:
