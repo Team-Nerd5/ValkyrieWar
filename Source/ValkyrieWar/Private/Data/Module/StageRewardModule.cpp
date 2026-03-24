@@ -70,10 +70,8 @@ const FStageRewardArray* UStageRewardModule::FindStageRewardRowsByGroupId(int32 
 	return StageRewardRowsByGroupId.Find(InGroupId);
 }
 
-bool UStageRewardModule::GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, TArray<FRewardDataRow>& OutRows) const
+bool UStageRewardModule::GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const
 {
-	OutRows.Reset();
-
 	if (InStageRewardRow.RewardId <= 0)
 	{
 		return false;
@@ -85,7 +83,7 @@ bool UStageRewardModule::GetRewardRowsByStageRewardRow(const FStageRewardDataRow
 		return false;
 	}
 
-	return RewardModule->GetRewardRowsByGroupId(InStageRewardRow.RewardId, OutRows);
+	return RewardModule->GetRewardRowsByDataId(InStageRewardRow.RewardId, OutData);
 }
 
 bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const
@@ -111,13 +109,13 @@ bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArr
 
 	for (const FStageRewardDataRow& StageRewardRow : StageRewardArray->Rows)
 	{
-		const FRewardArray* RewardArray = RewardModule->FindRewardRowsByGroupId(StageRewardRow.RewardId);
-		if (!RewardArray || RewardArray->Rows.IsEmpty())
+		const FRewardDataRow* Reward = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
+		if (!Reward)
 		{
 			continue;
 		}
 
-		OutRows.Append(RewardArray->Rows);
+		OutRows.Add(*Reward);
 	}
 
 	return OutRows.Num() > 0;

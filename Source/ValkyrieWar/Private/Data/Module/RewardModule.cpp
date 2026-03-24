@@ -15,7 +15,7 @@ void URewardModule::Initialize(UGameManager* InGameManager)
 
 void URewardModule::MakeData()
 {
-	RewardRowsByGroupId.Empty();
+	TableDataByDataId.Empty();
 
 	if (!DataTable)
 	{
@@ -32,36 +32,33 @@ void URewardModule::MakeData()
 			continue;
 		}
 
-		FRewardArray& RewardArray = RewardRowsByGroupId.FindOrAdd(Row->GroupId);
-		RewardArray.Rows.Add(*Row);
+		TableDataByDataId.Add(Row->DataId, *Row);
 	}
 }
 
-bool URewardModule::GetRewardRowsByGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const
+bool URewardModule::GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutData) const
 {
-	OutRows.Reset();
-
-	if (InGroupId <= 0)
+	if (InDataId <= 0)
 	{
 		return false;
 	}
 
-	const FRewardArray* FoundArray = RewardRowsByGroupId.Find(InGroupId);
-	if (!FoundArray || FoundArray->Rows.IsEmpty())
+	const FRewardDataRow* FoundReward = TableDataByDataId.Find(InDataId);
+	if (!FoundReward)
 	{
 		return false;
 	}
 
-	OutRows = FoundArray->Rows;
+	OutData = *FoundReward;
 	return true;
 }
 
-const FRewardArray* URewardModule::FindRewardRowsByGroupId(int32 InGroupId) const
+const FRewardDataRow* URewardModule::FindRewardByDataId(int32 InDataId) const
 {
-	if (InGroupId <= 0)
+	if (InDataId <= 0)
 	{
 		return nullptr;
 	}
 
-	return RewardRowsByGroupId.Find(InGroupId);
+	return TableDataByDataId.Find(InDataId);
 }

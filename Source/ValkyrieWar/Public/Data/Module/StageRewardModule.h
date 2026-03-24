@@ -21,13 +21,14 @@ public:
 	bool GetStageRewardRowsByGroupId(int32 InGroupId, TArray<FStageRewardDataRow>& OutRows) const;
 	const FStageRewardArray* FindStageRewardRowsByGroupId(int32 InGroupId) const;
 
-	bool GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, TArray<FRewardDataRow>& OutRows) const;
+	bool GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const;
 	bool GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const;
 
 protected:
 	virtual void MakeData() override;
 
 private:
+	//제발좀 원시포인터...
 	URewardModule* GetRewardModule() const;
 
 private:

@@ -15,11 +15,11 @@ struct VALKYRIEWAR_API FRewardDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 GroupId = 0;
-	UPROPERTY(EditAnywhere)
-	EItemType ItemType = EItemType::None;
-	UPROPERTY(EditAnywhere)
 	int32 DataId = 0;
+	UPROPERTY(EditAnywhere)
+	ERewardType RewardType = ERewardType::None;
+	UPROPERTY(EditAnywhere)
+	int32 RewardDataId = 0;
 	UPROPERTY(EditAnywhere)
 	int32 Amount = 0;
 };

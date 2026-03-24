@@ -32,13 +32,6 @@ enum class EItemType : uint8
 	Armor,
 
 	WeaponMasteryPiece,
-	//성장 아이템
-	BowMasteryPiece,		//활 업글 아이템
-	SwordMasteryPiece,		//검 업글 아이템
-	AxeMasteryPiece,
-	StaffMasteryPiece,
-	WandMasteryPiece,
-	ShieldMasteryPiece,
 };
 
 UENUM(BlueprintType)
@@ -144,4 +137,13 @@ enum class EContentType : uint8
 	HUD,
 	Menu,
 	Popup,
+};
+
+UENUM(BlueprintType)
+enum class ERewardType : uint8
+{
+	None,
+	Goods,
+	Item,
+	Character,
 };

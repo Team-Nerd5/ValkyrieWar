@@ -14,13 +14,13 @@ class VALKYRIEWAR_API URewardModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	bool GetRewardRowsByGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const;
-	const FRewardArray* FindRewardRowsByGroupId(int32 InGroupId) const;
+	bool GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutData) const;
+	const FRewardDataRow* FindRewardByDataId(int32 InDataId) const;
 
 protected:
 	virtual void MakeData() override;
 
 private:
 	UPROPERTY()
-	TMap<int32, FRewardArray> RewardRowsByGroupId;
+	TMap<int32, FRewardDataRow> TableDataByDataId;
 };
