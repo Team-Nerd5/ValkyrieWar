@@ -47,6 +47,7 @@ void ALobbyPlayerController::BeginPlay()
 		EventSystem->Lobby.OnShowNextGacha.AddDynamic(this, &ALobbyPlayerController::ShowNextGacha);
 		EventSystem->Widget.OnCharacterInfoWidgetOpened.AddDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
 		EventSystem->Widget.OnCharacterInfoWidgetClosed.AddDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
+		EventSystem->Widget.OnValkyrieSelected.AddDynamic(this, &ALobbyPlayerController::OnValkyrieChanged);
 	}	
 	ChangeGameState(ELobbyState::Init);
 }
@@ -62,6 +63,7 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		EventSystem->Lobby.OnShowNextGacha.RemoveDynamic(this, &ALobbyPlayerController::ShowNextGacha);
 		EventSystem->Widget.OnCharacterInfoWidgetOpened.RemoveDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
 		EventSystem->Widget.OnCharacterInfoWidgetClosed.RemoveDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
+		EventSystem->Widget.OnValkyrieSelected.RemoveDynamic(this, &ALobbyPlayerController::OnValkyrieChanged);
 	}
 
 }
@@ -177,6 +179,15 @@ void ALobbyPlayerController::ShowLobbyCharacter()
 				LobbyGameMode->SpawnValkyire(Valkyrie, this, TEXT("LobbyStart"));
 			}
 		}		
+	}
+}
+
+void ALobbyPlayerController::ChangeLobbyCharacter(UValkyrieData* InNewValkyrie)
+{
+	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+	if (ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(GameMode))
+	{
+		LobbyGameMode->SpawnValkyire(InNewValkyrie, this, TEXT("LobbyStart"));
 	}
 }
 
@@ -360,14 +371,20 @@ void ALobbyPlayerController::StartLobbyCamMove()
 	if (CharacterInfoCamera && CurrentCamera)
 	{
 		SetViewTargetWithBlend(CurrentCamera, 1.0f, VTBlend_Cubic);
-		GetWorldTimerManager().SetTimer(CameraBlendTimerHandle, this, &ALobbyPlayerController::ONMovedLobby, 1.0f, false);
+		GetWorldTimerManager().SetTimer(CameraBlendTimerHandle, this, &ALobbyPlayerController::OnMovedLobby, 1.0f, false);
 	}
 }
 
-void ALobbyPlayerController::ONMovedLobby()
+void ALobbyPlayerController::OnMovedLobby()
 {
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
 		UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
 	}
+}
+
+//캐릭터 정보창에서 변경함
+void ALobbyPlayerController::OnValkyrieChanged(UValkyrieData* InNewValkyrie)
+{
+	ChangeLobbyCharacter(InNewValkyrie);
 }

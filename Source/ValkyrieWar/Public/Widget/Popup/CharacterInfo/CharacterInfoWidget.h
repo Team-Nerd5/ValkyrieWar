@@ -7,6 +7,7 @@
 #include "CharacterInfoWidget.generated.h"
 
 class UItemData;
+class UValkyrieData;
 /**
  * 
  */
@@ -21,6 +22,8 @@ protected:
 
 	void InitItemList();
 
+	void InitValkyrieList();
+
 	UFUNCTION()
 	void OnItemClicked(UObject* InItemData);
 
@@ -30,6 +33,12 @@ protected:
 	UFUNCTION()
 	void OnTabMenuChanged(int32 InSelectedTab);
 
+	UFUNCTION()
+	void OnClickSetMain();
+
+	UFUNCTION()
+	void OnValkyrieSelected(UValkyrieData* InSelectedValkyrie);
+
 public:
 	virtual void OpenUI() override;
 	virtual void CloseUI() override;
@@ -38,8 +47,16 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UItemListWidget> ItemListWidget = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UValkyrieListWidget> ValkyrieListWidget = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> SetMainButton = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> MainValkyrieIcon = nullptr;
+
 	UPROPERTY(EditAnywhere)
-	TMap<ECharacterInfoFilterType, FString> InventoryTabNameData;
+	TMap<ECharacterInfoFilterType, FString> CharacterInfoTabNameData;
 private:
 
 	UPROPERTY()
@@ -47,4 +64,12 @@ private:
 
 	ECharacterInfoFilterType CurrentFilterType = ECharacterInfoFilterType::All;
 
+	UPROPERTY()
+	TArray<TObjectPtr<UValkyrieData>> OriginValkyires;
+
+	UPROPERTY()
+	TObjectPtr<UValkyrieData> MainValkyrie = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UValkyrieData> SelectedValkyrie = nullptr;
 };

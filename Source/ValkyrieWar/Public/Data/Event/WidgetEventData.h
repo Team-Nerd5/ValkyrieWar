@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Game/ItemData.h"
+#include "Data/Game/ValkyrieData.h"
 #include "WidgetEventData.generated.h"
 
 /**
@@ -15,6 +16,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpdateCharacterEquipment, uint64,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTabMenuSelected, int32, InSelectedTab);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSelected, UItemData*, InItemData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGoodsUpdate, EGoodsType, InGoodsType, uint64, InAmount);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnValkyrieSelected, UValkyrieData*, InValkyrieData);
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterInfoWidgetOpened);
@@ -39,6 +42,8 @@ public:
 
 	FOnTabMenuSelected OnTabMenuSelected;
 	FOnInventoryItemSelected OnInventoryItemSelected;
+
+	FOnValkyrieSelected OnValkyrieSelected;
 
 	FOnGoodsUpdate OnGoodsUpdate;
 

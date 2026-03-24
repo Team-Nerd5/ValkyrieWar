@@ -135,8 +135,10 @@ void UItemListWidget::OnClickEquipItem()
 	if (SelectedItem)
 	{
 		//장착 이벤트 호출
-		//캐릭터 정보 위젯에서 현재 캐릭터 아이디 가져와서 세팅
-		
+		//게임 매니저에서 SelectedValkyrie UID 가져와서 세팅.
+		//아이템 저장 및 리스트 갱신
+
+		//로비 컨트롤러에서 아이템 장착 처리(로비에 생성된 캐릭터)
 	}
 }
 
@@ -301,6 +303,14 @@ void UItemListWidget::UpdateButton()
 	{
 		EquipButton->SetVisibility(TabType == ETabType::CharacterInfo ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+	if (SellAmountPanel)
+	{
+		SellAmountPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (GoldPanel)
+	{
+		GoldPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 }
 
 void UItemListWidget::SortInventory()
@@ -346,16 +356,7 @@ void UItemListWidget::OnItemSelected(UItemData* InItemData)
 	ActiveButton->SetIsEnabled(InItemData != nullptr);
 
 	SelectedItem = InItemData;
-
-	if (SellAmountPanel)
-	{
-		SellAmountPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
-	if (GoldPanel)
-	{
-		GoldPanel->SetVisibility((TabType == ETabType::Inventory) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	}
-
+	
 	if (TabType == ETabType::Inventory)
 	{
 		RefreshInventory();

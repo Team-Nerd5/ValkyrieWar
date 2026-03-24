@@ -43,6 +43,14 @@ public:
 			return FValkyrieDataRow();
 	}
 
+	FORCEINLINE TArray<UValkyrieData*> GetValkyrieList()
+	{
+		TArray<TObjectPtr<UValkyrieData>> OutData;
+		OwnValkyries.GenerateValueArray(OutData);
+
+		return OutData;
+	}
+
 	bool HasValkyrie(int32 InDataId);
 
 	UValkyrieData* CreateValkyrie(int32 InDataId);

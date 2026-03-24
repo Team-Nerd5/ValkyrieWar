@@ -54,6 +54,7 @@ AValkyrieCharacter* ALobbyGameMode::SpawnValkyire(UValkyrieData* InData, AContro
     UClass* SpawnClass = InData->GetSpawnClass().LoadSynchronous();
 
     AValkyrieCharacter* SpawnedCharacter = GetWorld()->SpawnActor<AValkyrieCharacter>(SpawnClass, SpawnTransform);
+    SpawnedCharacter->SetData(InData);
 
     if (IsValid(SpawnedCharacter))
     {

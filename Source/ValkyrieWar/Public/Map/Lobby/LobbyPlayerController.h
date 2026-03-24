@@ -8,6 +8,7 @@
 #include "Data/Enum/DataEnums.h"
 #include "LobbyPlayerController.generated.h"
 
+class UValkyrieData;
 /**
  * 
  */
@@ -45,6 +46,8 @@ protected:
 
 	void ShowLobbyCharacter();
 
+	void ChangeLobbyCharacter(UValkyrieData* InNewValkyrie);
+
 	//가챠
 	void SetGachaResult(int32 InAmount, int32 InGachaGroupId);
 
@@ -66,7 +69,10 @@ protected:
 	void StartLobbyCamMove();
 
 	UFUNCTION()
-	void ONMovedLobby();
+	void OnMovedLobby();
+
+	UFUNCTION()
+	void OnValkyrieChanged(UValkyrieData* InNewValkyrie);
 
 private:
 	int32 CurrentGachaIndex = 0;

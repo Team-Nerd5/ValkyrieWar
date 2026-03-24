@@ -62,11 +62,14 @@ public:
 
 	FORCEINLINE const uint64 GetUID() { return UID; }
 	FORCEINLINE const int32 GetDataID() { return TableData.DataId; }
+	FORCEINLINE const EGradeType GetGrade() { return TableData.BaseGrade; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
+	FORCEINLINE FString& const GetValkyrieName() { return TableData.Name; }
+	FORCEINLINE TSoftObjectPtr<UTexture2D> const GetIcon() { return TableData.Icon; }
 	FORCEINLINE UItemData* GetEquippedItem(EEquipGroup InType)
 	{
 		if (EquippedItem.Contains(InType))
