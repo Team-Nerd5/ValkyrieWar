@@ -8,14 +8,8 @@ EItemGroup UGameDataHelper::GetItemGroup(EItemType InItemType)
 {
 	switch (InItemType)
 	{
-	case EItemType::ShieldMasteryPiece:
-	case EItemType::AxeMasteryPiece:
-	case EItemType::BowMasteryPiece:
-	case EItemType::StaffMasteryPiece:
-	case EItemType::SwordMasteryPiece:
-	case EItemType::WandMasteryPiece:
+	case EItemType::WeaponMasteryPiece:
 		return EItemGroup::GrowthItem;
-
 	default:
 		return EItemGroup::Equip;
 	}
