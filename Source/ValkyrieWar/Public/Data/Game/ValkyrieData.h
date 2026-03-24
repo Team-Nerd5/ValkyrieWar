@@ -68,7 +68,7 @@ public:
 	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
-	FORCEINLINE FString& const GetValkyrieName() { return TableData.Name; }
+	FORCEINLINE FString const GetValkyrieName() { return TableData.Name; }
 	FORCEINLINE TSoftObjectPtr<UTexture2D> const GetIcon() { return TableData.Icon; }
 	FORCEINLINE UItemData* GetEquippedItem(EEquipGroup InType)
 	{
