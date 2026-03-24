@@ -18,7 +18,6 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -35,7 +34,4 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BattlePauseMenu")
 	bool bPauseGameWhenOpened = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BattlePauseMenu")
-	FName LobbyLevelName = TEXT("LobbyLevel");
 };

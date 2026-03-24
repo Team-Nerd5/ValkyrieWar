@@ -122,11 +122,8 @@ void UStageDetailPopupWidget::HandleClickClose()
 {
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
-		//UIManager->Close
 		UIManager->CloseTopPopupUI();
 	}
-
-	CloseUI();
 }
 
 void UStageDetailPopupWidget::HandleClickStartStage()
