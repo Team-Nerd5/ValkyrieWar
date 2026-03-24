@@ -58,6 +58,12 @@ FSlateColor UEnemyInfoCardWidget::GetGradeFrameColor(EGradeType InGrade) const
 	case EGradeType::Rare:
 		return FSlateColor(FLinearColor(0.2f, 0.45f, 1.f, 1.f));
 
+	case EGradeType::Unique:
+		return FSlateColor(FLinearColor(0.7f, 0.3f, 0.9f, 1.f));
+
+	case EGradeType::Legend:
+		return FSlateColor(FLinearColor(1.0f, 0.6f, 0.1f, 1.f));
+
 	default:
 		break;
 	}
