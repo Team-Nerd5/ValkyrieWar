@@ -51,12 +51,12 @@ void UStageItemWidget::RefreshVisual()
 		Button_Stage->SetIsEnabled(!ViewData.bLocked);
 	}
 
-	if (Border_Selected)
-	{
-		Border_Selected->SetVisibility(
-			bSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed
-		);
-	}
+	//if (Border_Selected)
+	//{
+	//	Border_Selected->SetVisibility(
+	//		bSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed
+	//	);
+	//}
 }
 
 void UStageItemWidget::HandleClicked()

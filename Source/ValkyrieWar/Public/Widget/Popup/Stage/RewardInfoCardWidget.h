@@ -23,14 +23,14 @@ protected:
 	void RefreshUI();
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UBorder> Border_Root = nullptr;
+	//UPROPERTY(meta = (BindWidget))
+	//TObjectPtr<UBorder> Border_Root = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_RewardIcon = nullptr;
 
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UTextBlock> Text_Name = nullptr;
+	//UPROPERTY(meta = (BindWidget))
+	//TObjectPtr<UTextBlock> Text_Name = nullptr;
 
 private:
 	UPROPERTY()

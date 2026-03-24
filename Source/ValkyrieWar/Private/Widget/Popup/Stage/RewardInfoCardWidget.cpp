@@ -20,10 +20,10 @@ void URewardInfoCardWidget::SetRewardData(const FRewardViewData& InRewardData)
 
 void URewardInfoCardWidget::RefreshUI()
 {
-	if (Text_Name)
-	{
-		Text_Name->SetText(FText::FromString(CachedRewardData.Name));
-	}
+	//if (Text_Name)
+	//{
+	//	Text_Name->SetText(FText::FromString(CachedRewardData.Name));
+	//}
 
 	if (Image_RewardIcon)
 	{
