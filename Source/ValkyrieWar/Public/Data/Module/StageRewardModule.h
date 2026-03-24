@@ -30,7 +30,7 @@ public:
 	const FStageRewardArray* FindStageRewardRowsByGroupId(int32 InGroupId) const;
 
 	/** StageRewardRow 1개를 RewardDataRow로 변환 (RewardId → RewardRow) */
-	bool GetRewardRowByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const;
+	bool GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const;
 
 	/** RewardGroupId 기준으로 RewardDataRow 리스트 반환 */
 	bool GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const;
@@ -46,7 +46,7 @@ protected:
 
 private:
 	/** RewardModule 접근 (RewardRow 조회 및 ViewData 생성용) */
-	TObjectPtr<URewardModule> GetRewardModule() const;
+	URewardModule* GetRewardModule() const;
 
 	/** GoodsType을 UI용 이름 문자열로 변환 (보조 함수) */
 	FString GetGoodsDisplayName(EGoodsType InGoodsType) const;

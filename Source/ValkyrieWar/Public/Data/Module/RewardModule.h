@@ -25,7 +25,7 @@ public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
 	/** RewardId(DataId)로 RewardDataRow 1개 조회 (복사 반환) */
-	bool GetRewardRowByDataId(int32 InDataId, FRewardDataRow& OutRow) const;
+	bool GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutData) const;
 
 	/** RewardId(DataId)로 RewardDataRow 포인터 조회 (읽기 전용) */
 	const FRewardDataRow* FindRewardByDataId(int32 InDataId) const;
@@ -55,5 +55,5 @@ private:
 private:
 	/** RewardId(DataId) -> RewardDataRow 캐싱 */
 	UPROPERTY()
-	TMap<int32, FRewardDataRow> RewardRowById;
+	TMap<int32, FRewardDataRow> TableDataByDataId;
 };

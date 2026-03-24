@@ -24,19 +24,15 @@ void URewardModule::Initialize(UGameManager* InGameManager)
 
 void URewardModule::MakeData()
 {
-	Super::MakeData();
-
-	RewardRowById.Empty();
+	TableDataByDataId.Empty();
 
 	if (!DataTable)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[RewardModule] DataTable is null"));
 		return;
 	}
 
-	static const FString ContextString(TEXT("RewardModule"));
 	TArray<FRewardDataRow*> AllRows;
-	DataTable->GetAllRows(ContextString, AllRows);
+	DataTable->GetAllRows<FRewardDataRow>(TEXT("RewardModule_Init"), AllRows);
 
 	for (const FRewardDataRow* Row : AllRows)
 	{
@@ -45,27 +41,35 @@ void URewardModule::MakeData()
 			continue;
 		}
 
-		RewardRowById.Add(Row->DataId, *Row);
+		TableDataByDataId.Add(Row->DataId, *Row);
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("[RewardModule] Loaded RewardRow count = %d"), RewardRowById.Num());
 }
 
-bool URewardModule::GetRewardRowByDataId(int32 InDataId, FRewardDataRow& OutRow) const
+bool URewardModule::GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutData) const
 {
-	const FRewardDataRow* FoundRow = FindRewardByDataId(InDataId);
-	if (!FoundRow)
+	if (InDataId <= 0)
 	{
 		return false;
 	}
 
-	OutRow = *FoundRow;
+	const FRewardDataRow* FoundReward = TableDataByDataId.Find(InDataId);
+	if (!FoundReward)
+	{
+		return false;
+	}
+
+	OutData = *FoundReward;
 	return true;
 }
 
 const FRewardDataRow* URewardModule::FindRewardByDataId(int32 InDataId) const
 {
-	return RewardRowById.Find(InDataId);
+	if (InDataId <= 0)
+	{
+		return nullptr;
+	}
+
+	return TableDataByDataId.Find(InDataId);
 }
 
 /**

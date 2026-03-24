@@ -29,7 +29,6 @@ void UStageRewardModule::MakeData()
 
 	if (!DataTable)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] DataTable is null"));
 		return;
 	}
 
@@ -46,8 +45,6 @@ void UStageRewardModule::MakeData()
 		FStageRewardArray& RewardArray = StageRewardRowsByGroupId.FindOrAdd(Row->GroupId);
 		RewardArray.Rows.Add(*Row);
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("[StageRewardModule] Loaded Group Count = %d"), StageRewardRowsByGroupId.Num());
 }
 
 bool UStageRewardModule::GetStageRewardRowsByGroupId(int32 InGroupId, TArray<FStageRewardDataRow>& OutRows) const
@@ -79,20 +76,20 @@ const FStageRewardArray* UStageRewardModule::FindStageRewardRowsByGroupId(int32 
 	return StageRewardRowsByGroupId.Find(InGroupId);
 }
 
-bool UStageRewardModule::GetRewardRowByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const
+bool UStageRewardModule::GetRewardRowsByStageRewardRow(const FStageRewardDataRow& InStageRewardRow, FRewardDataRow& OutData) const
 {
 	if (InStageRewardRow.RewardId <= 0)
 	{
 		return false;
 	}
 
-	const TObjectPtr<URewardModule> RewardModule = GetRewardModule();
+	URewardModule* RewardModule = GetRewardModule();
 	if (!RewardModule)
 	{
 		return false;
 	}
 
-	return RewardModule->GetRewardRowById(InStageRewardRow.RewardId, OutData);
+	return RewardModule->GetRewardRowsByDataId(InStageRewardRow.RewardId, OutData);
 }
 
 bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArray<FRewardDataRow>& OutRows) const
@@ -104,7 +101,7 @@ bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArr
 		return false;
 	}
 
-	const TObjectPtr<URewardModule> RewardModule = GetRewardModule();
+	URewardModule* RewardModule = GetRewardModule();
 	if (!RewardModule)
 	{
 		return false;
@@ -118,14 +115,13 @@ bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArr
 
 	for (const FStageRewardDataRow& StageRewardRow : StageRewardArray->Rows)
 	{
-		const FRewardDataRow* RewardRow = RewardModule->FindRewardRowById(StageRewardRow.RewardId);
-		if (!RewardRow)
+		const FRewardDataRow* Reward = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
+		if (!Reward)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Reward not found. RewardId=%d"), StageRewardRow.RewardId);
 			continue;
 		}
 
-		OutRows.Add(*RewardRow);
+		OutRows.Add(*Reward);
 	}
 
 	return OutRows.Num() > 0;
@@ -172,7 +168,7 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 
 	for (const FStageRewardDataRow& StageRewardRow : StageRewardArray->Rows)
 	{
-		const FRewardDataRow* RewardRow = RewardModule->FindRewardRowById(StageRewardRow.RewardId);
+		const FRewardDataRow* RewardRow = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
 		if (!RewardRow)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] RewardRow not found. RewardId=%d"), StageRewardRow.RewardId);
@@ -240,14 +236,14 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 	return OutRows.Num() > 0;
 }
 
-TObjectPtr<URewardModule> UStageRewardModule::GetRewardModule() const
+URewardModule* UStageRewardModule::GetRewardModule() const
 {
 	if (!GameManager.IsValid())
 	{
 		return nullptr;
 	}
 
-	const TObjectPtr<UDataManager> DataManager = GameManager->GetSubsystem<UDataManager>();
+	UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
 	if (!DataManager)
 	{
 		return nullptr;
