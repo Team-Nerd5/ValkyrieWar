@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "Data/Enum/CharacterEnums.h"
-#include "Data/Enum/DataEnums.h"
 #include "UnitUpgradeSaveGame.generated.h"
 
 /**
@@ -16,10 +14,14 @@ struct VALKYRIEWAR_API FUnitDataStruct
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY()
 	uint64 UID;
-	EUnitCharacterType UnitType;
+	UPROPERTY()
+	int32 UnitType;
+	UPROPERTY()
 	int32 Level;
-	EGradeType Grade;
+	UPROPERTY()
+	int32 Grade;
 };
 
 UCLASS()

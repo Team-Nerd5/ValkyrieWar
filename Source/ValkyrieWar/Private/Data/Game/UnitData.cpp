@@ -37,10 +37,11 @@ void UUnitData::MakeData(const FUnitDataRow InTableData, UGameManager* InGameMan
 	}
 }
 
-void UUnitData::LoadData(uint64 InUID, const FUnitDataRow InTableData, UGameManager* InGameManager)
+void UUnitData::LoadData(uint64 InUID, const FUnitDataRow InTableData, int32 InLevel, UGameManager* InGameManager)
 {
 	UID = InUID;
 	TableData = InTableData;
+	Level = InLevel;
 	Stat.Empty();
 
 	if (InGameManager)

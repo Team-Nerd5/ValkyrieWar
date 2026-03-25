@@ -13,6 +13,8 @@ class USaveGame;
 class UValkyrieData;
 class UUnitData;
 class UItemData;
+struct FUnitDataStruct;
+
 /**
  * 
  */
@@ -104,4 +106,5 @@ public:
 	void SaveValkyrie(UValkyrieData* InData);
 
 	void SaveUnit(UUnitData* InData);
+	void SaveUnits(TArray<FUnitDataStruct> InData);
 };

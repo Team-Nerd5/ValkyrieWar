@@ -2,6 +2,8 @@
 
 
 #include "Data/Module/UnitModule.h"
+#include "Data/Enum/CharacterEnums.h"
+#include "Data/Enum/DataEnums.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
 void UUnitModule::Initialize(UGameManager* InGameManager)
@@ -97,12 +99,12 @@ void UUnitModule::LoadUnit(FUnitDataStruct InData)
 {
 	for (auto Data : TableDataByDataId)
 	{
-		if (Data.Value.UnitType == InData.UnitType &&
+		if (Data.Value.UnitType == static_cast<EUnitCharacterType>(InData.UnitType) &&
 			Data.Value.TeamType == ETeamType::Ally &&
-			Data.Value.Grade == InData.Grade)
+			Data.Value.Grade == static_cast<EGradeType>(InData.Grade))
 		{
 			UUnitData* NewData = NewObject<UUnitData>(this);
-			NewData->LoadData(InData.UID, Data.Value, GameManager.Get());
+			NewData->LoadData(InData.UID, Data.Value, InData.Level,  GameManager.Get());
 
 			OwnUnits.Add(InData.UID, NewData);
 		}

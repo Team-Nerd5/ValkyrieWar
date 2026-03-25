@@ -42,7 +42,7 @@ void UUnitUpgradeBoxWidget::Init(TObjectPtr<UUnitData> InUnitData)
 		UE_LOG(LogTemp, Warning, TEXT("[UnitUpgradeBoxWidget] 유닛 데이터가 없습니다"));
 		return;
 	}
-
+	CachedUnitData = InUnitData;
 	CachedUnitDataId = InUnitData->GetDataId();
 
 	// 위젯 표시 정보 초기화

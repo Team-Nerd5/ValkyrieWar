@@ -98,6 +98,32 @@ void ULevelManager::OnDataLoadCompleted()
 		if (SaveManager->IsNewAccount())
 		{
 			UGameDataFactory::GenerateValkyrie(100201, GetGameInstance());
+
+			if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+			{
+				UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
+				TArray<int32> BasicUnits = { 210011, 210021, 210031, 210041, 210051 };
+				TArray<FUnitDataStruct> CreatedUnits;
+				//최초 유닛 때려박기...시간이 없다
+				for (int32 DataId : BasicUnits)
+				{
+					UUnitData* UnitData = NewObject<UUnitData>();
+					FUnitDataRow UnitTableData;
+					DataManager->GetUnitModule()->GetUnitDataRow(DataId, UnitTableData);
+					UnitData->MakeData(UnitTableData, GameManager);
+
+					FUnitDataStruct NewData;
+					NewData.UID = UnitData->GetUID();
+					NewData.Level = UnitData->GetLevel();
+					NewData.UnitType = static_cast<int32>(UnitData->GetUnitType());
+					NewData.Grade = static_cast<int32>(UnitData->GetCurrentGrade());
+
+					CreatedUnits.Add(NewData);
+					DataManager->GetUnitModule()->LoadUnit(NewData);
+				}
+				SaveManager->SaveUnits(CreatedUnits);
+			}
+			
 		}
 	}
 

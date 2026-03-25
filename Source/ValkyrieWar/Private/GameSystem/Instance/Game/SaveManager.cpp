@@ -55,7 +55,10 @@ void USaveManager::InitSetDataAction()
 			SetItemData();
 		});
 	ActionSetData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { Unit = Cast<UUnitUpgradeSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) {
+		Unit = Cast<UUnitUpgradeSaveGame>(InData);
+		SetUnitData();
+		});
 	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData)
 		{
 			Valkyrie = Cast<UValkyrieSaveGame>(InData);
@@ -227,7 +230,7 @@ void USaveManager::SaveUnit(UUnitData* InData)
 		{
 			FUnitDataStruct* Data = Unit->OwnUnits.Find(InData->GetUID());
 			Data->Level = InData->GetLevel();
-			Data->Grade = InData->GetCurrentGrade();
+			Data->Grade = static_cast<int32>(InData->GetCurrentGrade());
 			//다른건 바뀌지 않을 데이터
 		}
 		else
@@ -235,13 +238,26 @@ void USaveManager::SaveUnit(UUnitData* InData)
 			FUnitDataStruct NewData;
 			NewData.UID = InData->GetUID();
 			NewData.Level = InData->GetLevel();
-			NewData.UnitType = InData->GetUnitType();
-			NewData.Grade = InData->GetCurrentGrade();
+			NewData.UnitType = static_cast<int32>(InData->GetUnitType());
+			NewData.Grade = static_cast<int32>(InData->GetCurrentGrade());
 
 			Unit->OwnUnits.Add(InData->GetUID(), NewData);
 		}
 	}
 	SaveInternal(ESaveType::UnitUpgrade);
+}
+
+void USaveManager::SaveUnits(TArray<FUnitDataStruct> InData)
+{
+	if (Unit)
+	{
+		for (const FUnitDataStruct&  Data : InData)
+		{
+			Unit->OwnUnits.Add(Data.UID, Data);
+		}
+
+		SaveInternal(ESaveType::UnitUpgrade);
+	}
 }
 
 #pragma region Add save data
@@ -297,26 +313,9 @@ void USaveManager::SetUnitData()
 	{
 		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 		{
-			if (Unit->OwnUnits.Num() == 0)
-			{
-				//없으면 기본유닛 생성해줌... 쩝...
-				UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
-				TArray<int32> BasicUnits = { 210011, 210021, 210031, 210041, 210051 };
-
-				for (int32 DataId : BasicUnits)
-				{
-					UUnitData* UnitData = NewObject<UUnitData>();
-					FUnitDataRow UnitTableData;
-					DataManager->GetUnitModule()->GetUnitDataRow(DataId, UnitTableData);
-					UnitData->MakeData(UnitTableData, GameManager);
-
-					SaveUnit(UnitData);
-				}				
-			}
-
 			TArray<FUnitDataStruct> Units;
 			Unit->OwnUnits.GenerateValueArray(Units);
-			for (FUnitDataStruct const UnitData : Units)
+			for (const FUnitDataStruct& UnitData : Units)
 			{
 				DataManager->GetUnitModule()->LoadUnit(UnitData);
 			}

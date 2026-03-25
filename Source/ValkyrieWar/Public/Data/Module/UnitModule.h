@@ -73,7 +73,7 @@ public:
 
 	FORCEINLINE FStatValueData GetUnitStat(int32 InDataId)
 	{
-		if (TableDataByDataId.Contains(InDataId))
+		if (UnitAddedStats.Contains(InDataId))
 			return UnitAddedStats.FindChecked(InDataId);
 		else
 			return FStatValueData();

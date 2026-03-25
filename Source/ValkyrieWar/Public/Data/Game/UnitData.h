@@ -48,7 +48,7 @@ private:
 public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
-	void LoadData(uint64 InUID, const FUnitDataRow InTableData, UGameManager* InGameManager);
+	void LoadData(uint64 InUID, const FUnitDataRow InTableData, int32 InLevel, UGameManager* InGameManager);
 
 	void LevelUp();
 
@@ -59,7 +59,13 @@ public:
 	FORCEINLINE int32 GetLevelUpGroupId() { return TableData.LevelUpGroupId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
-	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
+	FORCEINLINE float GetStat(EStatusType InType)
+	{
+		if (Stat.Contains(InType))
+			return Stat.FindChecked(InType);
+		else
+			return 0.0f;
+	}
 	FORCEINLINE ETeamType GetTeamType() { return TableData.TeamType; }
 	FORCEINLINE int32 GetLevel() { return Level; }
 	FORCEINLINE EUnitCharacterType GetUnitType() { return TableData.UnitType; }
