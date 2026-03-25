@@ -7,6 +7,7 @@
 #include "Data/Table/GameData/UnitDataRow.h"
 #include "Data/Game/UnitData.h"
 #include "Data/Struct/ComputedEnemyStat.h"
+#include "Data/Enum/DataEnums.h"
 #include "Object/SaveGame/UnitUpgradeSaveGame.h"
 #include "UnitModule.generated.h"
 
@@ -33,18 +34,9 @@ public:
 		OwnUnits.GenerateKeyArray(OutIds);
 	}
 
-	FORCEINLINE void GetUnitIdsByTeam(ETeamType InTeamType, TArray<int32>& OutIds) const
+	FORCEINLINE const TMap<int32, TObjectPtr<UUnitData>> GetOwnedUnits()
 	{
-		OutIds.Reset();
-		for (const auto& TableData : TableDataByDataId)
-		{
-			const int32 DataId = TableData.Key;
-			const FUnitDataRow& Row = TableData.Value;
-			if (Row.TeamType == InTeamType)
-			{
-				OutIds.Add(DataId);
-			}
-		}
+		return OwnUnits;
 	}
 
 	FORCEINLINE TSubclassOf<class AUnitCharacter> GetSpawnUnitClass(int32 InDataId)
@@ -97,7 +89,7 @@ protected:
 	virtual void MakeData() override;
 
 public:
-	void UnitLevelUpStat(int32 InUnitId);
+	void UnitLevelUpStat(int32 InDataId);
 
 private:
 	TMap<int32, FUnitDataRow> TableDataByDataId;

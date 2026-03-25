@@ -18,7 +18,6 @@ void UUnitUpgradeBoxWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
-	// 버튼 업데이트 테스트용 임시 바인딩(Goods위젯 업데이트 델리게이트 임시 사용)
 	EventSystem->Widget.OnGoodsUpdate.AddDynamic(this, &UUnitUpgradeBoxWidget::OnTestGoodsChangedAmount);
 
 	if (Btn_UpgradeUnit)
@@ -36,20 +35,30 @@ void UUnitUpgradeBoxWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UUnitUpgradeBoxWidget::Init(int32 InUnitId)
+void UUnitUpgradeBoxWidget::Init(TObjectPtr<UUnitData> InUnitData)
+{
+	if (!InUnitData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UnitUpgradeBoxWidget] 유닛 데이터가 없습니다"));
+		return;
+	}
+
+	CachedUnitDataId = InUnitData->GetDataId();
+
+	// 위젯 표시 정보 초기화
+	UpdateUpgradeInfo();
+
+	// 업그레이드 버튼 비활성화 색상 설정
+	FButtonStyle ButtonStyle = Btn_UpgradeUnit->GetStyle();
+	ButtonStyle.Disabled.TintColor = FSlateColor(ButtonDisableColor);
+	Btn_UpgradeUnit->SetStyle(ButtonStyle);
+}
+
+void UUnitUpgradeBoxWidget::UpdateUpgradeInfo()
 {
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
 		return;
-
-	// 위젯에서 설정할 유닛 ID
-	UnitDataId = InUnitId;
-
-	// 유닛 데이터 캐싱
-	if (!CachedUnitData || UnitDataId != InUnitId)
-	{
-		CachedUnitData = DataManager->GetUnitModule()->GetUnitDataById(InUnitId);
-	}
 	if (!CachedUnitData)
 		return;
 
@@ -68,21 +77,6 @@ void UUnitUpgradeBoxWidget::Init(int32 InUnitId)
 			UnitIcon->SetBrushFromTexture(Icon);
 		}
 	}
-	// 업그레이드 버튼 비활성화 색상 설정
-	FButtonStyle ButtonStyle = Btn_UpgradeUnit->GetStyle();
-	ButtonStyle.Disabled.TintColor = FSlateColor(ButtonDisableColor);
-	Btn_UpgradeUnit->SetStyle(ButtonStyle);
-
-	// 위젯 표시 정보 초기화
-	UpdateUpgradeInfo(UnitDataId);
-}
-
-void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
-{
-	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
-	if (!DataManager)
-		return;
-
 	// 현재 레벨
 	if (UnitLevel)
 	{
@@ -93,17 +87,17 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 	if (CurrentLevel_Attack)
 	{
 		CurrentLevel_Attack->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Attack) + DataManager->GetUnitModule()->GetUnitStat(UnitDataId).Attack));
+			CachedUnitData->GetStat(EStatusType::Attack) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Attack));
 	}
 	if (CurrentLevel_Health)
 	{
 		CurrentLevel_Health->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Health) + DataManager->GetUnitModule()->GetUnitStat(UnitDataId).Health));
+			CachedUnitData->GetStat(EStatusType::Health) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Health));
 	}
 	if (CurrentLevel_Defence)
 	{
 		CurrentLevel_Defence->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Defence) + DataManager->GetUnitModule()->GetUnitStat(UnitDataId).Defence));
+			CachedUnitData->GetStat(EStatusType::Defence) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Defence));
 	}
 
 	// 레벨업 할 때 오를 스텟
@@ -174,6 +168,7 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo(int32 InUnitId)
 
 void UUnitUpgradeBoxWidget::OnTestGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount)
 {
+	// 버튼 업데이트 테스트용 임시 바인딩(Goods위젯 업데이트 델리게이트 임시 사용)
 	CheckEnoughCost();
 }
 
@@ -198,10 +193,10 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 	// TODO: 재화 소모 추가 및 처리
 	DataManager->GetGoodsModule()->Add(NextLevelData->GetUpgradeCostType(), -NextLevelData->GetUpgradeCost());
 
-	DataManager->GetUnitModule()->UnitLevelUpStat(UnitDataId);
+	DataManager->GetUnitModule()->UnitLevelUpStat(CachedUnitDataId);
 
 	// 위젯 표시 정보 초기화
-	UpdateUpgradeInfo(UnitDataId);
+	UpdateUpgradeInfo();
 }
 
 void UUnitUpgradeBoxWidget::CheckEnoughCost()

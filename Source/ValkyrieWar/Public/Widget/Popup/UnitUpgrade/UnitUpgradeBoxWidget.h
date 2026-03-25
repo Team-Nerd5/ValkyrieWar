@@ -27,12 +27,10 @@ protected:
 	virtual void NativeDestruct() override;
 
 public:
-	UFUNCTION()
-	void Init(int32 InUnitId);
+	void Init(TObjectPtr<UUnitData> InUnitData);
 
 	// UI 정보 업데이트
-	UFUNCTION()
-	void UpdateUpgradeInfo(int32 InUnitId);
+	void UpdateUpgradeInfo();
 
 protected:
 	// 버튼 업테이트 테스트 함수
@@ -98,9 +96,8 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<UUnitData> CachedUnitData = nullptr;
-
+	UPROPERTY()
+	int32 CachedUnitDataId = 0;
 	UPROPERTY()
 	TWeakObjectPtr<UUnitUpgradeData> NextLevelData = nullptr;
-
-	int32 UnitDataId = 0;
 };

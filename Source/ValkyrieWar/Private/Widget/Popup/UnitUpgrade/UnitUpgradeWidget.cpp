@@ -37,17 +37,16 @@ void UUnitUpgradeWidget::InitUpgradeBox()
 		UnitListBox->ClearChildren();
 	UpgradeBoxes.Empty();
 
-	// 아군 유닛 DataId 가져오기
-	TArray<int32> AllyUnitDataIds;
-	UnitModule->GetUnitIdsByTeam(ETeamType::Ally, AllyUnitDataIds);
-
-	for (int32 Key : AllyUnitDataIds)
+	for (const TPair<int32, TObjectPtr<UUnitData>>& Pair : UnitModule->GetOwnedUnits())
 	{
+		UUnitData* UnitData = Pair.Value;
+		if (!UnitData)
+			continue;
+
 		UUnitUpgradeBoxWidget* NewUpgradeBox = CreateWidget<UUnitUpgradeBoxWidget>(this, UpgradeWidgetClass);
-		if (NewUpgradeBox)
+		if(NewUpgradeBox)
 		{
-			// 위젯 Key값 설정 및 저장
-			NewUpgradeBox->Init(Key);
+			NewUpgradeBox->Init(UnitData);
 			UpgradeBoxes.Add(NewUpgradeBox);
 
 			if (UnitListBox)
