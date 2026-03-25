@@ -10,6 +10,8 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 
+#include "Data/Module/StageModule.h"
+#include "Data/Module/StageInfoModule.h"
 #include "Data/Module/StageRewardModule.h"
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
@@ -39,24 +41,41 @@ void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
 	}
 
 	BattleState = InBattleState;
-
+	if (BattleState == EBattleState::Win)
+	{
+		UpdateBattleReward();
+	}
 	RefreshResultUI();
 }
 
-void UBattleResultWidget::SetBattleReward(int32 InStageRewardGroupId)
+void UBattleResultWidget::UpdateBattleReward()
 {
 	UDataManager* Datamanager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!Datamanager)
+		return;
+	UStageModule* StageModule = Datamanager->GetStageModule();
+	if (!StageModule)
+		return;
+	UStageInfoModule* StageInfoModule = Datamanager->GetStageInfoModule();
+	if (!StageInfoModule)
 		return;
 	UStageRewardModule* StageRewardModule = Datamanager->GetStageRewardModule();
 	if (!StageRewardModule)
 		return;
 
-	InRewardList.Empty();
 	if (Widget_Win)
 	{
-		StageRewardModule->GetRewardRowsByStageRewardGroupId(InStageRewardGroupId, InRewardList);
-		Widget_Win->SetReward(InRewardList);
+		InRewardList.Empty();
+
+		int32 SelectedChapter = StageModule->GetSelectedChapter();
+		int32 SelectedStage = StageModule->GetSelectedStage();
+
+		int32 SelectedStageRewardGroupId = 0;
+		if (StageInfoModule->GetRewardGroupIdByChapterAndStage(SelectedChapter, SelectedStage, SelectedStageRewardGroupId))
+		{
+			StageRewardModule->GetRewardRowsByStageRewardGroupId(SelectedStageRewardGroupId, InRewardList);
+			Widget_Win->SetReward(InRewardList);
+		}
 	}
 }
 

@@ -47,6 +47,16 @@ public:
 		return InStageId % StageCodeMultiplier;
 	}
 
+	FORCEINLINE int32 GetSelectedChapter()
+	{
+		return SelectedStageCode / StageCodeMultiplier;
+	}
+
+	FORCEINLINE int32 GetSelectedStage()
+	{
+		return SelectedStageCode % StageCodeMultiplier;
+	}
+
 protected:
 	virtual void MakeData() override;
 private:

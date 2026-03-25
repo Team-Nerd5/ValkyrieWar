@@ -56,8 +56,14 @@ void ABattleGameState::ChangeState(EBattleState InState)
 
 	case EBattleState::Win:
 		//결과 UI를 Win으로 열어줌
+		ShowBattleResult();
+		StopStageTimer();
+		break;
 	case EBattleState::Defeat:
 		//결과 UI를 Defeat으로 열여줌
+		ShowBattleResult();
+		StopStageTimer();
+		break;
 	case EBattleState::TimeOver:
 		// 결과 UI를 Draw로 열어줌
 		ShowBattleResult();
@@ -76,6 +82,7 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		}
 		break;
 	case EBattleState::MoveToNextLevel:
+		// 다음 레벨 세팅은 현재 StageListPanelWidget 자체적으로 세팅하고있는데 따로 접근루트를 만들어야할지?
 		break;
 
 	default:

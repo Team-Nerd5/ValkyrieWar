@@ -27,8 +27,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BattleResult")
 	void SetBattleResult(EBattleState InBattleState);
-
-	void SetBattleReward(int32 InStageRewardGroupId);
+	UFUNCTION(BlueprintCallable, Category = "BattleResult")
+	void UpdateBattleReward();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
