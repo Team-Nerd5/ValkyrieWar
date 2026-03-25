@@ -11,6 +11,7 @@
 
 class USaveGame;
 class UValkyrieData;
+class UUnitData;
 class UItemData;
 /**
  * 
@@ -32,7 +33,7 @@ public:
 	FORCEINLINE class UGoodsSaveGame* GetGoods() { return Goods; }
 	FORCEINLINE class UItemSaveGame* GetItem() { return Item; }
 	FORCEINLINE class UStageSaveGame* GetStage() { return Stage; }
-	FORCEINLINE class UUnitUpgradeSaveGame* GetUnitUpgrade() { return UnitUpgrade; }
+	FORCEINLINE class UUnitUpgradeSaveGame* GetUnitUpgrade() { return Unit; }
 	FORCEINLINE class UValkyrieSaveGame* GetValkyrie () { return Valkyrie; }
 
 	FORCEINLINE bool IsNewAccount() { return bIsNewAccount; }
@@ -55,7 +56,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UStageSaveGame> Stage = nullptr;
 	UPROPERTY()
-	TObjectPtr<class UUnitUpgradeSaveGame> UnitUpgrade = nullptr;
+	TObjectPtr<class UUnitUpgradeSaveGame> Unit = nullptr;
 	UPROPERTY()
 	TObjectPtr<class UValkyrieSaveGame> Valkyrie = nullptr;
 
@@ -75,6 +76,7 @@ protected:
 	void SetValkyrieData();
 	void SetItemData();
 	void SetGoodsData();
+	void SetUnitData();
 
 	//데이터 생성 후 저장용 Delgate 처리부분
 	UFUNCTION()
@@ -100,4 +102,6 @@ public:
 	void AddGoods(EGoodsType InGoodsType, int64 InAmount);
 
 	void SaveValkyrie(UValkyrieData* InData);
+
+	void SaveUnit(UUnitData* InData);
 };

@@ -55,7 +55,7 @@ void USaveManager::InitSetDataAction()
 			SetItemData();
 		});
 	ActionSetData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { Unit = Cast<UUnitUpgradeSaveGame>(InData); });
 	ActionSetData.Add(ESaveType::Valkyrie, [this](USaveGame* InData)
 		{
 			Valkyrie = Cast<UValkyrieSaveGame>(InData);
@@ -71,7 +71,7 @@ void USaveManager::InitInitDataAction()
 	ActionInitData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
 	ActionInitData.Add(ESaveType::Item, [this](USaveGame* InData)  { Item = Cast<UItemSaveGame>(InData);  });
 	ActionInitData.Add(ESaveType::Stage, [this](USaveGame* InData) { Stage = Cast<UStageSaveGame>(InData); });
-	ActionInitData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { UnitUpgrade = Cast<UUnitUpgradeSaveGame>(InData); });
+	ActionInitData.Add(ESaveType::UnitUpgrade, [this](USaveGame* InData) { Unit = Cast<UUnitUpgradeSaveGame>(InData); });
 	ActionInitData.Add(ESaveType::Valkyrie, [this](USaveGame* InData) { Valkyrie = Cast<UValkyrieSaveGame>(InData);	});
 }
 
@@ -104,7 +104,7 @@ void USaveManager::InitSaveDataAction()
 		});
 	ActionSaveData.Add(ESaveType::UnitUpgrade, [this]()
 		{
-			UDataEncryptHelper::SaveGameEncrypted(UnitUpgrade, ESaveType::UnitUpgrade);
+			UDataEncryptHelper::SaveGameEncrypted(Unit, ESaveType::UnitUpgrade);
 		});
 	ActionSaveData.Add(ESaveType::Valkyrie, [this]()
 		{
@@ -219,6 +219,31 @@ void USaveManager::SaveValkyrie(UValkyrieData* InData)
 	}
 }
 
+void USaveManager::SaveUnit(UUnitData* InData)
+{
+	if (Unit)
+	{
+		if (Unit->OwnUnits.Contains(InData->GetUID()))
+		{
+			FUnitDataStruct* Data = Unit->OwnUnits.Find(InData->GetUID());
+			Data->Level = InData->GetLevel();
+			Data->Grade = InData->GetCurrentGrade();
+			//다른건 바뀌지 않을 데이터
+		}
+		else
+		{
+			FUnitDataStruct NewData;
+			NewData.UID = InData->GetUID();
+			NewData.Level = InData->GetLevel();
+			NewData.UnitType = InData->GetUnitType();
+			NewData.Grade = InData->GetCurrentGrade();
+
+			Unit->OwnUnits.Add(InData->GetUID(), NewData);
+		}
+	}
+	SaveInternal(ESaveType::UnitUpgrade);
+}
+
 #pragma region Add save data
 void USaveManager::AddSaveItem(UItemData* InItem)
 {
@@ -262,6 +287,40 @@ void USaveManager::SetGoodsData()
 			DataManager->GetGoodsModule()->Update(EGoodsType::Gold, Goods->GetGoods(EGoodsType::Gold));
 		}
 		
+	}
+}
+
+void USaveManager::SetUnitData()
+{
+	//로드가 되었으면
+	if (Unit)
+	{
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			if (Unit->OwnUnits.Num() == 0)
+			{
+				//없으면 기본유닛 생성해줌... 쩝...
+				UGameManager* GameManager = Cast<UGameManager>(GetGameInstance());
+				TArray<int32> BasicUnits = { 210011, 210021, 210031, 210041, 210051 };
+
+				for (int32 DataId : BasicUnits)
+				{
+					UUnitData* UnitData = NewObject<UUnitData>();
+					FUnitDataRow UnitTableData;
+					DataManager->GetUnitModule()->GetUnitDataRow(DataId, UnitTableData);
+					UnitData->MakeData(UnitTableData, GameManager);
+
+					SaveUnit(UnitData);
+				}				
+			}
+
+			TArray<FUnitDataStruct> Units;
+			Unit->OwnUnits.GenerateValueArray(Units);
+			for (FUnitDataStruct const UnitData : Units)
+			{
+				DataManager->GetUnitModule()->LoadUnit(UnitData);
+			}
+		}
 	}
 }
 

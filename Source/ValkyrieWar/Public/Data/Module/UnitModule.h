@@ -7,6 +7,7 @@
 #include "Data/Table/GameData/UnitDataRow.h"
 #include "Data/Game/UnitData.h"
 #include "Data/Struct/ComputedEnemyStat.h"
+#include "Object/SaveGame/UnitUpgradeSaveGame.h"
 #include "UnitModule.generated.h"
 
 /**
@@ -91,6 +92,7 @@ public:
 	bool BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const;
 	bool GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const;
 
+	void LoadUnit(FUnitDataStruct InData);
 protected:
 	virtual void MakeData() override;
 

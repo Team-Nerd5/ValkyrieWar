@@ -65,7 +65,7 @@ void UGoodsModule::Add(EGoodsType InType, int64 InAmount)
 
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		EventSystem->Widget.OnGoodsUpdate.Broadcast(InType, *Amount);
+		EventSystem->Widget.OnGoodsUpdate.Broadcast(InType, Amount ? *Amount : 0);
 	}
 }
 

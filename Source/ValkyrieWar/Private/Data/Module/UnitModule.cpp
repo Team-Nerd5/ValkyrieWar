@@ -93,6 +93,22 @@ bool UUnitModule::GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueD
 	return false;
 }
 
+void UUnitModule::LoadUnit(FUnitDataStruct InData)
+{
+	for (auto Data : TableDataByDataId)
+	{
+		if (Data.Value.UnitType == InData.UnitType &&
+			Data.Value.TeamType == ETeamType::Ally &&
+			Data.Value.Grade == InData.Grade)
+		{
+			UUnitData* NewData = NewObject<UUnitData>(this);
+			NewData->LoadData(InData.UID, Data.Value, GameManager.Get());
+
+			OwnUnits.Add(InData.UID, NewData);
+		}
+	}
+}
+
 void UUnitModule::MakeData()
 {
 	if (DataTable)
@@ -105,13 +121,9 @@ void UUnitModule::MakeData()
 			if (!Item) continue;
 
 			TableDataByDataId.Add(Item->DataId, *Item);
-
-			UUnitData* UnitData = NewObject<UUnitData>(this);
-			UnitData->MakeData(*Item, GameManager.Get());
-
-			OwnUnits.Add(Item->DataId, UnitData);
 		}
 	}
+	OwnUnits.Empty();
 }
 
 void UUnitModule::UnitLevelUpStat(int32 InDataId)

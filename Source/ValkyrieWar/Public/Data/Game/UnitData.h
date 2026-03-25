@@ -40,13 +40,15 @@ private:
 	TMap<EStatusType, float> Stat;
 
 	UPROPERTY()
-	EGradeType GradeType = EGradeType::Uncommon;
+	EGradeType CurrentGrade = EGradeType::Common;
 
 	UPROPERTY()
 	int32 Level = 1;
 
 public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
+
+	void LoadData(uint64 InUID, const FUnitDataRow InTableData, UGameManager* InGameManager);
 
 	void LevelUp();
 
@@ -60,4 +62,6 @@ public:
 	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
 	FORCEINLINE ETeamType GetTeamType() { return TableData.TeamType; }
 	FORCEINLINE int32 GetLevel() { return Level; }
+	FORCEINLINE EUnitCharacterType GetUnitType() { return TableData.UnitType; }
+	FORCEINLINE EGradeType GetCurrentGrade() { return CurrentGrade; }
 };
