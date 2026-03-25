@@ -275,7 +275,7 @@ void ALobbyPlayerController::SetGachaResult(int32 InAmount, int32 InGachaGroupId
 							int32 ItemAmount = GetMasteryItemAmount(ValkyrieTableData.BaseGrade);
 
 							UItemData* NewItem = NewObject<UItemData>(this);
-							NewItem->MakeData(MasteryItem);
+							NewItem->MakeData(MasteryItem, GetGameInstance<UGameManager>());
 							NewItem->AddAmount(ItemAmount);
 							GachaResultData.Add(NewItem);
 

@@ -48,7 +48,7 @@ void AUnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	bDead = false;
+	bIsDead = false;
 }
 
 void AUnitCharacter::PostInitializeComponents()
@@ -136,6 +136,14 @@ void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
 	OwnerSpawner = InSpawner;
 }
 
+ETeamType AUnitCharacter::GetTeamType() const
+{
+	if (Data)
+		return Data->GetTeamType();
+
+	return ETeamType::None;
+}
+
 int32 AUnitCharacter::FindSlotOfAttacker(AActor* Attacker) const
 {
 	if (!Attacker) return INDEX_NONE;
@@ -166,8 +174,8 @@ bool AUnitCharacter::HasFreeSlot() const
 //TODO : Attributte에서 사망 시 호출로 변경
 void AUnitCharacter::HandleDeath()
 {
-	if (bDead) return;
-	bDead = true;
+	if (bIsDead) return;
+	bIsDead = true;
 
 	// 1) 예약/슬롯 정리(핵심)
 	UnregisterFromBattleDirector(true);
@@ -443,7 +451,7 @@ UObjectPoolSubsystem* AUnitCharacter::GetPool() const
 void AUnitCharacter::ResetForReuse()
 {
 	// 상태 리셋
-	bDead = false;
+	bIsDead = false;
 
 	// 죽음 타이머 제거
 	if (UWorld* World = GetWorld())
@@ -725,6 +733,14 @@ bool AUnitCharacter::FireProjectileAttack()
 	Projectile->SetActorRotation(SpawnRotation);
 	Projectile->SetOwner(this);
 	Projectile->SetInstigator(this);
+
+	float TotalAttack = StatAttributeSet->GetAttack();
+
+	if (EquippedWeapon)
+	{
+		TotalAttack += EquippedWeapon->GetStat().Attack;
+	}
+	Projectile->SetAttack(TotalAttack);
 
 	Projectile->SetData(
 		AttackData->GetAbilityTag(),

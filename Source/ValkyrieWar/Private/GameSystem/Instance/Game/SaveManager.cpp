@@ -45,7 +45,10 @@ void USaveManager::InitSetDataAction()
 			SetAccountData();
 		});
 	ActionSetData.Add(ESaveType::Gacha, [this](USaveGame* InData) { Gacha = Cast<UGachaSaveGame>(InData); });
-	ActionSetData.Add(ESaveType::Goods, [this](USaveGame* InData) { Goods = Cast<UGoodsSaveGame>(InData); });
+	ActionSetData.Add(ESaveType::Goods, [this](USaveGame* InData) {
+		Goods = Cast<UGoodsSaveGame>(InData);
+		SetGoodsData();
+		});
 	ActionSetData.Add(ESaveType::Item, [this](USaveGame* InData)
 		{
 			Item = Cast<UItemSaveGame>(InData);
@@ -246,6 +249,22 @@ void USaveManager::SetItemData()
 	//로드된 보유 아이템 데이터를 가져옴
 }
 
+void USaveManager::SetGoodsData()
+{
+	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+
+	if (DataManager)
+	{
+		if (Goods)
+		{
+			DataManager->GetGoodsModule()->Update(EGoodsType::Ticket, Goods->GetGoods(EGoodsType::Ticket));
+			DataManager->GetGoodsModule()->Update(EGoodsType::Gem, Goods->GetGoods(EGoodsType::Gem));
+			DataManager->GetGoodsModule()->Update(EGoodsType::Gold, Goods->GetGoods(EGoodsType::Gold));
+		}
+		
+	}
+}
+
 void USaveManager::SetAccountData()
 {
 	if (Account)
@@ -364,27 +383,12 @@ uint64 USaveManager::GetNextValkyrieUID()
 	return UID;
 }
 
-uint64 USaveManager::GetGoodsValue(EGoodsType InGoodsType)
-{
-	if (Goods)
-	{
-		return Goods->GetGoods(InGoodsType);
-	}
-
-	return 0;
-}
-
 void USaveManager::AddGoods(EGoodsType InGoodsType, int64 InAmount)
 {
 	if (Goods)
 	{
 		Goods->AddGoods(InGoodsType, InAmount);
 
-		SaveInternal(ESaveType::Goods);
-
-		if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-		{
-			EventSystem->Widget.OnGoodsUpdate.Broadcast(InGoodsType, Goods->GetGoods(InGoodsType));
-		}
+		SaveInternal(ESaveType::Goods);		
 	}
 }

@@ -284,6 +284,14 @@ void AValkyrieCharacter::OnAttackNotify()
 				}
 			}
 			ABaseProjectile* Projectile = Pool->Get<ABaseProjectile>(AttackData->GetProjectileData()->EPoolTypes, FirePos, GetActorRotation());
+			Projectile->SetTeam(GetTeamType());
+			float TotalAttack = StatAttributeSet->GetAttack();
+
+			if (EquippedWeapon)
+			{
+				TotalAttack += EquippedWeapon->GetStat().Attack;
+			}
+			Projectile->SetAttack(TotalAttack);
 			Projectile->SetData(AttackData->GetAbilityTag(), AttackSpec, *AttackData->GetProjectileData(), AttackData->GetCue(EGameplayCueOrder::InProjectile));
 		}
 	}
@@ -372,6 +380,17 @@ void AValkyrieCharacter::OnSkillNotify()
 	//		}
 	//	}
 	//}
+}
+
+ETeamType AValkyrieCharacter::GetTeamType() const
+{
+	return ETeamType::Ally;
+}
+
+void AValkyrieCharacter::OnDeath()
+{
+	//리스폰...? 게임 종료?
+
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)

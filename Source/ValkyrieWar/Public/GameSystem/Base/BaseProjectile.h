@@ -17,7 +17,7 @@
 class UAbilitySystemComponent;
 class UNiagaraComponent;
 class UProjectileMovementComponent;
-class UCapsuleComponent;
+class USphereComponent;
 
 /**
  * 
@@ -42,11 +42,16 @@ public:
 
 	void SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, FProjectileDataRow InProjectileData, TArray<FGameplayCueData> InCues);
 
+	void SetAttack(float InAttack);
+
 	void SetTeam(ETeamType InTeam) { TeamType = InTeam; }
 
 protected:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UStatAttributeSet> StatAttributeSet;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UNiagaraComponent> Effect = nullptr;
@@ -55,7 +60,7 @@ protected:
 	TObjectPtr<UProjectileMovementComponent> MovementComponent = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UCapsuleComponent> Collision = nullptr;
+	TObjectPtr<USphereComponent> Collision = nullptr;
 
 	FGameplayTag AbilityTag;
 

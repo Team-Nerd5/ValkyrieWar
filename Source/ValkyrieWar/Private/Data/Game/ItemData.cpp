@@ -28,11 +28,23 @@ void UItemData::Equip(uint64 InEquipCharacter)
 }
 
 //기본무기용 데이터 만들어주기
-void UItemData::MakeData(FItemDataRow InTableData)
+void UItemData::MakeData(FItemDataRow InTableData, UGameManager* InGameManager)
 {
 	Amount = 1;
 	TableData = InTableData;
 
 	ItemGroup = UGameDataHelper::GetItemGroup(InTableData.ItemType);
 	EquipGroup = UGameDataHelper::GetEquipGroup(InTableData.ItemType);
+
+	if (InGameManager)
+	{
+		if (UDataManager* DataManager = InGameManager->GetSubsystem<UDataManager>())
+		{
+			FStatGroupDataRow StatData = DataManager->GetStatGroupModule()->GetData(InTableData.StatId);
+			if (StatData.DataId > 0)
+			{
+				Stat.Add(StatData.Attack, StatData.Defence, StatData.Health);
+			}
+		}
+	}
 }

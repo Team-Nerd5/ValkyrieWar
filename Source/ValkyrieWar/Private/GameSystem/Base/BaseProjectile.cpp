@@ -4,19 +4,23 @@
 #include "GameSystem/Base/BaseProjectile.h"
 #include "AbilitySystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Object/Character/Unit/UnitCharacter.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+
+#include "Data/Attribute/StatAttributeSet.h"
+
 #include "NiagaraComponent.h"
 
 ABaseProjectile::ABaseProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("ASC"));
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilityComponent"));
 
-	Collision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Collision"));
-	Collision->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
+	StatAttributeSet = CreateDefaultSubobject<UStatAttributeSet>(TEXT("ProjectileStat"));
+
+	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
 
 	SetRootComponent(Collision);
 
@@ -36,17 +40,12 @@ ABaseProjectile::ABaseProjectile()
 
 void ABaseProjectile::BeginPlay()
 {
-	Super::BeginPlay();
-
-	if (Collision)
-	{
-		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnOverlap);
-	}
+	Super::BeginPlay();	
 }
 
 void ABaseProjectile::OnGet_Implementation()
 {
-	Effect->SetActive(true);
+	Collision->OnComponentBeginOverlap.Clear();
 }
 
 void ABaseProjectile::OnRelease_Implementation()
@@ -74,8 +73,24 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 		MovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * InProjectileData.MoveSpeed);
 		MovementComponent->Activate();
 	}
+	if (Collision)
+	{
+		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnOverlap);
+	}
+
+	Effect->SetActive(true);
+	//공격을 직접 넣어줘야겠는데..?
+
+	StatAttributeSet->SetHealth(0.0f);
+	StatAttributeSet->SetMaxHealth(0.0f);
+	StatAttributeSet->SetDefense(0.0f);
 
 	PlayCueOnTarget = InCues;
+}
+
+void ABaseProjectile::SetAttack(float InAttack)
+{
+	StatAttributeSet->SetAttack(InAttack);
 }
 
 void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -85,7 +100,8 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	AUnitCharacter* TargetUnit = Cast<AUnitCharacter>(OtherActor);
+	ABaseCharacter* TargetUnit = Cast<ABaseCharacter>(OtherActor);
+	//현재 상태...스폰되자마자 자신이랑 충돌됨. 팀타입이 None이니까 충돌처리되서 제거됨...
 	if (!TargetUnit || TargetUnit->IsDead() || TargetUnit->GetTeamType() == TeamType) return;
 
 	FGameplayEventData Payload;

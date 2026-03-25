@@ -39,6 +39,8 @@ public:
 	//스킬효과 적용
 	virtual void ApplySkill(int32 InSkillIndex, AActor* InTargetActor);
 
+	virtual ETeamType GetTeamType() const { return ETeamType::None; }
+
 	//AI나 타겟 계산 후 타겟 세팅
 	void UpdateTarget(AActor* InTarget);
 
@@ -50,6 +52,8 @@ public:
 
 	// 사망 시 StatAttributeSet에서 호출
 	virtual void OnDeath() {}
+
+	FORCEINLINE bool IsDead() const { return bIsDead; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -87,7 +91,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentTarget = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data|CharacterStat")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data|Character")
 	TObjectPtr<class UStatAttributeSet> StatAttributeSet;
 
 	UPROPERTY()
@@ -106,4 +110,7 @@ protected:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UAnimMontage>> SkillMontageList;
+
+	UPROPERTY()
+	bool bIsDead = false;
 };

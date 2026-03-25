@@ -2,6 +2,8 @@
 
 
 #include "Data/Module/GoodsModule.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
 
 void UGoodsModule::Initialize(UGameManager* InGameManager)
 {
@@ -25,9 +27,21 @@ FGoodsDataRow UGoodsModule::GetTableData(EGoodsType InKey)
 {
 	return TableDataByType.FindChecked(InKey);
 }
+void UGoodsModule::Update(EGoodsType InType, uint64 InAmount)
+{
+	uint64* Amount = GoodsAmount.Find(InType);
+	if (Amount)
+	{
+		*Amount = InAmount;
+	}
+	else
+	{
+		GoodsAmount.Add(InType, InAmount);
+	}
+}
 void UGoodsModule::Add(EGoodsType InType, int64 InAmount)
 {
-	if (InAmount < 0 && !IsEnough(InType, InAmount))
+	if (InAmount < 0 && !IsEnough(InType, -InAmount))
 	{
 		//빼야하는데 부족함..
 		return;
@@ -47,6 +61,11 @@ void UGoodsModule::Add(EGoodsType InType, int64 InAmount)
 	if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
 	{
 		SaveManager->AddGoods(InType, InAmount);
+	}
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Widget.OnGoodsUpdate.Broadcast(InType, *Amount);
 	}
 }
 

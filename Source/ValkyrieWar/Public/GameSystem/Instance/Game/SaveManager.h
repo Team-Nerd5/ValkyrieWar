@@ -74,6 +74,7 @@ protected:
 	void SetAccountData();
 	void SetValkyrieData();
 	void SetItemData();
+	void SetGoodsData();
 
 	//데이터 생성 후 저장용 Delgate 처리부분
 	UFUNCTION()
@@ -96,8 +97,6 @@ public:
 	uint64 GetNextItemUID();
 	uint64 GetNextValkyrieUID();
 
-	//이벤트로 해야하는데...인스턴스에선 안되서
-	uint64 GetGoodsValue(EGoodsType InGoodsType);
 	void AddGoods(EGoodsType InGoodsType, int64 InAmount);
 
 	void SaveValkyrie(UValkyrieData* InData);

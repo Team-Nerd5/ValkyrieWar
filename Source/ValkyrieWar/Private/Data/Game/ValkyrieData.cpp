@@ -19,7 +19,7 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 			if (BaseData.DataId > 0)
 			{
 				BaseWeapon = NewObject<UItemData>(this);
-				BaseWeapon->MakeData(BaseData);
+				BaseWeapon->MakeData(BaseData, InGameManager);
 
 				AttackData = DataManager->GetAttackModule()->GetAttackData(BaseData.AttackId);
 				SkillData = DataManager->GetSkillModule()->GetSkillData(BaseData.SkillId);

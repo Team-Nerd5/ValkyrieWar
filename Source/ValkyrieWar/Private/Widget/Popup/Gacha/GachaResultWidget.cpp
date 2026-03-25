@@ -6,7 +6,10 @@
 
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 
+#include "Widget/Popup/Inventory/InventoryEntryWidget.h"
+
 #include "Components/PanelWidget.h"
+#include "Components/WrapBox.h"
 #include "Components/Button.h"
 
 void UGachaResultWidget::NativeConstruct()
@@ -36,6 +39,16 @@ void UGachaResultWidget::OpenUI()
 	UIType = EUIType::PopupGachaResult;
 
 	Super::OpenUI();
+
+	if (WrapBox_Result)
+	{
+		WrapBox_Result->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	if (RewardListPanel)
+	{
+		RewardListPanel->ClearChildren();
+	}
 }
 
 void UGachaResultWidget::OnClickNextCharacter()
@@ -56,16 +69,32 @@ void UGachaResultWidget::OnClickCloseGacha()
 
 void UGachaResultWidget::ShowGachaResults()
 {
-	//음...패널을 두개로 나눌 경우
-	//데이터 개수로 판단해서 처리하면 될 듯함
-
-	if (WrapBox_Result)
-	{
-		//WrapBox_Result->ClearChildren();
+	if (WrapBox_Result)	
 		WrapBox_Result->SetVisibility(ESlateVisibility::Visible);
 
-		//자식 세팅
-		//아이템이나 캐릭터가 나옴. 이미지, 개수(1개 초과만 표기), 등급에 따른 배경색 변경 처리
+	if (RewardListPanel)
+	{
+		if (ResultData.Num() > 0)
+		{
+			for (UObject* Reward : ResultData)
+			{
+				if (ItemSpawnClass)
+				{
+					UInventoryEntryWidget* ItemWidget = CreateWidget<UInventoryEntryWidget>(this, ItemSpawnClass);
+					if (UItemData* Item = Cast<UItemData>(Reward))
+					{
+						//아이템
+						ItemWidget->SetData(Item);
+					}
+					else if (UValkyrieData* Valkyrie = Cast<UValkyrieData>(Reward))
+					{
+						//캐릭터
+						ItemWidget->SetData(Valkyrie);
+					}
+					RewardListPanel->AddChild(ItemWidget);
+				}				
+			}
+		}
 	}
 
 	if (NextCharacterButton)

@@ -21,7 +21,7 @@ public:
 	{
 		if (TableDataByDataId.Contains(InDataId))
 		{
-			return *TableDataByDataId.Find(InDataId);
+			return TableDataByDataId.FindChecked(InDataId);
 		}
 		return FStatGroupDataRow();
 	}

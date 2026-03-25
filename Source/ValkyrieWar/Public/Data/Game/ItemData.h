@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/Table/GameData/ItemDataRow.h"
+#include "Data/Struct/StatValueData.h"
 #include "GameSystem/Instance/Game/GameManager.h"
 #include "ItemData.generated.h"
 
@@ -19,7 +20,7 @@ public:
 	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData);
 	void AddAmount(int32 InAmount);
 	void Equip(uint64 InEquipCharacter);
-	void MakeData(FItemDataRow InTableData);
+	void MakeData(FItemDataRow InTableData, UGameManager* InGameManager);
 
 	FORCEINLINE EItemType GetItemType() { return TableData.ItemType; }
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
@@ -34,6 +35,7 @@ public:
 	FORCEINLINE bool IsSkeletalWeapon() { return TableData.IsSkeletal; }
 	FORCEINLINE TSoftObjectPtr<USkeletalMesh> GetSkeletalMesh() { return TableData.SkeletalMesh; }
 	FORCEINLINE TSoftObjectPtr<UStaticMesh> GetStaticMesh() { return TableData.StaticMesh; }
+	FORCEINLINE FStatValueData GetStat() { return Stat; }
 
 private:
 	UPROPERTY()
@@ -53,4 +55,7 @@ private:
 	EItemGroup ItemGroup = EItemGroup::None;
 	UPROPERTY()
 	EEquipGroup EquipGroup = EEquipGroup::None;
+
+	UPROPERTY()
+	FStatValueData Stat;
 };

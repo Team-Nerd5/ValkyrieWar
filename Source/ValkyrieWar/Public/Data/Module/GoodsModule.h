@@ -20,6 +20,7 @@ public:
 	FGoodsDataRow GetTableDataById(int32 InDataId);
 	FGoodsDataRow GetTableData(EGoodsType InKey);
 
+	void Update(EGoodsType InType, uint64 InAmount);
 	void Add(EGoodsType InType, int64 InAmount);
 	bool IsEnough(EGoodsType InType, uint64 InCheckAmount);
 

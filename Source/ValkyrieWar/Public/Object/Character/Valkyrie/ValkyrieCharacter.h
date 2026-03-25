@@ -30,6 +30,8 @@ public:
 	virtual void OnAttackNotify() override;
 	virtual void OnSkillNotify() override;
 	 
+	virtual ETeamType GetTeamType() const override;
+	virtual void OnDeath() override;
 
 	/*
 	virtual void StartAttackSequence() ; // 공격모션실행

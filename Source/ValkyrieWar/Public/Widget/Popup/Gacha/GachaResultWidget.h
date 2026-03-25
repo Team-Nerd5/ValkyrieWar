@@ -8,6 +8,7 @@
 
 class UWrapBox;
 class UButton;
+class UInventoryEntryWidget;
 /**
  * 
  */
@@ -29,15 +30,20 @@ protected:
 	void OnClickCloseGacha();
 
 protected:
-	//원시 포인터좀 제발 쓰지 말아주세요.
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UPanelWidget> WrapBox_Result = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UWrapBox> RewardListPanel = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> NextCharacterButton = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> CloseButton = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UInventoryEntryWidget> ItemSpawnClass;
 
 	TArray<TObjectPtr<UObject>> ResultData;
 public:

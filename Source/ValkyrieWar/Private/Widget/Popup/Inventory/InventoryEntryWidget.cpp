@@ -2,7 +2,11 @@
 
 
 #include "Widget/Popup/Inventory/InventoryEntryWidget.h"
+
 #include "GameSystem/Library/GameBaseLibrary.h"
+
+#include "Components/PanelWidget.h"
+
 #include "Data/Game/ItemData.h"
 
 void UInventoryEntryWidget::NativeConstruct()
@@ -80,18 +84,22 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 {
 	if (!InData)
 		return;
+
+	if (SelectImage)
+		SelectImage->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (AmountPanel)
+		AmountPanel->SetVisibility((InData->GetAmount() > 1) ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	
 	if (Amount)
 	{
 		if (InData->GetItemGroup() == EItemGroup::GrowthItem)
 		{
 			Amount->SetText(FText::AsNumber(InData->GetAmount()));
-			Amount->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
 			Amount->SetText(FText::AsNumber(0));
-			Amount->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 
@@ -101,6 +109,52 @@ void UInventoryEntryWidget::Init(UItemData* InData)
 		if(IconTexture)
 			Icon->SetBrushFromTexture(IconTexture);
 	}
+}
+
+void UInventoryEntryWidget::SetData(UItemData* ItemData)
+{
+	if (AmountPanel)
+		AmountPanel->SetVisibility(ESlateVisibility::Visible);
+
+	if (SelectImage)
+		SelectImage->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (Amount)
+	{
+		if (ItemData->GetItemGroup() == EItemGroup::GrowthItem)
+		{
+			Amount->SetText(FText::AsNumber(ItemData->GetAmount()));
+			Amount->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Amount->SetText(FText::AsNumber(0));
+			Amount->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
+	if (ItemData->GetTableData().DataId > 0)
+	{
+		UTexture2D* IconTexture = ItemData->GetTableData().Icon.LoadSynchronous();
+		if (IconTexture)
+			Icon->SetBrushFromTexture(IconTexture);
+	}
+}
+
+void UInventoryEntryWidget::SetData(UValkyrieData* InValkyrieData)
+{
+	if (!InValkyrieData)
+		return;
+
+	if (SelectImage)
+		SelectImage->SetVisibility(ESlateVisibility::Collapsed);
+
+	if(AmountPanel)
+		AmountPanel->SetVisibility(ESlateVisibility::Collapsed);
+
+	UTexture2D* IconTexture = InValkyrieData->GetIcon().LoadSynchronous();
+	if (IconTexture && Icon)
+		Icon->SetBrushFromTexture(IconTexture);
 }
 
 void UInventoryEntryWidget::OnAmountChanged(uint64 InUID)

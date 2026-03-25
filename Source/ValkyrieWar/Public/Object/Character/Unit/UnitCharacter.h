@@ -31,6 +31,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	virtual ETeamType GetTeamType() const override;
+
 	//캐릭터 생성 시 데이터 세팅
 	void SetData(UUnitData* InData);
 
@@ -40,11 +42,7 @@ public:
 
 	inline UUnitBrainComponent* GetBrain() const { return Brain; }
 
-	bool IsDead() const { return bDead; }
-
 	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
-
-	ETeamType GetTeamType() const { return Data ? Data->GetTeamType() : ETeamType::None; }
 
 	// 스포너가 스폰(또는 재사용) 시점에 세팅
 	UFUNCTION(BlueprintCallable, Category = "Pool")
@@ -195,8 +193,6 @@ protected:
 	TObjectPtr<UUnitData> Data = nullptr;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Health")
-	bool bDead = false;
 
 	UPROPERTY()
 	TWeakObjectPtr<ABaseUnitSpawner> OwnerSpawner;

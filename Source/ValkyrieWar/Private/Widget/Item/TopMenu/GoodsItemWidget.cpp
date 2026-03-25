@@ -47,13 +47,6 @@ void UGoodsItemWidget::OnGoodsChange(EGoodsType InGoodsType, uint64 InAmount)
 void UGoodsItemWidget::SetData(EGoodsType InGoodsType)
 {
 	CurrentType = InGoodsType;
-	if (USaveManager* Save = GetGameInstance()->GetSubsystem<USaveManager>())
-	{
-		 if (AmountText)
-		 {
-			 AmountText->SetText(FText::AsNumber(Save->GetGoodsValue(CurrentType)));
-		 }
-	}
 
 	if (UDataManager* Data = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
@@ -61,6 +54,11 @@ void UGoodsItemWidget::SetData(EGoodsType InGoodsType)
 		if (Icon)
 		{
 			Icon->SetBrushFromSoftTexture(Table.Icon);
+		}
+
+		if (AmountText)
+		{
+			AmountText->SetText(FText::AsNumber(Data->GetGoodsModule()->Get(CurrentType)));
 		}
 	}
 }
