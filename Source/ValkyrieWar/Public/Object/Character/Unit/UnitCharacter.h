@@ -13,6 +13,8 @@ class UObjectPoolSubsystem;
 class ABaseUnitSpawner;
 class UUnitBrainComponent;
 class AUnitAIController;
+class UUnitHealthBarWidget;
+class UWidgetComponent;
 struct FUnitEngagementSlotData;
 struct FComputedEnemyStat;
 
@@ -83,6 +85,8 @@ protected:
 
 	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
+	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
+
 	void DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const;
 	void DrawDebugSplashCandidate(AActor* TargetActor, const FVector& Center, bool bSelected, int32 Rank, float DistSq) const;
 	void DrawDebugSplashSummary(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, int32 CandidateCount, int32 SelectedCount) const;
@@ -102,6 +106,9 @@ private:
 	// 내부 적용 함수
 	void ApplyMoveSpeed(float NewSpeed);
 
+	void ApplyUnitData(UUnitData* InData);
+	void ApplyStat(float Attack, float Defense, float Health);
+
 	void StartStuckMonitor();
 	void StopStuckMonitor();
 
@@ -120,6 +127,12 @@ private:
 
 	void CollectSplashTargets(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, TArray<AActor*>& OutTargets) const;
 	bool IsValidAttackTargetActor(const AActor* TargetActor) const;
+
+	void UpdateHealthBar();
+	void InitHealthBar();
+	void SetHealthBarColor();
+	void BindAttributeDelegates();
+	void UnbindAttributeDelegates();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
@@ -191,6 +204,15 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UUnitData> Data = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> HealthBarComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUnitHealthBarWidget> HealthBarWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUnitHealthBarWidget> CachedHealthBarWidget = nullptr;
 
 private:
 

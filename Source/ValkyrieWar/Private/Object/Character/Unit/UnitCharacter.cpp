@@ -21,12 +21,16 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
+
 #include "AbilitySystemComponent.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "AbilitySystemBlueprintLibrary.h"
+
+#include "Widget/Item/Battle/UnitHealthBarWidget.h"
 
 AUnitCharacter::AUnitCharacter()
 {
@@ -42,11 +46,22 @@ AUnitCharacter::AUnitCharacter()
 
 	GetMesh()->bEnableUpdateRateOptimizations = true;
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+
+	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarComponent"));
+	HealthBarComponent->SetupAttachment(RootComponent);
+
+	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarComponent->SetDrawSize(FVector2D(60.f, 8.f));
+	HealthBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HealthBarComponent->SetCastShadow(false);
+	HealthBarComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
 }
 
 void AUnitCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitHealthBar();
 
 	bIsDead = false;
 }
@@ -76,45 +91,34 @@ void AUnitCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AUnitCharacter::SetData(UUnitData* InData)
 {
-	Data = InData;
+	if (!InData)
+	{
+		return;
+	}
 
-	StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
-	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
-	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
-	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+	ApplyStat(
+		InData->GetStat(EStatusType::Attack),
+		InData->GetStat(EStatusType::Defence),
+		InData->GetStat(EStatusType::Health)
+	);
 
-	SetLocomotionBlendSpace();
-
-	//기본 무기에 따른 공격/스킬 적용
-	AttackData = InData->GetAttackData();
-	CreateAttackAbility();
-
-	SkillDataList = InData->GetSkillData();
-	CreateSkillAbility();
-
-	InitProjectilePoolIfNeeded();
+	ApplyUnitData(InData);
 }
 
 void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat)
 {
-	Data = InBaseData;
-	if (!Data) return;
+	if (!InBaseData)
+	{
+		return;
+	}
 
-	// 계산된 최종 스탯 적용
-	StatAttributeSet->SetAttack(InComputedStat.Attack);
-	StatAttributeSet->SetDefense(InComputedStat.Defence);
-	StatAttributeSet->SetHealth(InComputedStat.Health);
-	StatAttributeSet->SetMaxHealth(InComputedStat.Health);
+	ApplyStat(
+		InComputedStat.Attack,
+		InComputedStat.Defence,
+		InComputedStat.Health
+	);
 
-	SetLocomotionBlendSpace();
-
-	AttackData = InBaseData->GetAttackData();
-	CreateAttackAbility();
-
-	SkillDataList = InBaseData->GetSkillData();
-	CreateSkillAbility();
-
-	InitProjectilePoolIfNeeded();
+	ApplyUnitData(InBaseData);
 }
 
 void AUnitCharacter::SetLocomotionBlendSpace()
@@ -341,6 +345,8 @@ void AUnitCharacter::OnRelease_Implementation()
 		}
 	}
 
+	UnbindAttributeDelegates();
+	HealthBarComponent->SetVisibility(false);
 	bInPool = true;
 	OwnerSpawner = nullptr;
 }
@@ -453,6 +459,10 @@ void AUnitCharacter::ResetForReuse()
 	// 상태 리셋
 	bIsDead = false;
 
+	BindAttributeDelegates();
+
+	if (HealthBarComponent) HealthBarComponent->SetVisibility(true);
+
 	// 죽음 타이머 제거
 	if (UWorld* World = GetWorld())
 	{
@@ -555,6 +565,36 @@ void AUnitCharacter::ApplyMoveSpeed(float NewSpeed)
 		return;
 
 	Move->MaxWalkSpeed = NewSpeed;
+}
+
+void AUnitCharacter::ApplyUnitData(UUnitData* InData)
+{
+	Data = InData;
+
+	SetLocomotionBlendSpace();
+
+	AttackData = InData->GetAttackData();
+	CreateAttackAbility();
+
+	SkillDataList = InData->GetSkillData();
+	CreateSkillAbility();
+
+	InitProjectilePoolIfNeeded();
+
+	SetHealthBarColor();
+}
+
+void AUnitCharacter::ApplyStat(float Attack, float Defense, float Health)
+{
+	if (!StatAttributeSet)
+	{
+		return;
+	}
+
+	StatAttributeSet->SetAttack(Attack);
+	StatAttributeSet->SetDefense(Defense);
+	StatAttributeSet->SetHealth(Health);
+	StatAttributeSet->SetMaxHealth(Health);
 }
 
 void AUnitCharacter::StartStuckMonitor()
@@ -934,7 +974,6 @@ bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
 {
 	if (!IsValid(TargetActor))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("!IsValid(TargetActor)"));
 		return false;
 	}
 
@@ -984,6 +1023,70 @@ bool AUnitCharacter::IsValidAttackTargetActor(const AActor* TargetActor) const
 	return false;
 }
 
+void AUnitCharacter::UpdateHealthBar()
+{
+	if (!HealthBarComponent || !StatAttributeSet)
+	{
+		return;
+	}
+
+	if (!CachedHealthBarWidget)
+	{
+		return;
+	}
+
+	const float CurrentHp = StatAttributeSet->GetHealth();
+	const float MaxHp = StatAttributeSet->GetMaxHealth();
+
+	CachedHealthBarWidget->SetHp(CurrentHp, MaxHp);
+}
+
+void AUnitCharacter::InitHealthBar()
+{
+	if (!HealthBarComponent || !HealthBarWidgetClass)
+	{
+		return;
+	}
+
+	HealthBarComponent->SetWidgetClass(HealthBarWidgetClass);
+	HealthBarComponent->InitWidget();
+	HealthBarComponent->SetVisibility(true);
+
+	CachedHealthBarWidget = Cast<UUnitHealthBarWidget>(HealthBarComponent->GetUserWidgetObject());
+}
+
+void AUnitCharacter::BindAttributeDelegates()
+{
+	if (!AbilitySystemComponent || !StatAttributeSet)
+	{
+		return;
+	}
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetHealthAttribute())
+		.AddUObject(this, &AUnitCharacter::HandleHealthChanged);
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetMaxHealthAttribute())
+		.AddUObject(this, &AUnitCharacter::HandleHealthChanged);
+}
+
+void AUnitCharacter::UnbindAttributeDelegates()
+{
+	if (!AbilitySystemComponent || !StatAttributeSet)
+	{
+		return;
+	}
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetHealthAttribute())
+		.RemoveAll(this);
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetMaxHealthAttribute())
+		.RemoveAll(this);
+}
+
 void AUnitCharacter::ExecuteAttack()
 {
 	if (IsDead()) return;
@@ -1016,6 +1119,37 @@ void AUnitCharacter::ExecuteAttack()
 void AUnitCharacter::ExecuteSkill(int32 InSkillIndex)
 {
 	//스킬 몽타주 실행
+}
+
+void AUnitCharacter::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
+{
+	UpdateHealthBar();
+}
+
+void AUnitCharacter::SetHealthBarColor()
+{
+	if (!CachedHealthBarWidget)
+	{
+		return;
+	}
+
+	FLinearColor TeamColor = FLinearColor::White;
+
+	switch (GetTeamType())
+	{
+	case ETeamType::Ally:
+		TeamColor = FLinearColor(0.0f, 0.75f, 0.7f);
+		break;
+
+	case ETeamType::Enemy:
+		TeamColor = FLinearColor(0.85f, 0.2f, 0.2f);
+		break;
+
+	default:
+		break;
+	}
+
+	CachedHealthBarWidget->SetTeamColor(TeamColor);
 }
 
 void AUnitCharacter::DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const
@@ -1150,8 +1284,9 @@ void AUnitCharacter::DrawDebugSplashSummary(AActor* MainTarget, int32 SplashTarg
 void AUnitCharacter::OnAttackNotify()
 {
 	if (IsDead()) return;
+	
 	if (!AttackData) return;
-
+	
 	switch (AttackData->GetAttackType())
 	{
 	case EAttackType::Melee:
