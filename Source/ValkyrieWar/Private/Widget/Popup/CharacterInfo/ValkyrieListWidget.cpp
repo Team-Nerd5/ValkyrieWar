@@ -9,6 +9,8 @@
 
 #include "Components/ListView.h"
 
+#include "Data/Game/ValkyrieData.h"
+
 void UValkyrieListWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -27,5 +29,17 @@ void UValkyrieListWidget::SetData(TArray<UValkyrieData*> InValkyries)
 	{
 		ValkyrieListView->ClearSelection();
 		ValkyrieListView->SetListItems(CachedValkyries);
+	}
+}
+
+void UValkyrieListWidget::SelectValkyrie(UValkyrieData* InData)
+{
+	for (UValkyrieData* Data : CachedValkyries)
+	{
+		if (Data->GetUID() == InData->GetUID())
+		{
+			ValkyrieListView->SetItemSelection(Data, true);
+			break;
+		}
 	}
 }

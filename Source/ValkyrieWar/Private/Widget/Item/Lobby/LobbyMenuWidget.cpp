@@ -32,11 +32,13 @@ void ULobbyMenuWidget::SetData(FContentsDataRow InTableData)
 	{
 		UTexture2D* IconTexture = InTableData.Icon.LoadSynchronous();
 
-		//FButtonStyle Style;
-		//FSlateBrush Brush;
-		//Brush.
-		//Style.SetNormal()
-		//MenuButton->SetStyle()
+		FButtonStyle NewButtonStyle = MenuButton->GetStyle();
+
+		NewButtonStyle.Normal.SetResourceObject(IconTexture);
+		NewButtonStyle.Hovered.SetResourceObject(IconTexture);
+		NewButtonStyle.Pressed.SetResourceObject(IconTexture);
+
+		MenuButton->SetStyle(NewButtonStyle);
 	}
 
 	if (MenuName)

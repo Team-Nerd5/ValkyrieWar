@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameSystem/Base/BaseWidget.h"
+#include "Widget/Item/CharacterInfo/InfoEquipItemWidget.h"
 #include "CharacterInfoWidget.generated.h"
 
 class UItemData;
@@ -57,6 +58,16 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TMap<ECharacterInfoFilterType, FString> CharacterInfoTabNameData;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UInfoEquipItemWidget> WeaponItem;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UInfoEquipItemWidget> ArmorItem;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UInfoEquipItemWidget> HelmetItem;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EEquipGroup, TSoftObjectPtr<UTexture2D>> TypeIcons;
 private:
 
 	UPROPERTY()

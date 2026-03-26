@@ -17,6 +17,8 @@ class VALKYRIEWAR_API UValkyrieListWidget : public UUserWidget
 public:
 	void SetData(TArray<UValkyrieData*> InValkyries);
 
+	void SelectValkyrie(UValkyrieData* InData);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

@@ -26,6 +26,7 @@ public:
 	FORCEINLINE EItemGroup GetItemGroup() { return ItemGroup; }
 	FORCEINLINE EEquipGroup GetEquipGroup() { return EquipGroup; }
 	FORCEINLINE EWeaponType GetWeaponType() { return TableData.WeaponType; }
+	FORCEINLINE TSoftObjectPtr<UTexture2D> GetIcon() { return TableData.Icon; }
 	FORCEINLINE int32 GetAmount() { return Amount; }
 	FORCEINLINE int32 GetAttackID() { return TableData.AttackId; }
 	FORCEINLINE TArray<int32> GetSkillID() { return TableData.SkillId; }

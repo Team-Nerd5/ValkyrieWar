@@ -68,6 +68,12 @@ void UCharacterInfoWidget::OpenUI()
 		ItemListWidget->InitFilterIndex(static_cast<int32>(CurrentFilterType));
 	}
 
+	if(WeaponItem && TypeIcons.Contains(EEquipGroup::Weapon))
+		WeaponItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Weapon));
+	if(ArmorItem && TypeIcons.Contains(EEquipGroup::Armor))
+		ArmorItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Armor));
+	if(HelmetItem && TypeIcons.Contains(EEquipGroup::Helmet))
+		HelmetItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Helmet));
 }
 
 void UCharacterInfoWidget::CloseUI()
@@ -107,15 +113,18 @@ void UCharacterInfoWidget::InitValkyrieList()
 		OriginValkyires = DataManager->GetValkyrieModule()->GetValkyrieList();
 	}
 
-	if (ValkyrieListWidget)
-	{
-		ValkyrieListWidget->SetData(OriginValkyires);
-	}
-
 	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
 	{
 		MainValkyrie = GameManager->GetSelectedValkyrie();
 	}
+	if (ValkyrieListWidget)
+	{
+		ValkyrieListWidget->SetData(OriginValkyires);
+		ValkyrieListWidget->SelectValkyrie(MainValkyrie);
+		OnValkyrieSelected(MainValkyrie);
+	}
+
+	
 }
 void UCharacterInfoWidget::OnItemClicked(UObject* InItemData)
 {
@@ -161,8 +170,18 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 {
 	SelectedValkyrie = InValkyrieData;
 
-	//장착된 장비 목록 갱신
-	//데이터의 EquippedItem 보내줌.
+	if (UItemData* EquipWeapon = SelectedValkyrie->GetEquippedItem(EEquipGroup::Weapon))
+	{
+		WeaponItem->SetEquip(EquipWeapon->GetIcon());
+	}
+	if (UItemData* EquipArmor = SelectedValkyrie->GetEquippedItem(EEquipGroup::Armor))
+	{
+		ArmorItem->SetEquip(EquipArmor->GetIcon());
+	}
+	if (UItemData* EquipHelmet = SelectedValkyrie->GetEquippedItem(EEquipGroup::Helmet))
+	{
+		HelmetItem->SetEquip(EquipHelmet->GetIcon());
+	}
 
 	if (SetMainButton)
 	{
