@@ -81,6 +81,18 @@ void UStageListPanelWidget::RefreshUI()
 	RebuildStageItems();
 }
 
+void UStageListPanelWidget::OpenStageList(int32 InStageInfoId)
+{
+	if (UStageInfoModule* InfoModule = GetStageInfoModule())
+	{
+		FStageInfoDataRow Data = InfoModule->GetInfoData(InStageInfoId);
+		if (Data.DataId > 0)
+		{
+			HandleStageItemClicked(Data.ChapterNum, Data.StageNum);
+		}
+	}
+}
+
 UStageModule* UStageListPanelWidget::GetStageModule() const
 {
 	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())

@@ -58,4 +58,8 @@ protected:
 private:
 	UPROPERTY()
 	FStageDetailViewData CachedDetailData;
+
+	//애초에 다른방식으로 만드셔서 따로 넣어주는 용도입니다..
+	UPROPERTY()
+	int32 CurrentStageDataId = 0;
 };

@@ -27,8 +27,8 @@ public:
 	/** RewardId(DataId)로 RewardDataRow 1개 조회 (복사 반환) */
 	bool GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutData) const;
 
-	/** RewardId(DataId)로 RewardDataRow 포인터 조회 (읽기 전용) */
-	const FRewardDataRow* FindRewardByDataId(int32 InDataId) const;
+	/** RewardId(DataId)로 RewardDataRow 조회 (읽기 전용) */
+	const FRewardDataRow FindRewardByDataId(int32 InDataId) const;
 
 	/**
 	 * RewardDataRow + 확률(RewardRate) 기반으로

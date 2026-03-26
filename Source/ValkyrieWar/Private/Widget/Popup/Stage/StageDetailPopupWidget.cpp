@@ -9,6 +9,9 @@
 
 #include "GameSystem/Instance/Game/LevelManager.h"
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/DataManager.h"
+
+#include "Data/Game/StageData.h"
 
 void UStageDetailPopupWidget::NativeConstruct()
 {
@@ -53,6 +56,20 @@ void UStageDetailPopupWidget::CloseUI()
 
 void UStageDetailPopupWidget::SetStageDetail(const FStageDetailViewData& InDetailData)
 {
+	//따로 사용... 원래는 앞에서 찾아서 들고있어야하는데...
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	{
+		UStageData* StageData = DataManager->GetStageModule()->GetStageData(InDetailData.ChapterNum);
+		if (StageData)
+		{
+			FStageInfoDataRow StageInfoData = StageData->GetStageInfoData(InDetailData.StageNum);
+			if (StageInfoData.DataId > 0)
+			{
+				CurrentStageDataId = StageInfoData.DataId;
+			}
+		}
+	}
+
 	CachedDetailData = InDetailData;
 	RefreshUI();
 }
@@ -128,8 +145,13 @@ void UStageDetailPopupWidget::HandleClickClose()
 
 void UStageDetailPopupWidget::HandleClickStartStage()
 {
+	//DataId가 0이면 시작하면 안되려나?
 	if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 	{
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			DataManager->GetStageInfoModule()->SetCurrentStage(CurrentStageDataId);
+		}
 		LevelManager->LoadMap(EMapType::Battle, true);
 	}
 }

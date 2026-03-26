@@ -57,6 +57,14 @@ public:
 		return SelectedStageCode % StageCodeMultiplier;
 	}
 
+
+	FORCEINLINE UStageData* GetStageData(int32 InChapter)
+	{
+		if (StageDataByChapter.Contains(InChapter))
+			return StageDataByChapter.FindChecked(InChapter);
+		else
+			return nullptr;
+	}
 protected:
 	virtual void MakeData() override;
 private:

@@ -33,4 +33,6 @@ public:
 	int32 EnemyLevel = 1;
 	UPROPERTY(EditAnywhere)
 	int32 RewardGroupId = 0;
+	UPROPERTY(EditAnywhere)
+	int32 NextStageDataId = 0;
 };

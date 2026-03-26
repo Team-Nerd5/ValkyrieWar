@@ -24,6 +24,14 @@ public:
 
 	FORCEINLINE int32 GetChapter() { return TableData.Chapter; }
 
+	FORCEINLINE FStageInfoDataRow GetStageInfoData(int32 InStageNum)
+	{
+		if (StageInfoData.Contains(InStageNum))
+			return StageInfoData.FindChecked(InStageNum);
+		else
+			return FStageInfoDataRow();
+	}
+
 	void GetSortedStageNums(TArray<int32>& OutStageNums) const;
 
 protected:

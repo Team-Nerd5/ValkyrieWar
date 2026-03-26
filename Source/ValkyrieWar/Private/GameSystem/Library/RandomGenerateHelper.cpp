@@ -54,6 +54,22 @@ int32 URandomGenerateHelper::GetRandomValkyrie(UDataManager* InDataManager, int3
 	return 0;
 }
 
+TArray<int32> URandomGenerateHelper::GetStageRewards(TArray<FStageRewardDataRow> InRewardData)
+{
+	TArray<int32> RewardedId;
+
+	int32 Random = 0;
+	for (const FStageRewardDataRow& Data : InRewardData)
+	{
+		if (FMath::RandHelper(10000) < Data.RewardRate)
+		{
+			RewardedId.Add(Data.RewardId);
+		}
+	}
+
+	return RewardedId;
+}
+
 bool URandomGenerateHelper::IsGachaDataValid(TMap<EGradeType, FGachaRandomDataRow> InData)
 {
 	if (InData.Num() != 5)

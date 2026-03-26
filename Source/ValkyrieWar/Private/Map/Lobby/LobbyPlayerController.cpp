@@ -26,6 +26,7 @@
 #include "Widget/Popup/Gacha/GachaWidget.h"
 #include "Widget/Loading/LoadingWidget.h"
 #include "Widget/Popup/CharacterInfo/CharacterInfoWidget.h"
+#include "Widget/Popup/Stage/StageListPanelWidget.h"
 
 #include "Object/Cheat/LobbyCheatManager.h"
 
@@ -160,6 +161,16 @@ void ALobbyPlayerController::OnLobbyLevelShown()
 		}
 		else
 		{
+			if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+			{
+				int32 NextStage = DataManager->GetStageInfoModule()->GetNextStageDataId();
+				if (NextStage > 0)
+				{
+					UStageListPanelWidget* StageWidget = UIManager->OpenUI<UStageListPanelWidget>(EUIType::PopupStageList);
+					StageWidget->OpenStageList(NextStage);
+				}
+			}
+
 			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
 	}

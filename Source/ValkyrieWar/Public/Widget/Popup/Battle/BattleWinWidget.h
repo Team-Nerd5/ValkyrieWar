@@ -22,7 +22,8 @@ class VALKYRIEWAR_API UBattleWinWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetReward(TArray<FRewardDataRow> InRewardList);
+	void ClearReward();
+	void SetReward(FRewardDataRow InReward);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

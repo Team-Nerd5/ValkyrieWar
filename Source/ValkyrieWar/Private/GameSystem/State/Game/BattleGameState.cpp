@@ -4,9 +4,12 @@
 #include "GameSystem/State/Game/BattleGameState.h"
 #include "GameSystem/Instance/Game/UIManager.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/Library/RandomGenerateHelper.h"
+
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
 #include "Widget/HUD/BattleWidget.h"
@@ -72,19 +75,15 @@ void ABattleGameState::ChangeState(EBattleState InState)
 
 	case EBattleState::MoveToLobby:
 		StopStageTimer();
+
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
 			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 			{
 				LevelManager->LoadMap(EMapType::Lobby, true);
 			}
-			//레벨 전환으로 가야할 듯..
 		}
 		break;
-	case EBattleState::MoveToNextLevel:
-		// 다음 레벨 세팅은 현재 StageListPanelWidget 자체적으로 세팅하고있는데 따로 접근루트를 만들어야할지?
-		break;
-
 	default:
 		break;
 	}
@@ -179,16 +178,29 @@ void ABattleGameState::CheckTimeOver()
 
 void ABattleGameState::ShowBattleResult()
 {
-	if (State == EBattleState::Win
-		|| State == EBattleState::Defeat
-		|| State == EBattleState::TimeOver)
+	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		TArray<int32> RewardId;
+
+		//이겼고, 보상 있으면 넣어줌
+		if (State == EBattleState::Win)
 		{
-			if (UBattleResultWidget* ResultWidget = UIManager->OpenUI<UBattleResultWidget>(EUIType::PopupBattleResult))
+			//스테이지 모듈에서
+			if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 			{
-				ResultWidget->SetBattleResult(State);
+				int32 RewardGroupId = DataManager->GetStageInfoModule()->GetCurrentRewardGroupId();
+				if (RewardGroupId > 0)
+				{
+					TArray<FStageRewardDataRow> Rewards;
+					DataManager->GetStageRewardModule()->GetStageRewardRowsByGroupId(RewardGroupId, Rewards);
+					RewardId = URandomGenerateHelper::GetStageRewards(Rewards);
+				}
 			}
+		}
+
+		if (UBattleResultWidget* ResultWidget = UIManager->OpenUI<UBattleResultWidget>(EUIType::PopupBattleResult))
+		{
+			ResultWidget->SetBattleResult(State, RewardId);
 		}
 	}
 }

@@ -3,15 +3,16 @@
 
 #include "Widget/Popup/Battle/BattleWinWidget.h"
 
-void UBattleWinWidget::SetReward(TArray<FRewardDataRow> InRewardList)
+void UBattleWinWidget::ClearReward()
 {
 	RewardListBox->ClearChildren();
-	for (const FRewardDataRow RewardData : InRewardList)
+}
+
+void UBattleWinWidget::SetReward(FRewardDataRow InReward)
+{
+	if (UBattleRewardBoxWidget* RewardWidget = CreateWidget<UBattleRewardBoxWidget>(GetWorld(), RewardBoxWidgetClass))
 	{
-		if (UBattleRewardBoxWidget* RewardWidget = CreateWidget<UBattleRewardBoxWidget>(GetWorld(), RewardBoxWidgetClass))
-		{
-			RewardWidget->SetRewardItem(RewardData);
-			RewardListBox->AddChild(RewardWidget);
-		}
+		RewardWidget->SetRewardItem(InReward);
+		RewardListBox->AddChild(RewardWidget);
 	}
 }

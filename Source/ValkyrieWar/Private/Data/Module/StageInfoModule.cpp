@@ -105,6 +105,19 @@ bool UStageInfoModule::GetRewardGroupIdByChapterAndStage(int32 InChapter, int32 
 	return OutRewardGroupId > 0;
 }
 
+int32 UStageInfoModule::GetNextStageId()
+{
+	if (CurrentStageDataId <= 0)
+		return 0;
+
+	if (TableDataByDataId.Contains(CurrentStageDataId))
+	{
+		return TableDataByDataId.FindChecked(CurrentStageDataId).NextStageDataId;
+	}
+
+	return 0;
+}
+
 void UStageInfoModule::MakeData()
 {
 	TableDataByDataId.Empty();

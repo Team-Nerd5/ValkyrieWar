@@ -19,6 +19,9 @@ public:
 	UFUNCTION()
 	static int32 GetRandomValkyrie(UDataManager* InDataManager, int32 InGroupId);
 
+	UFUNCTION()
+	static TArray<int32> GetStageRewards(TArray<FStageRewardDataRow> InRewardData);
+
 private:
 	static bool IsGachaDataValid(TMap<EGradeType, FGachaRandomDataRow> InData);
 

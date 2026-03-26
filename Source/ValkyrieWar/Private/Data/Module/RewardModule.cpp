@@ -62,14 +62,12 @@ bool URewardModule::GetRewardRowsByDataId(int32 InDataId, FRewardDataRow& OutDat
 	return true;
 }
 
-const FRewardDataRow* URewardModule::FindRewardByDataId(int32 InDataId) const
+const FRewardDataRow URewardModule::FindRewardByDataId(int32 InDataId) const
 {
-	if (InDataId <= 0)
-	{
-		return nullptr;
-	}
-
-	return TableDataByDataId.Find(InDataId);
+	if (TableDataByDataId.Contains(InDataId))
+		return TableDataByDataId.FindChecked(InDataId);
+	else
+		return FRewardDataRow();
 }
 
 /**

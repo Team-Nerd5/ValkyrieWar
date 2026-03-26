@@ -33,7 +33,7 @@ void UBattleResultWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
+void UBattleResultWidget::SetBattleResult(EBattleState InBattleState, TArray<int32> InRewards)
 {
 	if (!IsValidResultState(InBattleState))
 	{
@@ -43,38 +43,24 @@ void UBattleResultWidget::SetBattleResult(EBattleState InBattleState)
 	BattleState = InBattleState;
 	if (BattleState == EBattleState::Win)
 	{
-		UpdateBattleReward();
+		UpdateBattleReward(InRewards);
 	}
 	RefreshResultUI();
 }
 
-void UBattleResultWidget::UpdateBattleReward()
+void UBattleResultWidget::UpdateBattleReward(TArray<int32> InRewards)
 {
-	UDataManager* Datamanager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
-	if (!Datamanager)
-		return;
-	UStageModule* StageModule = Datamanager->GetStageModule();
-	if (!StageModule)
-		return;
-	UStageInfoModule* StageInfoModule = Datamanager->GetStageInfoModule();
-	if (!StageInfoModule)
-		return;
-	UStageRewardModule* StageRewardModule = Datamanager->GetStageRewardModule();
-	if (!StageRewardModule)
+	UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>();
+	if (!DataManager)
 		return;
 
 	if (Widget_Win)
 	{
-		InRewardList.Empty();
-
-		int32 SelectedChapter = StageModule->GetSelectedChapter();
-		int32 SelectedStage = StageModule->GetSelectedStage();
-
-		int32 SelectedStageRewardGroupId = 0;
-		if (StageInfoModule->GetRewardGroupIdByChapterAndStage(SelectedChapter, SelectedStage, SelectedStageRewardGroupId))
+		for (int32 DataId : InRewards)
 		{
-			StageRewardModule->GetRewardRowsByStageRewardGroupId(SelectedStageRewardGroupId, InRewardList);
-			Widget_Win->SetReward(InRewardList);
+			FRewardDataRow Reward = DataManager->GetRewardModule()->FindRewardByDataId(DataId);
+			if(Reward.DataId > 0)
+				Widget_Win->SetReward(Reward);
 		}
 	}
 }
@@ -95,8 +81,11 @@ void UBattleResultWidget::HandleGoToNextLevelClicked()
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		// TODO: 다음 레벨로 이동 -> 레벨 변경 구현 필요
-		WorldEventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::MoveToNextLevel);
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			DataManager->GetStageInfoModule()->SetNextStage();
+		}
+		WorldEventSystem->Battle.OnBattleStateChanged.Broadcast(EBattleState::MoveToLobby);
 	}
 }
 

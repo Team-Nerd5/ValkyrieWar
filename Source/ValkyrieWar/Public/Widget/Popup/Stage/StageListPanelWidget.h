@@ -29,6 +29,7 @@ public:
 	virtual void CloseUI() override;
 	virtual void RefreshUI() override;
 
+	void OpenStageList(int32 InStageInfoId);
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

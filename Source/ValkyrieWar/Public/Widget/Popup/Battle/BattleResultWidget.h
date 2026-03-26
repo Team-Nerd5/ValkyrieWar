@@ -26,9 +26,9 @@ public:
 	virtual void NativeDestruct() override;
 
 	UFUNCTION(BlueprintCallable, Category = "BattleResult")
-	void SetBattleResult(EBattleState InBattleState);
+	void SetBattleResult(EBattleState InBattleState, TArray<int32> InRewards);
 	UFUNCTION(BlueprintCallable, Category = "BattleResult")
-	void UpdateBattleReward();
+	void UpdateBattleReward(TArray<int32> InRewards);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -48,8 +48,6 @@ protected:
 private:
 	UPROPERTY()
 	EBattleState BattleState = EBattleState::Init;
-	UPROPERTY()
-	TArray<FRewardDataRow> InRewardList;
 
 private:
 	UFUNCTION()

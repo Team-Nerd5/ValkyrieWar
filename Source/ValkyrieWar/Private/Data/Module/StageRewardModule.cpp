@@ -115,13 +115,13 @@ bool UStageRewardModule::GetRewardRowsByStageRewardGroupId(int32 InGroupId, TArr
 
 	for (const FStageRewardDataRow& StageRewardRow : StageRewardArray->Rows)
 	{
-		const FRewardDataRow* Reward = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
-		if (!Reward)
+		const FRewardDataRow Reward = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
+		if (Reward.DataId <= 0)
 		{
 			continue;
 		}
 
-		OutRows.Add(*Reward);
+		OutRows.Add(Reward);
 	}
 
 	return OutRows.Num() > 0;
@@ -168,21 +168,21 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 
 	for (const FStageRewardDataRow& StageRewardRow : StageRewardArray->Rows)
 	{
-		const FRewardDataRow* RewardRow = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
-		if (!RewardRow)
+		const FRewardDataRow RewardRow = RewardModule->FindRewardByDataId(StageRewardRow.RewardId);
+		if (RewardRow.DataId <= 0)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] RewardRow not found. RewardId=%d"), StageRewardRow.RewardId);
 			continue;
 		}
 
 		FRewardViewData ViewData;
-		ViewData.RewardType = RewardRow->RewardType;
-		ViewData.RewardId = RewardRow->DataId;
-		ViewData.RewardDataId = RewardRow->RewardDataId;
-		ViewData.Amount = RewardRow->Amount;
+		ViewData.RewardType = RewardRow.RewardType;
+		ViewData.RewardId = RewardRow.DataId;
+		ViewData.RewardDataId = RewardRow.RewardDataId;
+		ViewData.Amount = RewardRow.Amount;
 		ViewData.RewardRate = StageRewardRow.RewardRate;
 
-		switch (RewardRow->RewardType)
+		switch (RewardRow.RewardType)
 		{
 		case ERewardType::Item:
 		{
@@ -192,10 +192,10 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 				continue;
 			}
 
-			const FItemDataRow ItemRow = ItemModule->GetTableDataById(RewardRow->RewardDataId);
+			const FItemDataRow ItemRow = ItemModule->GetTableDataById(RewardRow.RewardDataId);
 			if (ItemRow.DataId <= 0)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Invalid ItemData. RewardDataId=%d"), RewardRow->RewardDataId);
+				UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Invalid ItemData. RewardDataId=%d"), RewardRow.RewardDataId);
 				continue;
 			}
 
@@ -212,7 +212,7 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 				continue;
 			}
 
-			const EGoodsType GoodsType = static_cast<EGoodsType>(RewardRow->RewardDataId);
+			const EGoodsType GoodsType = static_cast<EGoodsType>(RewardRow.RewardDataId);
 			const FGoodsDataRow GoodsRow = GoodsModule->GetTableData(GoodsType);
 
 			ViewData.Name = GetGoodsDisplayName(GoodsRow.GoodsType);
@@ -221,12 +221,12 @@ bool UStageRewardModule::GetRewardViewDataByStageRewardGroupId(int32 InGroupId, 
 		}
 
 		case ERewardType::Character:
-			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Character reward is not supported yet. RewardId=%d"), RewardRow->DataId);
+			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Character reward is not supported yet. RewardId=%d"), RewardRow.DataId);
 			continue;
 
 		case ERewardType::None:
 		default:
-			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Invalid RewardType. RewardId=%d"), RewardRow->DataId);
+			UE_LOG(LogTemp, Warning, TEXT("[StageRewardModule] Invalid RewardType. RewardId=%d"), RewardRow.DataId);
 			continue;
 		}
 
