@@ -40,6 +40,11 @@ protected:
 	UFUNCTION()
 	void OnValkyrieSelected(UValkyrieData* InSelectedValkyrie);
 
+	UFUNCTION()
+	void OnClickUnEquip(EEquipGroup InEquipGroup);
+	UFUNCTION()
+	void OnClickEquip(UItemData* InItemData);
+
 public:
 	virtual void OpenUI() override;
 	virtual void CloseUI() override;

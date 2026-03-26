@@ -127,7 +127,8 @@ TArray<UItemData*> UInventorySystem::GetEquipItems()
 
 		for(UItemData* Item : Items)
 		{
-			if (Item && Item->GetItemGroup() == EItemGroup::Equip)
+			//장착된 장비는 인벤토리 미표기
+			if (Item && Item->GetItemGroup() == EItemGroup::Equip && Item->GetEquipCharacter() == 0)
 			{
 				EquipItems.Add(Item);
 			}

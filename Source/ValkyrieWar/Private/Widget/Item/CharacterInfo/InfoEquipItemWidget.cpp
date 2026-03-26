@@ -2,9 +2,29 @@
 
 
 #include "Widget/Item/CharacterInfo/InfoEquipItemWidget.h"
-#include "Components/Image.h"
+#include "GameSystem/Instance/World/WorldEventSystem.h"
+#include "GameSystem/Library/GameBaseLibrary.h"
 
-void UInfoEquipItemWidget::InitEquip(TSoftObjectPtr<UTexture2D> InIcon)
+#include "Components/Image.h"
+#include "Components/Button.h"
+
+void UInfoEquipItemWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	if (UnEquipButton)
+		UnEquipButton->OnClicked.AddDynamic(this, &UInfoEquipItemWidget::UnEquipItem);
+}
+
+void UInfoEquipItemWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	if (UnEquipButton)
+		UnEquipButton->OnClicked.RemoveDynamic(this, &UInfoEquipItemWidget::UnEquipItem);
+}
+
+void UInfoEquipItemWidget::InitEquip(EEquipGroup InEquipGroup, TSoftObjectPtr<UTexture2D> InIcon)
 {
 	if (ItemIcon)
 		ItemIcon->SetVisibility(ESlateVisibility::Hidden);
@@ -17,14 +37,29 @@ void UInfoEquipItemWidget::InitEquip(TSoftObjectPtr<UTexture2D> InIcon)
 
 void UInfoEquipItemWidget::SetEquip(TSoftObjectPtr<UTexture2D> InIcon)
 {
-	if (InIcon.IsValid())
+	if (!InIcon.IsNull())
 	{
 		ItemIcon->SetBrushFromSoftTexture(InIcon);
 	}
 
 	if (TypeIcon)
-		TypeIcon->SetVisibility(InIcon.IsValid() ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+		TypeIcon->SetVisibility(InIcon.IsNull() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 
 	if(ItemIcon)
-		ItemIcon->SetVisibility(InIcon.IsValid() ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		ItemIcon->SetVisibility(InIcon.IsNull() ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+}
+
+void UInfoEquipItemWidget::UnEquipItem()
+{
+	if (ItemIcon->GetVisibility() != ESlateVisibility::Visible)
+		return;
+
+	//이벤트로 캐릭터 위젯에 전달(EquipGroup)
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnClickUnEquip.Broadcast(EquipGroup);
+	}
+	
+	//눌리면 해제
+	SetEquip(nullptr);
 }

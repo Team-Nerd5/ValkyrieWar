@@ -9,6 +9,7 @@
 #include "LobbyPlayerController.generated.h"
 
 class UValkyrieData;
+class UItemData;
 /**
  * 
  */
@@ -73,6 +74,12 @@ protected:
 
 	UFUNCTION()
 	void OnValkyrieChanged(UValkyrieData* InNewValkyrie);
+
+	UFUNCTION()
+	void OnEquipItem(UItemData* InItem);
+
+	UFUNCTION()
+	void OnUnEquipItem();
 
 private:
 	int32 CurrentGachaIndex = 0;

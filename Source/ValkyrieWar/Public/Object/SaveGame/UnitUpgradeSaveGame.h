@@ -15,13 +15,13 @@ struct VALKYRIEWAR_API FUnitDataStruct
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	uint64 UID;
+	uint64 UID = 0;
 	UPROPERTY()
-	int32 UnitType;
+	int32 UnitType = 0;
 	UPROPERTY()
-	int32 Level;
+	int32 Level = 1;
 	UPROPERTY()
-	int32 Grade;
+	int32 Grade = 0;
 };
 
 UCLASS()

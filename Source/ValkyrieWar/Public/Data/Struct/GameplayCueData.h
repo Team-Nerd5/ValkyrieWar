@@ -16,7 +16,7 @@ struct VALKYRIEWAR_API FGameplayCueData
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	EGameplayCueOrder CueOrder;
+	EGameplayCueOrder CueOrder = EGameplayCueOrder::OnNotify;
 	UPROPERTY()
 	FGameplayTag Tag;
 	UPROPERTY()

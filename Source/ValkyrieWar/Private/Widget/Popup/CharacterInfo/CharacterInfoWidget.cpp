@@ -23,6 +23,8 @@ void UCharacterInfoWidget::NativeConstruct()
 		EventSystem->Widget.OnUpdateInventory.AddUniqueDynamic(this, &UCharacterInfoWidget::OnInventoryUpdate);
 		EventSystem->Widget.OnTabMenuSelected.AddUniqueDynamic(this, &UCharacterInfoWidget::OnTabMenuChanged);
 		EventSystem->Widget.OnValkyrieSelected.AddUniqueDynamic(this, &UCharacterInfoWidget::OnValkyrieSelected);
+		EventSystem->Widget.OnClickUnEquip.AddUniqueDynamic(this, &UCharacterInfoWidget::OnClickUnEquip);
+		EventSystem->Widget.OnClickEquip.AddUniqueDynamic(this, &UCharacterInfoWidget::OnClickEquip);
 	}
 
 	if (SetMainButton)
@@ -37,6 +39,8 @@ void UCharacterInfoWidget::NativeDestruct()
 		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UCharacterInfoWidget::OnInventoryUpdate);
 		EventSystem->Widget.OnTabMenuSelected.RemoveDynamic(this, &UCharacterInfoWidget::OnTabMenuChanged);
 		EventSystem->Widget.OnValkyrieSelected.RemoveDynamic(this, &UCharacterInfoWidget::OnValkyrieSelected);
+		EventSystem->Widget.OnClickUnEquip.RemoveDynamic(this, &UCharacterInfoWidget::OnClickUnEquip);
+		EventSystem->Widget.OnClickEquip.RemoveDynamic(this, &UCharacterInfoWidget::OnClickEquip);
 	}
 	if (SetMainButton)
 		SetMainButton->OnClicked.RemoveDynamic(this, &UCharacterInfoWidget::OnClickSetMain);
@@ -69,11 +73,11 @@ void UCharacterInfoWidget::OpenUI()
 	}
 
 	if(WeaponItem && TypeIcons.Contains(EEquipGroup::Weapon))
-		WeaponItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Weapon));
+		WeaponItem->InitEquip(EEquipGroup::Weapon, TypeIcons.FindChecked(EEquipGroup::Weapon));
 	if(ArmorItem && TypeIcons.Contains(EEquipGroup::Armor))
-		ArmorItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Armor));
+		ArmorItem->InitEquip(EEquipGroup::Armor, TypeIcons.FindChecked(EEquipGroup::Armor));
 	if(HelmetItem && TypeIcons.Contains(EEquipGroup::Helmet))
-		HelmetItem->InitEquip(TypeIcons.FindChecked(EEquipGroup::Helmet));
+		HelmetItem->InitEquip(EEquipGroup::Helmet, TypeIcons.FindChecked(EEquipGroup::Helmet));
 }
 
 void UCharacterInfoWidget::CloseUI()
@@ -191,5 +195,52 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 	if (MainValkyrieIcon)
 	{
 		MainValkyrieIcon->SetVisibility(SelectedValkyrie == MainValkyrie ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void UCharacterInfoWidget::OnClickUnEquip(EEquipGroup InEquipGroup)
+{
+	UItemData* EquipItem = SelectedValkyrie->GetEquippedItem(InEquipGroup);
+
+	if (EquipItem)
+	{
+		if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+		{
+			Inventory->UnEquipItem(EquipItem, SelectedValkyrie);
+		}
+		if (EventSystem)
+		{
+			//무기면 캐릭터 장비 메쉬 빼야함...
+			EventSystem->Widget.OnUnEquipItem.Broadcast();
+		}
+	}		
+}
+
+void UCharacterInfoWidget::OnClickEquip(UItemData* InItemData)
+{
+	if (InItemData)
+	{
+		if (InItemData->GetEquipGroup() == EEquipGroup::Weapon)
+		{
+			WeaponItem->SetEquip(InItemData->GetIcon());
+		}
+		if (InItemData->GetEquipGroup() == EEquipGroup::Armor)
+		{
+			ArmorItem->SetEquip(InItemData->GetIcon());
+		}
+		if (InItemData->GetEquipGroup() == EEquipGroup::Helmet)
+		{
+			HelmetItem->SetEquip(InItemData->GetIcon());
+		}
+	}
+	if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+	{
+		Inventory->EquipItem(InItemData, SelectedValkyrie);
+	}
+
+	if (EventSystem)
+	{
+		//무기 메쉬 변경
+		EventSystem->Widget.OnEquipItem.Broadcast(InItemData);
 	}
 }

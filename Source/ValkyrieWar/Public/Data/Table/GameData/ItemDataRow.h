@@ -29,7 +29,7 @@ public:
 	 
 	//장비용
 	UPROPERTY(EditAnywhere)
-	EWeaponType WeaponType;
+	EWeaponType WeaponType = EWeaponType::None;
 	UPROPERTY(EditAnywhere)
 	int32 StatId = 0;
 	UPROPERTY(EditAnywhere)

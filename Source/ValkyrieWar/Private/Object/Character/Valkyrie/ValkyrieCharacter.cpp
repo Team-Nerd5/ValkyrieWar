@@ -102,7 +102,7 @@ void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 					}
 				}
 			}
-		}		
+		}
 	}
 }
 #endif
@@ -126,39 +126,32 @@ void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 //이거는 캐릭터 정보창에서 장비를 장착해서 변경되었을때, 해당 캐릭터가 로비 캐릭터일 때만 사용
 //데이터 업데이트 및 로비에배치된 캐릭터 무기 변경
-void AValkyrieCharacter::EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID)
+void AValkyrieCharacter::EquipWeapon(UItemData* InWeapon)
 {
-	if (InValkyrieUID != Data->GetUID())
-	{
-		//장착한 캐릭터가 배치된 캐릭터가 아님
-		return;
-	}
-	//TODO : Inventory에서 Get 해야함. 수정필요
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
-		if (UItemModule* ItemModule = DataManager->GetItemModule())
+		if(InWeapon)
+			EquippedWeapon = InWeapon;
+		else
+			EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
+
+		if (EquippedWeapon && EquippedWeapon->GetItemGroup() != EItemGroup::Equip)
 		{
-			//장착한 장비
-			EquippedWeapon = ItemModule->GetItem(InEquipUID);
+			//장비 아니면 없애버림
+			EquippedWeapon = nullptr;
+		}
+		if (EquippedWeapon && DataManager->GetAttackModule())
+		{
+			AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());;
+		}
 
-			if (EquippedWeapon && EquippedWeapon->GetItemGroup() != EItemGroup::Equip)
+		if (EquippedWeapon)
+		{
+			if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
 			{
-				//장비 아니면 없애버림
-				EquippedWeapon = nullptr;
-			}
-			if (EquippedWeapon && DataManager->GetAttackModule())
-			{
-				AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());;
-			}
-
-			if (EquippedWeapon)
-			{
-				if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
-				{
-					UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
-					if (NewBS)
-						LocomotionBS = NewBS;
-				}
+				UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
+				if (NewBS)
+					LocomotionBS = NewBS;
 			}
 		}
 	}

@@ -28,6 +28,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitUpgrade, EUnitCharacterType, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHiddenInventoryPopup);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquipItem, UItemData*, InItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnEquipItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickUnEquip, EEquipGroup, InEquipGroup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickEquip, UItemData*, InItemData);
+
+
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
 {
@@ -54,6 +60,11 @@ public:
 	//캐릭터 정보창 오픈/클로즈 연출
 	FOnCharacterInfoWidgetOpened OnCharacterInfoWidgetOpened;
 	FOnCharacterInfoWidgetClosed OnCharacterInfoWidgetClosed;
+
+	FOnEquipItem OnEquipItem;
+	FOnUnEquipItem OnUnEquipItem;
+	FOnClickUnEquip OnClickUnEquip;
+	FOnClickEquip OnClickEquip;
 
 	//-----------------------------삭제 예정---------------------------
 	// 인벤토리 아이템 선택 취소용

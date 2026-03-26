@@ -28,6 +28,8 @@
 #include "Widget/Popup/CharacterInfo/CharacterInfoWidget.h"
 #include "Widget/Popup/Stage/StageListPanelWidget.h"
 
+#include "Object/Character/Valkyrie/ValkyrieCharacter.h"
+
 #include "Object/Cheat/LobbyCheatManager.h"
 
 #include "Camera/CameraActor.h"
@@ -49,6 +51,8 @@ void ALobbyPlayerController::BeginPlay()
 		EventSystem->Widget.OnCharacterInfoWidgetOpened.AddDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
 		EventSystem->Widget.OnCharacterInfoWidgetClosed.AddDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
 		EventSystem->Widget.OnValkyrieSelected.AddDynamic(this, &ALobbyPlayerController::OnValkyrieChanged);
+		EventSystem->Widget.OnUnEquipItem.AddDynamic(this, &ALobbyPlayerController::OnUnEquipItem);
+		EventSystem->Widget.OnEquipItem.AddDynamic(this, &ALobbyPlayerController::OnEquipItem);
 	}	
 	ChangeGameState(ELobbyState::Init);
 }
@@ -65,6 +69,8 @@ void ALobbyPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		EventSystem->Widget.OnCharacterInfoWidgetOpened.RemoveDynamic(this, &ALobbyPlayerController::StartCharacterInfoCamMove);
 		EventSystem->Widget.OnCharacterInfoWidgetClosed.RemoveDynamic(this, &ALobbyPlayerController::StartLobbyCamMove);
 		EventSystem->Widget.OnValkyrieSelected.RemoveDynamic(this, &ALobbyPlayerController::OnValkyrieChanged);
+		EventSystem->Widget.OnUnEquipItem.RemoveDynamic(this, &ALobbyPlayerController::OnUnEquipItem);
+		EventSystem->Widget.OnEquipItem.RemoveDynamic(this, &ALobbyPlayerController::OnEquipItem);
 	}
 
 }
@@ -398,4 +404,27 @@ void ALobbyPlayerController::OnMovedLobby()
 void ALobbyPlayerController::OnValkyrieChanged(UValkyrieData* InNewValkyrie)
 {
 	ChangeLobbyCharacter(InNewValkyrie);
+}
+
+void ALobbyPlayerController::OnEquipItem(UItemData* InItem)
+{
+	//스폰된 캐릭터 찾아서 변경
+	if (APawn* Spawned = GetPawn())
+	{
+		if (AValkyrieCharacter* Valkyrie = Cast<AValkyrieCharacter>(Spawned))
+		{
+			Valkyrie->EquipWeapon(InItem);
+		}
+	}	
+}
+
+void ALobbyPlayerController::OnUnEquipItem()
+{
+	if (APawn* Spawned = GetPawn())
+	{
+		if (AValkyrieCharacter* Valkyrie = Cast<AValkyrieCharacter>(Spawned))
+		{
+			Valkyrie->EquipWeapon(nullptr);
+		}
+	}
 }

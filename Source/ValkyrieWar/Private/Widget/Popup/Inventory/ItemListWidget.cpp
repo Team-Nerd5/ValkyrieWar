@@ -134,11 +134,10 @@ void UItemListWidget::OnClickEquipItem()
 {
 	if (SelectedItem)
 	{
-		//장착 이벤트 호출
-		//게임 매니저에서 SelectedValkyrie UID 가져와서 세팅.
-		//아이템 저장 및 리스트 갱신
-
-		//로비 컨트롤러에서 아이템 장착 처리(로비에 생성된 캐릭터)
+		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+		{
+			WorldEventSystem->Widget.OnClickEquip.Broadcast(SelectedItem);
+		}
 	}
 }
 

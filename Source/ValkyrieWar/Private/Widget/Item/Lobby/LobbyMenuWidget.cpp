@@ -28,7 +28,7 @@ void ULobbyMenuWidget::NativeDestruct()
 
 void ULobbyMenuWidget::SetData(FContentsDataRow InTableData)
 {
-	if (InTableData.Icon.IsValid())
+	if (!InTableData.Icon.IsNull())
 	{
 		UTexture2D* IconTexture = InTableData.Icon.LoadSynchronous();
 

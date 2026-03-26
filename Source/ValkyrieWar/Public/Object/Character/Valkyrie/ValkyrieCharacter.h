@@ -54,10 +54,9 @@ public:
 
 	void InitHpBarWidget();
 
+	void EquipWeapon(UItemData* InWeapon);
 protected:
 	virtual void BeginPlay() override;
-
-	void EquipWeapon(uint64 InValkyrieUID, uint64 InEquipUID);
 
 	void UpdateWeaponMesh();
 
