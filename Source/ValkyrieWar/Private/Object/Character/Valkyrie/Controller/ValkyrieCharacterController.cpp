@@ -71,6 +71,11 @@ void AValkyrieCharacterController::BeginPlay()
 	SetControlMode(EInputControlMode::Manual);
 
 	ChageGameState(EBattleState::Play);
+
+	if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(ControlledPawn))
+	{
+		ValkyrieChar->InitHpBarWidget();
+	}
 }
 
 void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)

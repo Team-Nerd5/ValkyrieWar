@@ -7,6 +7,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUseSkill, int32, InIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseAttack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnValkyrieHpChanged, float, InCurrentHp, float, InMaxHp);
 
 /**
  * 발키리 캐릭터 관련 이벤트 데이터 구조체
@@ -18,4 +19,5 @@ struct VALKYRIEWAR_API FValkyrieEventData
 public:
 	FOnUseSkill OnUseSkill;
 	FOnUseAttack OnUseAttack;
+	FOnValkyrieHpChanged OnValkyrieHpChanged;
 };

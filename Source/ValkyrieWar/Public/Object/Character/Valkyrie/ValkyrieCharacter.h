@@ -29,6 +29,8 @@ public:
 
 	virtual void OnAttackNotify() override;
 	virtual void OnSkillNotify() override;
+
+	virtual void OnDeath() override;
 	 
 	virtual ETeamType GetTeamType() const override;
 	virtual void OnDeath() override;
@@ -52,6 +54,8 @@ public:
 	void ChangeWeapon(UItemData* InEquip);
 #endif
 
+	void InitHpBarWidget();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -59,7 +63,12 @@ protected:
 
 	void UpdateWeaponMesh();
 
-	
+	void BindAttributeDelegates();
+	void UnbindAttributeDelegates();
+
+	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
+	void BroadcastHpChanged();
+
 protected: // 스킬 관련
 	UFUNCTION()
 	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);

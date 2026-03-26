@@ -17,6 +17,7 @@
 #include "GameSystem/Base/BaseGameplayAbility.h"
 #include "GameSystem/Base/BaseProjectile.h"
 #include "GameSystem/Base/BaseAnimInstance.h"
+#include "GameSystem/State/Game/BattleGameState.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -106,12 +107,18 @@ void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 }
 #endif
 
+void AValkyrieCharacter::InitHpBarWidget()
+{
+	BroadcastHpChanged();
+}
+
 void AValkyrieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	BindAttributeDelegates();
 }
+
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -196,6 +203,53 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 			StaticWeapon->SetRelativeLocation(AttackData->GetLocationOffset());
 			StaticWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
 		}
+	}
+}
+
+void AValkyrieCharacter::BindAttributeDelegates()
+{
+	if (!AbilitySystemComponent || !StatAttributeSet)
+	{
+		return;
+	}
+
+	UnbindAttributeDelegates();
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetHealthAttribute())
+		.AddUObject(this, &AValkyrieCharacter::HandleHealthChanged);
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetMaxHealthAttribute())
+		.AddUObject(this, &AValkyrieCharacter::HandleHealthChanged);
+}
+
+void AValkyrieCharacter::UnbindAttributeDelegates()
+{
+	if (!AbilitySystemComponent || !StatAttributeSet)
+	{
+		return;
+	}
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetHealthAttribute())
+		.RemoveAll(this);
+
+	AbilitySystemComponent
+		->GetGameplayAttributeValueChangeDelegate(StatAttributeSet->GetMaxHealthAttribute())
+		.RemoveAll(this);
+}
+
+void AValkyrieCharacter::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
+{
+	BroadcastHpChanged();
+}
+
+void AValkyrieCharacter::BroadcastHpChanged()
+{
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Valkyrie.OnValkyrieHpChanged.Broadcast(StatAttributeSet->GetHealth(), StatAttributeSet->GetMaxHealth());
 	}
 }
 
@@ -389,8 +443,11 @@ ETeamType AValkyrieCharacter::GetTeamType() const
 
 void AValkyrieCharacter::OnDeath()
 {
-	//리스폰...? 게임 종료?
-
+	ABattleGameState* State = GetWorld()->GetGameState<ABattleGameState>();
+	if (State)
+	{
+		State->ChangeState(EBattleState::Defeat);
+	}
 }
 
 void AValkyrieCharacter::SetData(UValkyrieData* InData)
@@ -450,6 +507,7 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 	CreateSkillAbility();
 
 	UpdateWeaponMesh();
+	//BroadcastHpChanged();
 }
 void AValkyrieCharacter::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
