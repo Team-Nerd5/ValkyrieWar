@@ -29,9 +29,7 @@ public:
 
 	virtual void OnAttackNotify() override;
 	virtual void OnSkillNotify() override;
-
-	virtual void OnDeath() override;
-	 
+ 
 	virtual ETeamType GetTeamType() const override;
 	virtual void OnDeath() override;
 
