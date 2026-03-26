@@ -2,9 +2,12 @@
 
 
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeWidget.h"
+
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/SaveManager.h"
+
 #include "Components/HorizontalBoxSlot.h"
+
 #include "Data/Module/UnitModule.h"
 
 void UUnitUpgradeWidget::OpenUI()
@@ -37,16 +40,19 @@ void UUnitUpgradeWidget::InitUpgradeBox()
 		UnitListBox->ClearChildren();
 	UpgradeBoxes.Empty();
 
-	for (const TPair<int32, TObjectPtr<UUnitData>>& Pair : UnitModule->GetOwnedUnits())
+	TArray<int32> OwnedUnitIds;
+	UnitModule->GetOwnedUnitIds(OwnedUnitIds);
+
+	for (const int32& UnitId : OwnedUnitIds)
 	{
-		UUnitData* UnitData = Pair.Value;
-		if (!UnitData)
-			continue;
+		if (UnitId == 0)
+			break;
 
 		UUnitUpgradeBoxWidget* NewUpgradeBox = CreateWidget<UUnitUpgradeBoxWidget>(this, UpgradeWidgetClass);
 		if(NewUpgradeBox)
 		{
-			NewUpgradeBox->Init(UnitData);
+			// 유닛 업그레이드 박스 세팅
+			NewUpgradeBox->Init(UnitId);
 			UpgradeBoxes.Add(NewUpgradeBox);
 
 			if (UnitListBox)

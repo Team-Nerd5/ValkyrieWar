@@ -3,11 +3,11 @@
 
 #include "Widget/Popup/UnitUpgrade/UnitUpgradeBoxWidget.h"
 
+#include "GameSystem/Library/GameBaseLibrary.h"
+
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/Game/SaveManager.h"
-
-#include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "Data/Game/UnitData.h"
 #include "Data/Module/GoodsModule.h"
@@ -17,8 +17,9 @@ void UUnitUpgradeBoxWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	// 버튼 업데이트 테스트용 임시 바인딩(Goods위젯 업데이트 델리게이트 임시 사용)
 	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
-	EventSystem->Widget.OnGoodsUpdate.AddDynamic(this, &UUnitUpgradeBoxWidget::OnTestGoodsChangedAmount);
+	EventSystem->Widget.OnGoodsUpdate.AddDynamic(this, &UUnitUpgradeBoxWidget::OnGoodsChangedAmount);
 
 	if (Btn_UpgradeUnit)
 		Btn_UpgradeUnit->OnClicked.AddDynamic(this, &UUnitUpgradeBoxWidget::OnUpgradeUnit);
@@ -27,7 +28,7 @@ void UUnitUpgradeBoxWidget::NativeConstruct()
 void UUnitUpgradeBoxWidget::NativeDestruct()
 {
 	UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this);
-	EventSystem->Widget.OnGoodsUpdate.RemoveDynamic(this, &UUnitUpgradeBoxWidget::OnTestGoodsChangedAmount);
+	EventSystem->Widget.OnGoodsUpdate.RemoveDynamic(this, &UUnitUpgradeBoxWidget::OnGoodsChangedAmount);
 
 	if (Btn_UpgradeUnit)
 		Btn_UpgradeUnit->OnClicked.RemoveDynamic(this, &UUnitUpgradeBoxWidget::OnUpgradeUnit);
@@ -35,15 +36,9 @@ void UUnitUpgradeBoxWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UUnitUpgradeBoxWidget::Init(TObjectPtr<UUnitData> InUnitData)
+void UUnitUpgradeBoxWidget::Init(int32 InUnitDataId)
 {
-	if (!InUnitData)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[UnitUpgradeBoxWidget] 유닛 데이터가 없습니다"));
-		return;
-	}
-	CachedUnitData = InUnitData;
-	CachedUnitDataId = InUnitData->GetDataId();
+	CachedUnitDataId = InUnitDataId;
 
 	// 위젯 표시 정보 초기화
 	UpdateUpgradeInfo();
@@ -59,19 +54,30 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo()
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
 		return;
-	if (!CachedUnitData)
+	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	if (!UnitModule)
+		return;
+	UUnitData* UnitData = UnitModule->GetUnitDataById(CachedUnitDataId);
+	if (!UnitData)
+		return;
+	UUnitUpgradeStatModule* UnitUpgradeStatMoudle = DataManager->GetUnitUpgradeStatModule();
+	if (!UnitUpgradeStatMoudle)
+		return;
+	UGoodsModule* GoodsModule = DataManager->GetGoodsModule();
+	if (!GoodsModule)
 		return;
 
 	// 유닛 타입 표시
 	if (UnitType)
 	{
-		FString EnumString = StaticEnum<EUnitCharacterType>()->GetNameStringByValue((int64)CachedUnitData->GetTableData().UnitType);
+		FString EnumString = StaticEnum<EUnitCharacterType>()->GetNameStringByValue((int64)UnitData->GetTableData().UnitType);
 		UnitType->SetText(FText::FromString(EnumString));
+		UnitType->SetColorAndOpacity(SetTextByGrade(UnitData->GetCurrentGrade()));
 	}
 	// 유닛 아이콘 표시
 	if (UnitIcon)
 	{
-		UTexture2D* Icon = CachedUnitData->GetIcon().LoadSynchronous();
+		UTexture2D* Icon = UnitData->GetIcon().LoadSynchronous();
 		if (Icon)
 		{
 			UnitIcon->SetBrushFromTexture(Icon);
@@ -80,102 +86,105 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo()
 	// 현재 레벨
 	if (UnitLevel)
 	{
-		UnitLevel->SetText(FText::AsNumber(CachedUnitData->GetLevel()));
+		UnitLevel->SetText(FText::AsNumber(UnitData->GetLevel()));
 	}
 
 	// 현재 스텟
 	if (CurrentLevel_Attack)
 	{
 		CurrentLevel_Attack->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Attack) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Attack));
+			UnitData->GetStat(EStatusType::Attack) + UnitModule->GetUnitStat(UnitData->GetDataId()).Attack));
 	}
 	if (CurrentLevel_Health)
 	{
 		CurrentLevel_Health->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Health) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Health));
+			UnitData->GetStat(EStatusType::Health) + UnitModule->GetUnitStat(UnitData->GetDataId()).Health));
 	}
 	if (CurrentLevel_Defence)
 	{
 		CurrentLevel_Defence->SetText(FText::AsNumber(
-			CachedUnitData->GetStat(EStatusType::Defence) + DataManager->GetUnitModule()->GetUnitStat(CachedUnitData->GetDataId()).Defence));
+			UnitData->GetStat(EStatusType::Defence) + UnitModule->GetUnitStat(UnitData->GetDataId()).Defence));
 	}
 
-	// 레벨업 할 때 오를 스텟
-	NextLevelData = DataManager->GetUnitUpgradeStatModule()->GetNextLevelData(CachedUnitData->GetLevelUpGroupId(), CachedUnitData->GetLevel() + 1);
-	if (NextLevelData.IsValid())
+	if (UUnitUpgradeData* UpgradeData = UnitUpgradeStatMoudle->GetNextLevelData(UnitData->GetLevelUpGroupId(), UnitData->GetLevel() + 1))
 	{
-		if (NextLevel_Attack)
+		if (UpgradeData && UpgradeData->GetUpgradeCostType() != EGoodsType::None)
 		{
-			NextLevel_Attack->SetVisibility(NextLevelData->GetAttack() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-			NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), NextLevelData->GetAttack())));
+			UseGoodsType = UpgradeData->GetUpgradeCostType();
+			UseGoodsCost = UpgradeData->GetUpgradeCost();
+
+			// 레벨업 할 때 오를 스텟
+			if (NextLevel_Attack)
+			{
+				NextLevel_Attack->SetVisibility(UpgradeData->GetAttack() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+				NextLevel_Attack->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), UpgradeData->GetAttack())));
+			}
+			if (NextLevel_Health)
+			{
+				NextLevel_Health->SetVisibility(UpgradeData->GetHealth() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+				NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), UpgradeData->GetHealth())));
+			}
+			if (NextLevel_Defence)
+			{
+				NextLevel_Defence->SetVisibility(UpgradeData->GetDefence() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+				NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), UpgradeData->GetDefence())));
+			}
+
+			// 소모될 재화 아이콘
+			if (NextLevel_CostTypeIcon)
+			{
+				UTexture2D* CostTypeIcon = GoodsModule->GetTableData(UpgradeData->GetUpgradeCostType()).Icon.LoadSynchronous();
+				NextLevel_CostTypeIcon->SetBrushFromTexture(CostTypeIcon);
+			}
+
+			// 소모될 재화의 양
+			if (NextLevel_Cost)
+			{
+				if (UpgradeData)
+					NextLevel_Cost->SetText(FText::AsNumber(UpgradeData->GetUpgradeCost()));
+				else
+				{
+					NextLevel_Cost->SetVisibility(ESlateVisibility::Hidden);
+					if (NextLevel_CostTypeIcon)
+						NextLevel_CostTypeIcon->SetVisibility(ESlateVisibility::Hidden);
+				}
+			}
 		}
-		if (NextLevel_Health)
-		{
-			NextLevel_Health->SetVisibility(NextLevelData->GetHealth() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-			NextLevel_Health->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), NextLevelData->GetHealth())));
-		}
-		if (NextLevel_Defence)
-		{
-			NextLevel_Defence->SetVisibility(NextLevelData->GetDefence() > 0.0f ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-			NextLevel_Defence->SetText(FText::FromString(FString::Printf(TEXT(" + %.d"), NextLevelData->GetDefence())));
-		}
+		IsMaxUpgrade = false;
 	}
 	else
 	{
+		// 오를 스텟 텍스트 숨김
 		if (NextLevel_Attack)
 			NextLevel_Attack->SetVisibility(ESlateVisibility::Hidden);
 		if (NextLevel_Health)
 			NextLevel_Health->SetVisibility(ESlateVisibility::Hidden);
 		if (NextLevel_Defence)
 			NextLevel_Defence->SetVisibility(ESlateVisibility::Hidden);
-	}
 
-	// 소모될 재화 아이콘
-	if (NextLevel_CostTypeIcon)
-	{
-		if (NextLevelData.IsValid())
-		{
-			UTexture2D* CostTypeIcon = DataManager->GetGoodsModule()->GetTableData(NextLevelData->GetUpgradeCostType()).Icon.LoadSynchronous();
-			NextLevel_CostTypeIcon->SetBrushFromTexture(CostTypeIcon);
-		}
-	}
-	// 소모될 재화의 양
-	if (NextLevel_Cost)
-	{
-		if (NextLevelData.IsValid())
-			NextLevel_Cost->SetText(FText::AsNumber(NextLevelData->GetUpgradeCost()));
-		else
-		{
+		// 사용될 Cost 와 CostIcon 숨김
+		if (NextLevel_CostTypeIcon)
+			NextLevel_CostTypeIcon->SetVisibility(ESlateVisibility::Hidden);
+		if (NextLevel_Cost)
 			NextLevel_Cost->SetVisibility(ESlateVisibility::Hidden);
-			if (NextLevel_CostTypeIcon)
-				NextLevel_CostTypeIcon->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
 
-	// 다음 레벨이 없다면 버튼 비활성화
-	if (!NextLevelData.IsValid())
-	{
+
+		// 다음 레벨이 없다면 버튼 비활성화
 		if (ButtonText)
 		{
 			ButtonText->SetText(FText::FromString(FString::Printf(TEXT("최대 레벨"))));
-			SetEnableButton(false);
-			return;
 		}
+		if (Btn_UpgradeUnit)
+		{
+			Btn_UpgradeUnit->SetIsEnabled(false);
+		}
+		IsMaxUpgrade = true;
 	}
-
 	CheckEnoughCost();
 }
 
-void UUnitUpgradeBoxWidget::OnTestGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount)
+void UUnitUpgradeBoxWidget::OnGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount)
 {
-	// 버튼 업데이트 테스트용 임시 바인딩(Goods위젯 업데이트 델리게이트 임시 사용)
-	CheckEnoughCost();
-}
-
-void UUnitUpgradeBoxWidget::OnGoodsChangedAmount()
-{
-	// TODO: 재화의 변화가 있을 때 델리게이트를 통해 바인딩
-
 	CheckEnoughCost();
 }
 
@@ -184,18 +193,19 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
 		return;
-	USaveManager* SaveManager = GetWorld()->GetGameInstance()->GetSubsystem<USaveManager>();
-	if (!SaveManager)
+	UGoodsModule* GoodsModule = DataManager->GetGoodsModule();
+	if (!GoodsModule)
 		return;
-	if (!NextLevelData.IsValid())
+	UUnitModule* UnitModule = DataManager->GetUnitModule();
+	if (!UnitModule)
 		return;
 
-	// TODO: 재화 소모 추가 및 처리
-	DataManager->GetGoodsModule()->Add(NextLevelData->GetUpgradeCostType(), -NextLevelData->GetUpgradeCost());
+	// 재화 사용 처리
+	GoodsModule->Add(UseGoodsType, -UseGoodsCost);
 
-	DataManager->GetUnitModule()->UnitLevelUpStat(CachedUnitDataId);
+	// 유닛 스텟 업그레이드
+	UnitModule->UnitLevelUpStat(CachedUnitDataId);
 
-	// 위젯 표시 정보 초기화
 	UpdateUpgradeInfo();
 }
 
@@ -204,31 +214,48 @@ void UUnitUpgradeBoxWidget::CheckEnoughCost()
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
 		return;
+	UGoodsModule* GoodsModule = DataManager->GetGoodsModule();
+	if (!GoodsModule)
+		return;
 
-	if (NextLevelData.IsValid())
+	if (Btn_UpgradeUnit)
 	{
-		if (DataManager->GetGoodsModule()->IsEnough(NextLevelData->GetUpgradeCostType(), NextLevelData->GetUpgradeCost()))
+		if (!IsMaxUpgrade)
 		{
-			SetEnableButton(true);
-		}
-		else
-		{
-			SetEnableButton(false);
+			if (GoodsModule->IsEnough(UseGoodsType, UseGoodsCost))
+			{
+				Btn_UpgradeUnit->SetIsEnabled(true);
+			}
+			else
+			{
+				Btn_UpgradeUnit->SetIsEnabled(false);
+			}
 		}
 	}
 }
 
-void UUnitUpgradeBoxWidget::SetEnableButton(bool IsActive)
+FSlateColor UUnitUpgradeBoxWidget::SetTextByGrade(EGradeType InUnitGradeType)
 {
-	if (Btn_UpgradeUnit)
+	FSlateColor TextColor;
+	switch (InUnitGradeType)
 	{
-		if (IsActive)
-		{
-			Btn_UpgradeUnit->SetIsEnabled(true);
-		}
-		else
-		{
-			Btn_UpgradeUnit->SetIsEnabled(false);
-		}
+	case EGradeType::Common:
+		TextColor = FSlateColor(FLinearColor::White);
+		break;
+	case EGradeType::Uncommon:
+		TextColor = FSlateColor(FLinearColor::Green);
+		break;
+	case EGradeType::Rare:
+		TextColor = FSlateColor(FLinearColor::Blue);
+		break;
+	case EGradeType::Unique:
+		TextColor = FSlateColor(FLinearColor(1.0, 0.5, 0.0));	// Orenge
+		break;
+	case EGradeType::Legend:
+		TextColor = FSlateColor(FLinearColor::Red);
+		break;
+	default:
+		break;
 	}
+	return TextColor;
 }

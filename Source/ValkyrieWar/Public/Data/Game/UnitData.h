@@ -56,6 +56,7 @@ public:
 	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
 	FORCEINLINE int32 GetDataId() { return TableData.DataId; }
 	FORCEINLINE TSoftObjectPtr<UTexture2D> GetIcon() { return TableData.UnitIcon; }
+	FORCEINLINE EUnitCharacterType GetUnitType() { return TableData.UnitType; }
 	FORCEINLINE int32 GetLevelUpGroupId() { return TableData.LevelUpGroupId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
@@ -68,6 +69,5 @@ public:
 	}
 	FORCEINLINE ETeamType GetTeamType() { return TableData.TeamType; }
 	FORCEINLINE int32 GetLevel() { return Level; }
-	FORCEINLINE EUnitCharacterType GetUnitType() { return TableData.UnitType; }
 	FORCEINLINE EGradeType GetCurrentGrade() { return CurrentGrade; }
 };

@@ -27,19 +27,15 @@ protected:
 	virtual void NativeDestruct() override;
 
 public:
-	void Init(TObjectPtr<UUnitData> InUnitData);
+	void Init(int32 InUnitDataId);
 
 	// UI 정보 업데이트
 	void UpdateUpgradeInfo();
-
 protected:
-	// 버튼 업테이트 테스트 함수
-	UFUNCTION()
-	void OnTestGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount);
 	
 	// 재화의 변화가 있을 때 바인딩 할 함수(버튼 활성화 여부를 체크)
 	UFUNCTION()
-	void OnGoodsChangedAmount();
+	void OnGoodsChangedAmount(EGoodsType InGoodsType, uint64 InAmount);
 	// 업그레이드 버튼 바인딩 함수
 	UFUNCTION()
 	void OnUpgradeUnit();
@@ -48,10 +44,9 @@ private:
 	// 재화의 상태에 따라 버튼 활성화/비활성화 설정 함수
 	UFUNCTION()
 	void CheckEnoughCost();
-	// 버튼 활성화/비활성화 설정 함수
-	UFUNCTION()
-	void SetEnableButton(bool IsActive);
 
+	UFUNCTION()
+	FSlateColor SetTextByGrade(EGradeType InUnitGradeType);
 protected:
 	// 유닛 정보
 	UPROPERTY(meta = (BindWidget))
@@ -93,11 +88,13 @@ protected:
 	// 버튼 비활성화 색상설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting|Color")
 	FLinearColor ButtonDisableColor = FLinearColor(0.0f, 0.0f, 0.0f);
+
 private:
-	UPROPERTY()
-	TObjectPtr<UUnitData> CachedUnitData = nullptr;
-	UPROPERTY()
 	int32 CachedUnitDataId = 0;
-	UPROPERTY()
-	TWeakObjectPtr<UUnitUpgradeData> NextLevelData = nullptr;
+	// 업그레이드할 때 사용할 Goods
+	EGoodsType UseGoodsType = EGoodsType::None;
+	// 업그레이드할 때 사용될 Cost
+	int32 UseGoodsCost = 0;
+	// UpgradeData가 있는지 없는지 확인용
+	bool IsMaxUpgrade = false;
 };

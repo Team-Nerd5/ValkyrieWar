@@ -34,7 +34,7 @@ public:
 		OwnUnits.GenerateKeyArray(OutIds);
 	}
 
-	FORCEINLINE const TMap<int32, TObjectPtr<UUnitData>> GetOwnedUnits()
+	FORCEINLINE const TMap<int32, TObjectPtr<UUnitData>>& GetOwnedUnits() const
 	{
 		return OwnUnits;
 	}

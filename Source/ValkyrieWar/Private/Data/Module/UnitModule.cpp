@@ -144,11 +144,6 @@ void UUnitModule::UnitLevelUpStat(int32 InDataId)
 		// 유닛 레벨업
 		TargetUnitData->LevelUp();
 
-		UUnitUpgradeData* UpgradeData = DataManager->GetUnitUpgradeStatModule()->GetNextLevelData(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
-
-		//UnitData의 테이블 데이터를 코드로 바꿔버리는데 이러면 큰일납니다.
-		//데이터 자체를 바꿔버리는거에요. 게임 돌때마다 테이블이 바뀌는 일이 발생합니다.
-
 		FStatValueData BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
 
 		// 증가한 스텟 저장

@@ -23,6 +23,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnValkyrieSelected, UValkyrieData*,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterInfoWidgetOpened);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterInfoWidgetClosed);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitUpgrade, EUnitCharacterType, InUnitType);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpdateInventorySelectedCancel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHiddenInventoryPopup);
 
@@ -46,6 +48,8 @@ public:
 	FOnValkyrieSelected OnValkyrieSelected;
 
 	FOnGoodsUpdate OnGoodsUpdate;
+
+	FOnUnitUpgrade OnUnitUpgrade;
 
 	//캐릭터 정보창 오픈/클로즈 연출
 	FOnCharacterInfoWidgetOpened OnCharacterInfoWidgetOpened;
