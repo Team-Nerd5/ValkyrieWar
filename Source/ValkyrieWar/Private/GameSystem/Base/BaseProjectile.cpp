@@ -117,6 +117,11 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 	else if (AProjectileWallActor* TargetWall = Cast<AProjectileWallActor>(OtherActor))
 	{
+		if (TargetWall->GetTeamType() == TeamType)
+		{
+			return;
+		}
+
 		TargetActor = TargetWall;
 	}
 	else
