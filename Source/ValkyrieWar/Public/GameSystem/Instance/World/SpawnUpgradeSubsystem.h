@@ -139,4 +139,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "SpawnUpgrade")
 	int32 DefaultReserveSize = 30;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn")
+	float DefaultSpawnCooltime = 10.0f;
 };

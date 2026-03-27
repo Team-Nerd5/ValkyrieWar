@@ -198,6 +198,9 @@ bool USpawnUpgradeSubsystem::MakeSpawnEntry(
 	OutEntry.ReserveSize = DefaultReserveSize;
 	OutEntry.SpawnCount = FMath::Max(0, InSpawnCount);
 
+	float UnitSpawnCooltime = InUnitModule->GetUnitSpawnCooltime(InUnitDataId);
+	OutEntry.SpawnInterval = UnitSpawnCooltime > 0.0f ? UnitSpawnCooltime : DefaultSpawnCooltime;
+
 	if (!OutEntry.UnitClass)
 	{
 		UE_LOG(LogTemp, Warning,

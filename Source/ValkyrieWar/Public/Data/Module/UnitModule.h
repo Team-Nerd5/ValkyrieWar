@@ -71,6 +71,14 @@ public:
 			return nullptr;
 	}
 
+	FORCEINLINE float GetUnitSpawnCooltime(int32 InDataId)
+	{
+		if (TableDataByDataId.Contains(InDataId))
+			return TableDataByDataId.FindChecked(InDataId).SpawnCooltime;
+		else
+			return 10.0f;
+	}
+
 	FORCEINLINE FStatValueData GetUnitStat(int32 InDataId)
 	{
 		if (UnitAddedStats.Contains(InDataId))

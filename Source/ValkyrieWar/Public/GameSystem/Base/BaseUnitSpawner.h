@@ -37,6 +37,12 @@ struct FSpawnUnitEntry
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta = (ClampMin = "0"))
 	int32 SpawnCount = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SpawnInterval = 10.0f;
+
+	UPROPERTY()
+	float CurrentCooltime = 0.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 UnitLevel = 1;
 
@@ -141,7 +147,7 @@ protected:
 	bool bAutoStart = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta = (ClampMin = "0.01"))
-	float SpawnInterval = 10.0f;
+	float SpawnTimerInterval = 1.0f;
 
 	// NotifyUnitReleased 못 받는 경우 대비
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")

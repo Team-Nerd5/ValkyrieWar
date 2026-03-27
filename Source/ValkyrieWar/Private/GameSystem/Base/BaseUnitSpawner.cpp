@@ -91,16 +91,19 @@ void ABaseUnitSpawner::StartSpawning()
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[Spawner] StartSpawning success. Interval=%.2f"), SpawnInterval);
+	// 시작 시 모든 엔트리 쿨타임 초기화
+	for (FSpawnUnitEntry& Entry : SpawnEntries)
+	{
+		Entry.CurrentCooltime = 0.0f;
+	}
 
 	BP_OnSpawningStarted();
 
-	const float Interval = FMath::Max(0.01f, SpawnInterval);
 	GetWorldTimerManager().SetTimer(
 		SpawnTickHandle,
 		this,
 		&ABaseUnitSpawner::HandleSpawnTick,
-		Interval,
+		SpawnTimerInterval,
 		true
 	);
 }
@@ -109,13 +112,21 @@ void ABaseUnitSpawner::StopSpawning()
 {
 	GetWorldTimerManager().ClearTimer(SpawnTickHandle);
 
+	for (FSpawnUnitEntry& Entry : SpawnEntries)
+	{
+		Entry.CurrentCooltime = 0.0f;
+	}
+
 	if (UObjectPoolSubsystem* Pool = GetPool())
 	{
 		for (TWeakObjectPtr<AUnitCharacter>& W : SpawnedUnits)
 		{
 			if (AUnitCharacter* Unit = W.Get())
 			{
-				if (Unit->IsInPool()) continue;
+				if (Unit->IsInPool())
+				{
+					continue;
+				}
 
 				if (Unit->GetMyPoolType() != EPoolTypes::None)
 				{
@@ -185,19 +196,51 @@ bool ABaseUnitSpawner::TryInitPoolForEntry(const FSpawnUnitEntry& Entry)
 
 void ABaseUnitSpawner::HandleSpawnTick()
 {
-	if (SpawnEntries.IsEmpty()) return;
-	if (!TryInitPools()) return;
+	if (SpawnEntries.IsEmpty())
+	{
+		return;
+	}
+
+	if (!TryInitPools())
+	{
+		return;
+	}
 
 	CompactSpawnedUnits();
 
 	int32 Budget = FMath::Max(0, MaxSpawnPerTick);
-	if (Budget <= 0) return;
-
-	for (const FSpawnUnitEntry& Entry : SpawnEntries)
+	if (Budget <= 0)
 	{
-		if (Budget <= 0) break;
-		if (Entry.SpawnCount <= 0) continue;
+		return;
+	}
 
+	for (FSpawnUnitEntry& Entry : SpawnEntries)
+	{
+		if (Budget <= 0)
+		{
+			break;
+		}
+
+		if (Entry.SpawnCount <= 0)
+		{
+			continue;
+		}
+
+		if (Entry.SpawnInterval <= 0.0f)
+		{
+			continue;
+		}
+
+		// 쿨타임 누적
+		Entry.CurrentCooltime += SpawnTimerInterval;
+
+		// 아직 스폰 시점이 아니면 넘어감
+		if (Entry.CurrentCooltime < Entry.SpawnInterval)
+		{
+			continue;
+		}
+
+		// 이번 tick에 스폰 가능한 수
 		const int32 SpawnNum = FMath::Min(Entry.SpawnCount, Budget);
 
 		for (int32 i = 0; i < SpawnNum; ++i)
@@ -206,6 +249,15 @@ void ABaseUnitSpawner::HandleSpawnTick()
 		}
 
 		Budget -= SpawnNum;
+
+		// 쿨타임 초기화 대신 초과분 보정
+		Entry.CurrentCooltime -= Entry.SpawnInterval;
+
+		// 안전장치
+		if (Entry.CurrentCooltime < 0.0f)
+		{
+			Entry.CurrentCooltime = 0.0f;
+		}
 	}
 }
 
