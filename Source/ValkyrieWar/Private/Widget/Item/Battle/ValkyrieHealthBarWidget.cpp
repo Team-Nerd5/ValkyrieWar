@@ -39,6 +39,6 @@ void UValkyrieHealthBarWidget::RefreshHp(float CurrentHp, float MaxHp)
 
 	if (Text_HP)
 	{
-		Text_HP->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHp, MaxHp)));
+		Text_HP->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), FMath::Max(0.0f, CurrentHp), MaxHp)));
 	}
 }
