@@ -56,8 +56,6 @@ void UCharacterInfoWidget::NativeOnInitialized()
 	{
 		ItemListWidget->SetMenu(CharacterInfoTabNameData);
 	}
-	InitItemList();
-	InitValkyrieList();
 }
 
 void UCharacterInfoWidget::OpenUI()
@@ -65,6 +63,9 @@ void UCharacterInfoWidget::OpenUI()
 	UIType = EUIType::PopupCharacterInfo;
 
 	Super::OpenUI();
+
+	InitItemList();
+	InitValkyrieList();
 
 	CurrentFilterType = ECharacterInfoFilterType::All;
 	if (ItemListWidget)
@@ -167,6 +168,14 @@ void UCharacterInfoWidget::OnClickSetMain()
 	}
 
 	//메인 관련 버튼, UI 갱신
+	if (SetMainButton)
+	{
+		SetMainButton->SetIsEnabled(SelectedValkyrie != MainValkyrie);
+	}
+	if (MainValkyrieIcon)
+	{
+		MainValkyrieIcon->SetVisibility(SelectedValkyrie == MainValkyrie ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 }
 
 //선택된 캐릭터가 바뀜
