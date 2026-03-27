@@ -38,4 +38,6 @@ public:
 	EUnitCharacterType UnitType = EUnitCharacterType::SwordMan;
 	UPROPERTY(EditAnywhere)
 	int32 LevelUpGroupId = 0;
+	UPROPERTY(EditAnywhere)
+	float SpawnCooltime = 0.0f;
 };
