@@ -68,8 +68,7 @@ void UUnitSpawnUpgradeCardWidget::NativeConstruct()
 
 	if (UpgradeButton)
 	{
-		UpgradeButton->OnClicked.RemoveDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
-		UpgradeButton->OnClicked.AddDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
+		UpgradeButton->OnClicked.AddUniqueDynamic(this, &UUnitSpawnUpgradeCardWidget::HandleUpgradeButton);
 	}
 }
 

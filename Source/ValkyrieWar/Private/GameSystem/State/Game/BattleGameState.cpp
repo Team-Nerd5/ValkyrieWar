@@ -76,12 +76,9 @@ void ABattleGameState::ChangeState(EBattleState InState)
 	case EBattleState::MoveToLobby:
 		StopStageTimer();
 
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 		{
-			if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
-			{
-				LevelManager->LoadMap(EMapType::Lobby, true);
-			}
+			LevelManager->LoadMap(EMapType::Lobby, true);
 		}
 		break;
 	default:

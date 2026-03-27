@@ -34,7 +34,7 @@ void ULevelManager::LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadD
 	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
 	{
 		TSoftObjectPtr<UWorld> MapObject = GameManager->GetMapObject(InMapType);
-		if (MapObject.IsValid())
+		if (!MapObject.IsNull())
 		{
 			LoadLevelAsync(MapObject, bShowLoading);
 

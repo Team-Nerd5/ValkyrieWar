@@ -40,7 +40,7 @@ TSoftObjectPtr<UWorld> UGameManager::GetMapObject(EMapType InMapType)
         {
             if (row->UIType == InMapType)
             {
-                return row->Map.LoadSynchronous();
+                return row->Map;
             }
         }
     }
