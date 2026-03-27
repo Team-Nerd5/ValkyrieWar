@@ -70,6 +70,15 @@ public:
 	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
 	FORCEINLINE FString const GetValkyrieName() { return TableData.Name; }
 	FORCEINLINE TSoftObjectPtr<UTexture2D> const GetIcon() { return TableData.Icon; }
+	FORCEINLINE UItemData* GetRealEquippedItem(EEquipGroup InType)
+	{
+		if (EquippedItem.Contains(InType))
+		{
+			return EquippedItem.FindChecked(InType);
+		}
+		else
+			return nullptr;
+	}
 	FORCEINLINE UItemData* GetEquippedItem(EEquipGroup InType)
 	{
 		if (EquippedItem.Contains(InType))

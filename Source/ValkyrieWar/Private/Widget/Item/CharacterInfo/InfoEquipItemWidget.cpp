@@ -26,6 +26,8 @@ void UInfoEquipItemWidget::NativeDestruct()
 
 void UInfoEquipItemWidget::InitEquip(EEquipGroup InEquipGroup, TSoftObjectPtr<UTexture2D> InIcon)
 {
+	EquipGroup = InEquipGroup;
+
 	if (ItemIcon)
 		ItemIcon->SetVisibility(ESlateVisibility::Hidden);
 

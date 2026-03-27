@@ -183,7 +183,8 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 {
 	SelectedValkyrie = InValkyrieData;
 
-	if (UItemData* EquipWeapon = SelectedValkyrie->GetEquippedItem(EEquipGroup::Weapon))
+	//기본장비는 표기안함
+	if (UItemData* EquipWeapon = SelectedValkyrie->GetRealEquippedItem(EEquipGroup::Weapon))
 	{
 		WeaponItem->SetEquip(EquipWeapon->GetIcon());
 	}

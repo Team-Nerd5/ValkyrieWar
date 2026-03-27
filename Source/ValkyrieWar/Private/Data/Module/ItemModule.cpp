@@ -50,7 +50,7 @@ uint64 UItemModule::GetExistItemUID(int32 InDataId)
 	return 0;
 }
 
-void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
+void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount, uint64 InEquipCharacter)
 {
 	FItemDataRow TableData = GetTableDataById(InDataId);
 
@@ -59,6 +59,7 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount)
 		UItemData* NewItem = NewObject<UItemData>(this);
 
 		NewItem->Initialize(InUID, InAmount, TableData);
+		NewItem->Equip(InEquipCharacter);
 
 		OwnItems.Add(InUID, NewItem);
 		SetList();

@@ -26,7 +26,7 @@ public:
 	/// <param name="InUID"></param>
 	/// <param name="InDataId"></param>
 	/// <param name="InAmount"></param>
-	void LoadItem(uint64 InUID, int32 InDataId, int32 InAmount);
+	void LoadItem(uint64 InUID, int32 InDataId, int32 InAmount, uint64 InEquipCharacter = 0);
 
 	/// <summary>
 	/// 아이템 새로 추가(획득)

@@ -16,10 +16,14 @@ struct VALKYRIEWAR_API FItemDataStruct
 {
 	GENERATED_BODY()
 public:
-	uint64 UID;
-	int32 DataId;
-	int32 Amount;
-	uint64 EquipCharacter;
+	UPROPERTY()
+	uint64 UID = 0;
+	UPROPERTY()
+	int32 DataId = 0;
+	UPROPERTY()
+	int32 Amount = 0;
+	UPROPERTY()
+	uint64 EquipCharacter = 0;
 };
 
 UCLASS()

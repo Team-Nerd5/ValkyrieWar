@@ -288,6 +288,20 @@ void USaveManager::RemoveSaveItem(uint64 InUID)
 void USaveManager::SetItemData()
 {
 	//로드된 보유 아이템 데이터를 가져옴
+	if (Item)
+	{
+		if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+		{
+			for (auto& ItemData : Item->ItemDataList)
+			{
+				DataManager->GetItemModule()->LoadItem(
+					ItemData.Value.UID,
+					ItemData.Value.DataId,
+					ItemData.Value.Amount,
+					ItemData.Value.EquipCharacter);
+			}
+		}		
+	}
 }
 
 void USaveManager::SetGoodsData()
