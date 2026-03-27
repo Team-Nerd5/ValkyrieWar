@@ -447,13 +447,16 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 {
 	Data = InData;
 
-	if (StatAttributeSet)
+	if (!StatAttributeSet)
 	{
-		StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
-		StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
-		StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
-		StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+		StatAttributeSet = NewObject<UStatAttributeSet>(this);
+		AbilitySystemComponent->AddAttributeSetSubobject<UStatAttributeSet>(StatAttributeSet);
 	}
+
+	StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
+	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
+	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
+	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
 
 	EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
 
