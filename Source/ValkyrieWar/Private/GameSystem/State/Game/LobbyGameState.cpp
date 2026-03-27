@@ -42,6 +42,10 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		break;
 	case ELobbyState::MoveToStage:
 		//UI 지워주고 스테이지로 레벨전환
+		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		{
+			UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
+		}
 		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 		{
 			LevelManager->LoadMap(EMapType::Battle, true);
