@@ -91,6 +91,8 @@ protected:
 public:
 	void UnitLevelUpStat(int32 InDataId);
 
+	UUnitData* CreateEnemyData(int32 InDataId);
+
 private:
 	TMap<int32, FUnitDataRow> TableDataByDataId;
 

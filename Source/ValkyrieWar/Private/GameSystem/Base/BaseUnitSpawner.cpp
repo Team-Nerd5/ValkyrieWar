@@ -252,7 +252,7 @@ UUnitData* ABaseUnitSpawner::ResolveUnitDataObject(int32 DataId) const
 		{
 			if (UUnitModule* UnitModule = DataManager->GetUnitModule())
 			{
-				return UnitModule->GetUnitDataById(DataId);
+				return UnitModule->CreateEnemyData(DataId);
 			}
 		}
 	}

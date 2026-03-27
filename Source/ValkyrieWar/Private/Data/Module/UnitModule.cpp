@@ -151,3 +151,17 @@ void UUnitModule::UnitLevelUpStat(int32 InDataId)
 	}
 	
 }
+
+UUnitData* UUnitModule::CreateEnemyData(int32 InDataId)
+{
+	if (TableDataByDataId.Contains(InDataId))
+	{
+		FUnitDataRow TableData = TableDataByDataId.FindChecked(InDataId);
+		UUnitData* NewData = NewObject<UUnitData>(this);
+		NewData->MakeData(TableData, GameManager.Get());
+
+		return NewData;
+	}
+
+	return nullptr;
+}
