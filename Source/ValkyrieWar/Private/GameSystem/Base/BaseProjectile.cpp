@@ -11,6 +11,7 @@
 #include "Data/Attribute/StatAttributeSet.h"
 
 #include "NiagaraComponent.h"
+#include <Object/Actor/Wall/ProjectileWallActor.h>
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -100,13 +101,32 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	ABaseCharacter* TargetUnit = Cast<ABaseCharacter>(OtherActor);
-	//현재 상태...스폰되자마자 자신이랑 충돌됨. 팀타입이 None이니까 충돌처리되서 제거됨...
-	if (!TargetUnit || TargetUnit->IsDead() || TargetUnit->GetTeamType() == TeamType) return;
+	AActor* TargetActor = nullptr;
+
+	UE_LOG(LogTemp, Log, TEXT("OnOverlap : %s"), *OtherActor->GetFName().ToString());
+
+	if (ABaseCharacter* TargetUnit = Cast<ABaseCharacter>(OtherActor))
+	{
+		//현재 상태...스폰되자마자 자신이랑 충돌됨. 팀타입이 None이니까 충돌처리되서 제거됨...
+		if (TargetUnit->IsDead() || TargetUnit->GetTeamType() == TeamType)
+		{
+			return;
+		}
+
+		TargetActor = TargetUnit;
+	}
+	else if (AProjectileWallActor* TargetWall = Cast<AProjectileWallActor>(OtherActor))
+	{
+		TargetActor = TargetWall;
+	}
+	else
+	{
+		return;
+	}
 
 	FGameplayEventData Payload;
 	Payload.Instigator = this;
-	Payload.Target = TargetUnit;
+	Payload.Target = TargetActor;
 
 	for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
 	{
@@ -125,10 +145,10 @@ void ABaseProjectile::OnOverlap(UPrimitiveComponent* OverlappedComponent,
 
 	if (PlayCueOnTarget.Num() > 0)
 	{
-		for (FGameplayCueData Cue : PlayCueOnTarget)
+		for (FGameplayCueData& Cue : PlayCueOnTarget)
 		{
 			FGameplayCueParameters CueParams;
-			CueParams.Location = TargetUnit->GetActorLocation();
+			CueParams.Location = TargetActor->GetActorLocation();
 
 			AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
 		}

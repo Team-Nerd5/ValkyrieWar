@@ -15,6 +15,7 @@
 #include "Widget/HUD/BattleWidget.h"
 #include "Widget/Loading/LoadingWidget.h"
 #include "Widget/Popup/Battle/BattleResultWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void ABattleGameState::ChangeState(EBattleState InState)
 {
@@ -178,6 +179,8 @@ void ABattleGameState::CheckTimeOver()
 
 void ABattleGameState::ShowBattleResult()
 {
+	UGameplayStatics::SetGamePaused(this, true);
+
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
 		TArray<int32> RewardId;

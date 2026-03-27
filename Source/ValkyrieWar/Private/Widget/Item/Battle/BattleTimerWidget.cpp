@@ -10,13 +10,11 @@ void UBattleTimerWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// 이벤트 바인딩 (너가 말한 방식)
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		WorldEventSystem->Battle.OnInGameTimeChanged.AddDynamic(this, &UBattleTimerWidget::OnTimeChanged);
 	}
 
-	// 초기 상태
 	UpdateTimeTextAndColor(0.f);
 }
 
@@ -24,7 +22,6 @@ void UBattleTimerWidget::NativeDestruct()
 {
 	StopBlink();
 
-	// 이벤트 언바인드 (크래시 방지)
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		WorldEventSystem->Battle.OnInGameTimeChanged.RemoveDynamic(this, &UBattleTimerWidget::OnTimeChanged);
@@ -39,7 +36,6 @@ void UBattleTimerWidget::OnTimeChanged(float InCurrentTime)
 
 	const int32 TotalSec = FMath::Max(0, FMath::FloorToInt(InCurrentTime));
 
-	// 10초 이하: blink ON
 	if (TotalSec <= BlinkSeconds)
 	{
 		StartBlink();
@@ -60,11 +56,9 @@ void UBattleTimerWidget::UpdateTimeTextAndColor(float InSeconds)
 
 	TimeText->SetText(FText::FromString(FString::Printf(TEXT("%02d:%02d"), Min, Sec)));
 
-	// 60초 이하: 빨강 / 그 외: 흰색
 	if (TotalSec <= WarningSeconds)
 	{
 		TimeText->SetColorAndOpacity(FSlateColor(WarningColor));
-		// 알파(깜빡임)는 ToggleBlink()에서 SetRenderOpacity로만 처리
 	}
 	else
 	{
@@ -104,7 +98,6 @@ void UBattleTimerWidget::StopBlink()
 		GetWorld()->GetTimerManager().ClearTimer(BlinkTimerHandle);
 	}
 
-	// 복구: 빨강 상태 유지(<=60초일 때), 알파는 1로
 	if (TimeText)
 	{
 		TimeText->SetRenderOpacity(1.f);
@@ -117,7 +110,6 @@ void UBattleTimerWidget::ToggleBlink()
 
 	bBlinkOn = !bBlinkOn;
 
-	// Opacity만 토글 (색은 빨강 유지)
 	const float Opacity = bBlinkOn ? 1.0f : 0.3f;
 	TimeText->SetRenderOpacity(Opacity);
 }
