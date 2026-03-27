@@ -56,11 +56,17 @@ void USpawnUpgradeSubsystem::InitAllyUnitDataIds()
 	UUnitModule* UnitModule = GetUnitModule();
 	if (!UnitModule) return;
 
-	TArray<int32> OwnedUnitIds;
-	UnitModule->GetOwnedUnitIds(OwnedUnitIds);
-
-	for (int32 UnitDataId : OwnedUnitIds)
+	TMap<int32, TObjectPtr<UUnitData>> OwnedUnits = UnitModule->GetOwnedUnits();
+	int32 UnitDataId = 0;
+	 
+	for (const TPair<int32, TObjectPtr<UUnitData>>& Pair : OwnedUnits)
 	{
+		UUnitData* UnitData = Pair.Value;
+
+		if (!UnitData) continue;
+
+		UnitDataId = UnitData->GetDataId();
+
 		if (UnitModule->GetUnitTeam(UnitDataId) == ETeamType::Ally)
 		{
 			AllyUnitIdList.AddUnique(UnitDataId);
