@@ -36,7 +36,7 @@ ABaseProjectile::ABaseProjectile()
 	Effect->SetupAttachment(RootComponent);
 	Effect->SetAutoActivate(false);
 
-	InitialLifeSpan = 3.0f;
+	InitialLifeSpan = .5f;
 }
 
 void ABaseProjectile::BeginPlay()
@@ -47,12 +47,14 @@ void ABaseProjectile::BeginPlay()
 void ABaseProjectile::OnGet_Implementation()
 {
 	Collision->OnComponentBeginOverlap.Clear();
+	MovementComponent->Velocity = FVector::ZeroVector;
+	MovementComponent->UpdateComponentVelocity();
 }
 
 void ABaseProjectile::OnRelease_Implementation()
 {
 	TeamType = ETeamType::None;
-	Effect->SetActive(false);
+	Effect->Deactivate();
 	MovementComponent->StopMovementImmediately();
 	MovementComponent->Deactivate();
 }
@@ -79,8 +81,8 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnOverlap);
 	}
 
-	Effect->SetActive(true);
-	//공격을 직접 넣어줘야겠는데..?
+	Effect->ResetSystem();
+	Effect->Activate(true);
 
 	StatAttributeSet->SetHealth(0.0f);
 	StatAttributeSet->SetMaxHealth(0.0f);
@@ -89,6 +91,7 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 	PlayCueOnTarget = InCues;
 }
 
+//
 void ABaseProjectile::SetAttack(float InAttack)
 {
 	StatAttributeSet->SetAttack(InAttack);

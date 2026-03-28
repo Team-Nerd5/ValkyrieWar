@@ -383,7 +383,7 @@ void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)
 		TArray<FGameplayCueData> Cues = UsingSkill->GetCue(EGameplayCueOrder::OnExecute);
 		if (Cues.Num() > 0)
 		{
-			for (const FGameplayCueData Cue : Cues)
+			for (const FGameplayCueData& Cue : Cues)
 			{
 				FGameplayCueParameters CueParams;
 				CueParams.Location = GetActorLocation() + Cue.Offset;
@@ -407,10 +407,6 @@ void AValkyrieCharacter::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterr
 
 void AValkyrieCharacter::OnSkillNotify()
 {	
-	//근접 공격 시 데미지 처리
-	//원거리 공격 시 발사체 생성 위치
-	//무기 동작을 시작하는 지점 아님
-	//TODO : 원거리는 발사체 생성해서 어빌리티 넘겨줘야함
 	if (SkillDataList[UsingSkillIndex]->GetAttackType() == EAttackType::Melee)
 	{
 		ApplySkill(UsingSkillIndex, nullptr);
@@ -419,23 +415,38 @@ void AValkyrieCharacter::OnSkillNotify()
 	}
 	else
 	{
+		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+		{
+			FVector FirePos = GetActorLocation();
+			if (EquippedWeapon->IsSkeletalWeapon())
+			{
+				if (!SkeletalWeapon->DoesSocketExist(FName("FirePos")))
+				{
+					UE_LOG(LogTemp, Error, TEXT("Weapon id %d doesn't have FirePos Socket!!"), EquippedWeapon->GetTableData().DataId);
+					return;
+				}
+				FirePos = SkeletalWeapon->GetSocketLocation(FName("FirePos"));
+			}
+			else
+			{
+				if (StaticWeapon->DoesSocketExist(FName("FirePos")))
+				{
+					UE_LOG(LogTemp, Error, TEXT("Weapon id %d doesn't have FirePos Socket!!"), EquippedWeapon->GetTableData().DataId);
+					return;
+				}
+			}
+			ABaseProjectile* Projectile = Pool->Get<ABaseProjectile>(SkillDataList[UsingSkillIndex]->GetProjectileData()->EPoolTypes, FirePos, GetActorRotation());
+			Projectile->SetTeam(GetTeamType());
+			float TotalAttack = StatAttributeSet->GetAttack();
 
+			if (EquippedWeapon)
+			{
+				TotalAttack += EquippedWeapon->GetStat().Attack;
+			}
+			Projectile->SetAttack(TotalAttack);
+			Projectile->SetData(SkillDataList[UsingSkillIndex]->GetAbilityTag(), AttackSpec, *SkillDataList[UsingSkillIndex]->GetProjectileData(), SkillDataList[UsingSkillIndex]->GetCue(EGameplayCueOrder::InProjectile));
+		}
 	}
-
-	//TArray<AActor*> FoundEnemies;
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AUnitCharacter::StaticClass(), FoundEnemies);
-
-	//for (AActor* Actor : FoundEnemies)
-	//{
-	//	if (Actor == this) continue;
-	//	if (UArrowStackComponent* StackComp = Actor->FindComponentByClass<UArrowStackComponent>())
-	//	{
-	//		if (StackComp->StackingArrows.Num() > 0)
-	//		{
-	//			StackComp->PullIt(CachedSkillDamage);
-	//		}
-	//	}
-	//}
 }
 
 ETeamType AValkyrieCharacter::GetTeamType() const
