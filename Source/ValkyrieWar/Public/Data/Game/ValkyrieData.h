@@ -37,7 +37,7 @@ private:
 	TArray<TObjectPtr<USkillData>> SkillData;
 
 	UPROPERTY()
-	TMap<EStatusType, float> Stat;
+	FStatValueData Stat;
 
 	UPROPERTY()
 	EGradeType Grade = EGradeType::Uncommon;
@@ -66,7 +66,7 @@ public:
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData;}
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
 	FORCEINLINE TSoftClassPtr<class AValkyrieCharacter> GetSpawnClass() { return TableData.SpawnClass; }
-	FORCEINLINE float GetStat(EStatusType InType) { return *Stat.Find(InType); }
+	FORCEINLINE FStatValueData GetStat() { return Stat; }
 	FORCEINLINE bool IsEquipped(EEquipGroup InEquipGroup) { return EquippedItem.Contains(InEquipGroup); }
 	FORCEINLINE FString const GetValkyrieName() { return TableData.Name; }
 	FORCEINLINE TSoftObjectPtr<UTexture2D> const GetIcon() { return TableData.Icon; }

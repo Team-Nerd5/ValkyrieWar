@@ -98,10 +98,8 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 		{
 			for (AActor* Actor : LoadedLevel->Actors)
 			{
-				// 1. 배열의 해당 인덱스가 비어있지 않은지 반드시 먼저 확인합니다.
 				if (Actor != nullptr)
 				{
-					// 2. 그 다음 클래스를 확인하고 캐스팅합니다.
 					if (Actor->IsA(ACameraActor::StaticClass()))
 					{
 						if (Actor->ActorHasTag("CharacterInfo"))
@@ -176,8 +174,6 @@ void ALobbyPlayerController::OnLobbyLevelShown()
 					StageWidget->OpenStageList(NextStage);
 				}
 			}
-
-			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
 	}
 

@@ -7,7 +7,7 @@
 void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* InGameManager)
 {
 	TableData = InTableData;
-	Stat.Empty();
+	Stat = FStatValueData();
 
 	if (InGameManager)
 	{
@@ -28,9 +28,7 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 			FStatGroupDataRow StatData = DataManager->GetStatGroupModule()->GetData(TableData.StatId);
 			if (StatData.DataId > 0)
 			{
-				Stat.Add(EStatusType::Attack, StatData.Attack);
-				Stat.Add(EStatusType::Defence, StatData.Defence);
-				Stat.Add(EStatusType::Health, StatData.Health);
+				Stat.Add(StatData.Attack, StatData.Defence, StatData.Health);
 			}
 		}
 	}

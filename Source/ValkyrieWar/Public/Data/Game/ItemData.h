@@ -17,7 +17,7 @@ class VALKYRIEWAR_API UItemData : public UObject
 	GENERATED_BODY()
 
 public:
-	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData);
+	void Initialize(uint64 InUID, int32 InAmount, FItemDataRow InTableData, UGameManager* InGameManager);
 	void AddAmount(int32 InAmount);
 	void Equip(uint64 InEquipCharacter);
 	void MakeData(FItemDataRow InTableData, UGameManager* InGameManager);

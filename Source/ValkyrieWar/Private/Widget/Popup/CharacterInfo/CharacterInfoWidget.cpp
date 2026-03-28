@@ -11,6 +11,7 @@
 #include "Widget/HUD/LobbyWidget.h"
 #include "Widget/Popup/Inventory/ItemListWidget.h"
 #include "Widget/Popup/CharacterInfo/ValkyrieListWidget.h"
+#include "Widget/Item/CharacterInfo/ValkyrieStatWidget.h"
 
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -94,7 +95,6 @@ void UCharacterInfoWidget::CloseUI()
 		}
 	}
 
-
 	Super::CloseUI();
 }
 
@@ -125,8 +125,15 @@ void UCharacterInfoWidget::InitValkyrieList()
 	if (ValkyrieListWidget)
 	{
 		ValkyrieListWidget->SetData(OriginValkyires);
-		ValkyrieListWidget->SelectValkyrie(MainValkyrie);
-		OnValkyrieSelected(MainValkyrie);
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().SetTimerForNextTick([this]()
+				{
+					ValkyrieListWidget->SelectValkyrie(MainValkyrie);
+					OnValkyrieSelected(MainValkyrie);
+				});
+		}
+		
 	}
 
 	
@@ -186,7 +193,7 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 	//기본장비는 표기안함
 	if (UItemData* EquipWeapon = SelectedValkyrie->GetRealEquippedItem(EEquipGroup::Weapon))
 	{
-		WeaponItem->SetEquip(EquipWeapon->GetIcon());
+		WeaponItem->SetEquip(EquipWeapon->GetIcon());		
 	}
 	if (UItemData* EquipArmor = SelectedValkyrie->GetEquippedItem(EEquipGroup::Armor))
 	{
@@ -206,6 +213,8 @@ void UCharacterInfoWidget::OnValkyrieSelected(UValkyrieData* InValkyrieData)
 	{
 		MainValkyrieIcon->SetVisibility(SelectedValkyrie == MainValkyrie ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+
+	UpdateStat();
 }
 
 void UCharacterInfoWidget::OnClickUnEquip(EEquipGroup InEquipGroup)
@@ -223,7 +232,9 @@ void UCharacterInfoWidget::OnClickUnEquip(EEquipGroup InEquipGroup)
 			//무기면 캐릭터 장비 메쉬 빼야함...
 			EventSystem->Widget.OnUnEquipItem.Broadcast();
 		}
-	}		
+	}
+
+	UpdateStat();
 }
 
 void UCharacterInfoWidget::OnClickEquip(UItemData* InItemData)
@@ -252,5 +263,30 @@ void UCharacterInfoWidget::OnClickEquip(UItemData* InItemData)
 	{
 		//무기 메쉬 변경
 		EventSystem->Widget.OnEquipItem.Broadcast(InItemData);
+	}
+
+	UpdateStat();
+}
+
+void UCharacterInfoWidget::UpdateStat()
+{
+	FStatValueData EquipStat;
+
+	if (UItemData* EquipWeapon = SelectedValkyrie->GetEquippedItem(EEquipGroup::Weapon))
+	{
+		EquipStat.Add(EquipWeapon->GetStat());
+	}
+	if (UItemData* EquipArmor = SelectedValkyrie->GetEquippedItem(EEquipGroup::Armor))
+	{
+		EquipStat.Add(EquipArmor->GetStat());
+	}
+	if (UItemData* EquipHelmet = SelectedValkyrie->GetEquippedItem(EEquipGroup::Helmet))
+	{
+		EquipStat.Add(EquipHelmet->GetStat());
+	}
+
+	if (StatWidget)
+	{
+		StatWidget->SetStatValue(SelectedValkyrie->GetStat(), EquipStat);
 	}
 }

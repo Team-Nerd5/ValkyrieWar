@@ -35,7 +35,10 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		//캐릭터 생성/배치
 		break;
 	case ELobbyState::Ready:
-		//그냥 로비 표기상태..
+		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		{
+			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
+		}
 		break;
 	case ELobbyState::Gacha:
 

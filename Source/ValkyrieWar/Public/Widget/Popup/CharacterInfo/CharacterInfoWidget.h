@@ -45,6 +45,8 @@ protected:
 	UFUNCTION()
 	void OnClickEquip(UItemData* InItemData);
 
+	void UpdateStat();
+
 public:
 	virtual void OpenUI() override;
 	virtual void CloseUI() override;
@@ -73,6 +75,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<EEquipGroup, TSoftObjectPtr<UTexture2D>> TypeIcons;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UValkyrieStatWidget> StatWidget = nullptr;
 private:
 
 	UPROPERTY()

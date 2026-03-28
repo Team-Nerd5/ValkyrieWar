@@ -21,4 +21,7 @@ public:
 
 	UFUNCTION(exec)
 	void AddGoods(EGoodsType InDataId, int64 InAmount);
+
+	UFUNCTION(exec)
+	void AddAll();
 };

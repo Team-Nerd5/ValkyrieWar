@@ -39,6 +39,7 @@ void UValkyrieListWidget::SelectValkyrie(UValkyrieData* InData)
 		if (Data->GetUID() == InData->GetUID())
 		{
 			ValkyrieListView->SetItemSelection(Data, true);
+			ValkyrieListView->RequestNavigateToItem(Data);
 			break;
 		}
 	}

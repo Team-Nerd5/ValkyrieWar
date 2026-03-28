@@ -58,7 +58,7 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount, uint64 
 	{
 		UItemData* NewItem = NewObject<UItemData>(this);
 
-		NewItem->Initialize(InUID, InAmount, TableData);
+		NewItem->Initialize(InUID, InAmount, TableData, GameManager.Get());
 		NewItem->Equip(InEquipCharacter);
 
 		OwnItems.Add(InUID, NewItem);
@@ -136,7 +136,7 @@ UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 		UItemData* NewItem = NewObject<UItemData>(this);
 		uint64 UID = GameManager->GetItemUID();
 
-		NewItem->Initialize(UID, InAmount, InTableData);
+		NewItem->Initialize(UID, InAmount, InTableData, GameManager.Get());
 
 		OwnItems.Add(UID, NewItem);
 		SetList();

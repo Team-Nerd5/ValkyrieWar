@@ -152,6 +152,15 @@ void AValkyrieCharacter::EquipWeapon(UItemData* InWeapon)
 				UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
 				if (NewBS)
 					LocomotionBS = NewBS;
+
+				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+				if (AnimInstance)
+				{
+					if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
+					{
+						BaseInstance->SetInstacne(LocomotionBS, this);
+					}
+				}
 			}
 		}
 	}
@@ -453,10 +462,12 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 		AbilitySystemComponent->AddAttributeSetSubobject<UStatAttributeSet>(StatAttributeSet);
 	}
 
-	StatAttributeSet->SetAttack(Data->GetStat(EStatusType::Attack));
-	StatAttributeSet->SetDefense(Data->GetStat(EStatusType::Defence));
-	StatAttributeSet->SetHealth(Data->GetStat(EStatusType::Health));
-	StatAttributeSet->SetMaxHealth(Data->GetStat(EStatusType::Health));
+	FStatValueData Stat = Data->GetStat();
+
+	StatAttributeSet->SetAttack(Stat.Attack);
+	StatAttributeSet->SetDefense(Stat.Defence);
+	StatAttributeSet->SetHealth(Stat.Health);
+	StatAttributeSet->SetMaxHealth(Stat.Health);
 
 	EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
 

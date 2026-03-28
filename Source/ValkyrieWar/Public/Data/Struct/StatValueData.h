@@ -27,4 +27,11 @@ public:
 		Defence += InDefence;
 		Health += InHealth;
 	}
+
+	void Add(FStatValueData InData)
+	{
+		Attack += InData.Attack;
+		Defence += InData.Defence;
+		Health += InData.Health;
+	}
 };
