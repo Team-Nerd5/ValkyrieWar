@@ -60,18 +60,19 @@ void ABattleGameState::ChangeState(EBattleState InState)
 
 	case EBattleState::Win:
 		//결과 UI를 Win으로 열어줌
-		ShowBattleResult();
 		StopStageTimer();
+		ShowBattleResult();
 		break;
 	case EBattleState::Defeat:
 		//결과 UI를 Defeat으로 열여줌
-		ShowBattleResult();
 		StopStageTimer();
+		ShowBattleResult();
 		break;
 	case EBattleState::TimeOver:
 		// 결과 UI를 Draw로 열어줌
-		ShowBattleResult();
+		//?? Draw가 어디있음..?
 		StopStageTimer();
+		ShowBattleResult();
 		break;
 
 	case EBattleState::MoveToLobby:
@@ -179,7 +180,6 @@ void ABattleGameState::CheckTimeOver()
 
 void ABattleGameState::ShowBattleResult()
 {
-	UGameplayStatics::SetGamePaused(this, true);
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
@@ -205,5 +205,7 @@ void ABattleGameState::ShowBattleResult()
 		{
 			ResultWidget->SetBattleResult(State, RewardId);
 		}
+
+		UGameplayStatics::SetGamePaused(this, true);
 	}
 }
