@@ -97,9 +97,9 @@ void AUnitCharacter::SetData(UUnitData* InData)
 	}
 
 	ApplyStat(
-		InData->GetStat(EStatusType::Attack),
-		InData->GetStat(EStatusType::Defence),
-		InData->GetStat(EStatusType::Health)
+		InData->GetTotalStat(EStatusType::Attack),
+		InData->GetTotalStat(EStatusType::Defence),
+		InData->GetTotalStat(EStatusType::Health)
 	);
 
 	ApplyUnitData(InData);

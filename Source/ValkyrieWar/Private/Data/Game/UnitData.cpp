@@ -65,11 +65,33 @@ void UUnitData::LoadData(uint64 InUID, const FUnitDataRow InTableData, int32 InL
 				Stat.Add(EStatusType::Defence, StatData.Defence);
 				Stat.Add(EStatusType::Health, StatData.Health);
 			}
+
+			LevelAddedStat = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(GetLevelUpGroupId(), Level);
 		}
 	}
 }
 
-void UUnitData::LevelUp()
+void UUnitData::LevelUp(UDataManager* InDataManager)
 {
 	Level++;
+	LevelAddedStat = InDataManager->GetUnitUpgradeStatModule()->GetTotalStat(GetLevelUpGroupId(), Level);
+}
+
+float UUnitData::GetTotalStat(EStatusType InStatusType)
+{
+	float AddStat = 0.0f;
+	switch (InStatusType)
+	{
+	case EStatusType::Attack:
+		AddStat = LevelAddedStat.Attack;
+		break;
+	case EStatusType::Defence:
+		AddStat = LevelAddedStat.Defence;
+		break;
+	case EStatusType::Health:
+		AddStat = LevelAddedStat.Health;
+		break;		
+	}
+
+	return GetBaseStat(InStatusType) + AddStat;
 }

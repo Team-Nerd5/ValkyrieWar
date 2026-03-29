@@ -79,25 +79,16 @@ public:
 			return 10.0f;
 	}
 
-	FORCEINLINE FStatValueData GetUnitStat(int32 InDataId)
-	{
-		if (UnitAddedStats.Contains(InDataId))
-			return UnitAddedStats.FindChecked(InDataId);
-		else
-			return FStatValueData();
-	}
-
 	bool GetUnitDataRow(int32 InDataId, FUnitDataRow& OutRow) const;
 
 	bool BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FComputedEnemyStat& OutStat) const;
-	bool GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const;
 
 	void LoadUnit(FUnitDataStruct InData);
 protected:
 	virtual void MakeData() override;
 
 public:
-	void UnitLevelUpStat(int32 InDataId);
+	void LevelUpUnit(int32 InDataId);
 
 	UUnitData* CreateEnemyData(int32 InDataId);
 
@@ -107,8 +98,4 @@ private:
 	//TODO: 임시 보유 유닛 데이터(전체 보유로 판단)
 	UPROPERTY()
 	TMap<int32, TObjectPtr<UUnitData>> OwnUnits;
-
-	// 증가한 스텟 저장
-	UPROPERTY()
-	TMap<int32, FStatValueData> UnitAddedStats;
 };

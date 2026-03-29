@@ -44,51 +44,12 @@ bool UUnitModule::BuildComputedEnemyStat(int32 InDataId, int32 InLevel, FCompute
 			return false;
 		}
 
-		FStatValueData BonusStat;
-		GetBonusStatByLevel(InDataId, InLevel, BonusStat);
-
 		OutStat.DataId = InDataId;
 		OutStat.Level = FMath::Max(1, InLevel);
-		OutStat.Attack = BaseData->GetStat(EStatusType::Attack) + BonusStat.Attack;
-		OutStat.Defence = BaseData->GetStat(EStatusType::Defence) + BonusStat.Defence;
-		OutStat.Health = BaseData->GetStat(EStatusType::Health) + BonusStat.Health;
+		OutStat.Attack = BaseData->GetTotalStat(EStatusType::Attack);
+		OutStat.Defence = BaseData->GetTotalStat(EStatusType::Defence);
+		OutStat.Health = BaseData->GetTotalStat(EStatusType::Health);
 
-		return true;
-	}
-
-	return false;
-}
-
-bool UUnitModule::GetBonusStatByLevel(int32 InDataId, int32 InLevel, FStatValueData& OutBonusStat) const
-{
-	OutBonusStat = FStatValueData{};
-
-	if (!GameManager.IsValid())
-	{
-		return false;
-	}
-
-	UDataManager* DataManager = GameManager->GetSubsystem<UDataManager>();
-	if (!DataManager)
-	{
-		return false;
-	}
-
-	if (OwnUnits.Contains(InDataId))
-	{
-		UUnitData* BaseData = OwnUnits.FindChecked(InDataId);
-		if (!BaseData)
-		{
-			return false;
-		}
-
-		UUnitUpgradeStatModule* UpgradeModule = DataManager->GetUnitUpgradeStatModule();
-		if (!UpgradeModule)
-		{
-			return false;
-		}
-
-		OutBonusStat = UpgradeModule->GetTotalStat(BaseData->GetLevelUpGroupId(), FMath::Max(1, InLevel));
 		return true;
 	}
 
@@ -128,7 +89,8 @@ void UUnitModule::MakeData()
 	OwnUnits.Empty();
 }
 
-void UUnitModule::UnitLevelUpStat(int32 InDataId)
+//레벨업을 처리하면서 스탯만 하는 느낌의 이름임. UnitLevelUpStat -> 변경
+void UUnitModule::LevelUpUnit(int32 InDataId)
 {
 	if (OwnUnits.Contains(InDataId))
 	{
@@ -142,12 +104,14 @@ void UUnitModule::UnitLevelUpStat(int32 InDataId)
 			return;
 
 		// 유닛 레벨업
-		TargetUnitData->LevelUp();
+		TargetUnitData->LevelUp(DataManager);
+
+		if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+		{
+			SaveManager->SaveUnit(TargetUnitData);
+		}
 
 		FStatValueData BonusStatData = DataManager->GetUnitUpgradeStatModule()->GetTotalStat(TargetUnitData->GetLevelUpGroupId(), TargetUnitData->GetLevel());
-
-		// 증가한 스텟 저장
-		UnitAddedStats.Add(TargetUnitData->GetDataId(), BonusStatData);
 	}
 	
 }

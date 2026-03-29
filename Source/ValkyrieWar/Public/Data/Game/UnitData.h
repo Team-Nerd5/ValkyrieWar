@@ -45,12 +45,17 @@ private:
 	UPROPERTY()
 	int32 Level = 1;
 
+	UPROPERTY()
+	FStatValueData LevelAddedStat;
+
 public:
 	void MakeData(const FUnitDataRow InTableData, UGameManager* InGameManager);
 
 	void LoadData(uint64 InUID, const FUnitDataRow InTableData, int32 InLevel, UGameManager* InGameManager);
 
-	void LevelUp();
+	void LevelUp(class UDataManager* InDataManager);
+
+	float GetTotalStat(EStatusType InStatusType);
 
 	FORCEINLINE uint64 GetUID() { return UID; }
 	FORCEINLINE FUnitDataRow GetTableData() { return TableData; }
@@ -60,7 +65,7 @@ public:
 	FORCEINLINE int32 GetLevelUpGroupId() { return TableData.LevelUpGroupId; }
 	FORCEINLINE TArray<USkillData*> GetSkillData() { return SkillData; }
 	FORCEINLINE UAttackData* GetAttackData() { return AttackData; }
-	FORCEINLINE float GetStat(EStatusType InType)
+	FORCEINLINE float GetBaseStat(EStatusType InType)
 	{
 		if (Stat.Contains(InType))
 			return Stat.FindChecked(InType);

@@ -92,18 +92,15 @@ void UUnitUpgradeBoxWidget::UpdateUpgradeInfo()
 	// 현재 스텟
 	if (CurrentLevel_Attack)
 	{
-		CurrentLevel_Attack->SetText(FText::AsNumber(
-			UnitData->GetStat(EStatusType::Attack) + UnitModule->GetUnitStat(UnitData->GetDataId()).Attack));
+		CurrentLevel_Attack->SetText(FText::AsNumber(UnitData->GetTotalStat(EStatusType::Attack)));
 	}
 	if (CurrentLevel_Health)
 	{
-		CurrentLevel_Health->SetText(FText::AsNumber(
-			UnitData->GetStat(EStatusType::Health) + UnitModule->GetUnitStat(UnitData->GetDataId()).Health));
+		CurrentLevel_Health->SetText(FText::AsNumber(UnitData->GetTotalStat(EStatusType::Health)));
 	}
 	if (CurrentLevel_Defence)
 	{
-		CurrentLevel_Defence->SetText(FText::AsNumber(
-			UnitData->GetStat(EStatusType::Defence) + UnitModule->GetUnitStat(UnitData->GetDataId()).Defence));
+		CurrentLevel_Defence->SetText(FText::AsNumber(UnitData->GetTotalStat(EStatusType::Defence)));
 	}
 
 	if (UUnitUpgradeData* UpgradeData = UnitUpgradeStatMoudle->GetNextLevelData(UnitData->GetLevelUpGroupId(), UnitData->GetLevel() + 1))
@@ -204,7 +201,7 @@ void UUnitUpgradeBoxWidget::OnUpgradeUnit()
 	GoodsModule->Add(UseGoodsType, -UseGoodsCost);
 
 	// 유닛 스텟 업그레이드
-	UnitModule->UnitLevelUpStat(CachedUnitDataId);
+	UnitModule->LevelUpUnit(CachedUnitDataId);
 
 	UpdateUpgradeInfo();
 }
