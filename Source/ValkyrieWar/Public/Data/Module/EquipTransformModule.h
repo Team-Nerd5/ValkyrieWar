@@ -25,12 +25,12 @@ class VALKYRIEWAR_API UEquipTransformModule : public UBaseModule
 public:
 	virtual void Initialize(UGameManager* InGameManager) override;
 
-	FOffsetGroupData GetDataListByValkyrieId(int32 InValkyrieId);
+	FOffsetGroupData GetDataListByValkyrieId(int32 InGroupId);
 
 protected:
 	virtual void MakeData() override;
 
 private:
 	UPROPERTY()
-	TMap<int32, FOffsetGroupData> TableDataByValkyrieId;
+	TMap<int32, FOffsetGroupData> TableDataByGroupId;
 };

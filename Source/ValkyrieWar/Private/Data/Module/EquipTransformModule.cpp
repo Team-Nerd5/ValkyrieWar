@@ -16,10 +16,10 @@ void UEquipTransformModule::Initialize(UGameManager* InGameManager)
 	SendDataLoadComplete();
 }
 
-FOffsetGroupData UEquipTransformModule::GetDataListByValkyrieId(int32 InValkyrieId)
+FOffsetGroupData UEquipTransformModule::GetDataListByValkyrieId(int32 InGroupId)
 {
-	if (TableDataByValkyrieId.Contains(InValkyrieId))
-		return TableDataByValkyrieId.FindChecked(InValkyrieId);
+	if (TableDataByGroupId.Contains(InGroupId))
+		return TableDataByGroupId.FindChecked(InGroupId);
 	else
 		return FOffsetGroupData();
 }
@@ -29,22 +29,22 @@ void UEquipTransformModule::MakeData()
 	if (DataTable)
 	{
 		TArray<FEquipTransformDataRow*> AllRows;
-		DataTable->GetAllRows<FEquipTransformDataRow>(TEXT("GachaRandomModule_Init"), AllRows);
+		DataTable->GetAllRows<FEquipTransformDataRow>(TEXT("EquipTransform_Init"), AllRows);
 
 		for (FEquipTransformDataRow* Item : AllRows)
 		{
 			if (!Item) continue;
 
-			if (TableDataByValkyrieId.Contains(Item->ValkyrieId))
+			if (TableDataByGroupId.Contains(Item->TransformGroupId))
 			{
-				FOffsetGroupData* Data = TableDataByValkyrieId.Find(Item->ValkyrieId);
+				FOffsetGroupData* Data = TableDataByGroupId.Find(Item->TransformGroupId);
 				Data->DataByItemId.Add(Item->ItemId, *Item);
 			}
 			else
 			{
 				FOffsetGroupData Data;
 				Data.DataByItemId.Add(Item->ItemId, *Item);
-				TableDataByValkyrieId.Add(Item->ValkyrieId, Data);
+				TableDataByGroupId.Add(Item->TransformGroupId, Data);
 			}
 		}
 	}

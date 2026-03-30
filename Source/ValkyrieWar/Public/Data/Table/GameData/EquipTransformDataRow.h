@@ -17,6 +17,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 ValkyrieId = 0;
 	UPROPERTY(EditAnywhere)
+	int32 TransformGroupId = 0;
+	UPROPERTY(EditAnywhere)
 	int32 ItemId = 0;
 	UPROPERTY(EditAnywhere)
 	FVector LocationtionOffset = FVector::ZeroVector;		//무기 포지션 오프셋

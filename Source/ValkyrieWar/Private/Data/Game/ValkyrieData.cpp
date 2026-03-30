@@ -31,8 +31,8 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 				Stat.Add(StatData.Attack, StatData.Defence, StatData.Health);
 			}
 
-			if(TableData.DataId > 0)
-				OffsetData = DataManager->GetEquipTransformModule()->GetDataListByValkyrieId(TableData.DataId);
+			if(TableData.EquipTransfromGroupId > 0)
+				OffsetData = DataManager->GetEquipTransformModule()->GetDataListByValkyrieId(TableData.EquipTransfromGroupId);
 		}
 	}
 }

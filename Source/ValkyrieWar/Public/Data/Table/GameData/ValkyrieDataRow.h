@@ -30,4 +30,6 @@ public:
 	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditAnywhere)
 	TSoftClassPtr<class AValkyrieCharacter> SpawnClass = nullptr;
+	UPROPERTY(EditAnywhere)
+	int32 EquipTransfromGroupId = 0;
 };
