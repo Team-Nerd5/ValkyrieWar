@@ -171,7 +171,7 @@ void AValkyrieCharacter::EquipWeapon(UItemData* InWeapon)
 void AValkyrieCharacter::UpdateWeaponMesh()
 {
 	if (!EquippedWeapon) return;
-	if (!AttackData) return;
+
 	if (EquippedWeapon->IsSkeletalWeapon())
 	{
 		if (StaticWeapon)
@@ -185,8 +185,8 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 
 			FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 			SkeletalWeapon->AttachToComponent(GetMesh(), AttachRules, EquippedWeapon->GetTableData().SocketName);
-			SkeletalWeapon->SetRelativeLocation(AttackData->GetLocationOffset());
-			SkeletalWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
+			SkeletalWeapon->SetRelativeLocation(Data->GetCurrentWeaponOffset().LocationtionOffset);
+			SkeletalWeapon->SetRelativeRotation(Data->GetCurrentWeaponOffset().RotateOffset);
 		}
 	}
 	else
@@ -202,8 +202,8 @@ void AValkyrieCharacter::UpdateWeaponMesh()
 
 			FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, true);
 			StaticWeapon->AttachToComponent(GetMesh(), AttachRules, EquippedWeapon->GetTableData().SocketName);
-			StaticWeapon->SetRelativeLocation(AttackData->GetLocationOffset());
-			StaticWeapon->SetRelativeRotation(AttackData->GetRotatinOffset());
+			StaticWeapon->SetRelativeLocation(Data->GetCurrentWeaponOffset().LocationtionOffset);
+			StaticWeapon->SetRelativeRotation(Data->GetCurrentWeaponOffset().RotateOffset);
 		}
 	}
 }

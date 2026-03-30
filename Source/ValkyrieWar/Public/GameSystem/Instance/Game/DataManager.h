@@ -23,6 +23,7 @@
 #include "Data/Module/TargetingModule.h"
 #include "Data/Module/RewardModule.h"
 #include "Data/Module/StageRewardModule.h"
+#include "Data/Module/EquipTransformModule.h"
 
 #include "GameSystem/Base/BaseModule.h"
 #include "DataManager.generated.h"
@@ -58,6 +59,7 @@ public:
 	FORCEINLINE UTargetingModule* GetTargetingModule() const { return TargetingModule; }
 	FORCEINLINE URewardModule* GetRewardModule() const { return RewardModule; }
 	FORCEINLINE UStageRewardModule* GetStageRewardModule() const { return StageRewardModule; }
+	FORCEINLINE UEquipTransformModule* GetEquipTransformModule() const { return EquipTransformModule; }
 private:
 	template<typename T>
 	void InitializeData(TObjectPtr<T>& InVal);
@@ -98,6 +100,8 @@ private:
 	TObjectPtr<URewardModule> RewardModule = nullptr;
 	UPROPERTY()
 	TObjectPtr<UStageRewardModule> StageRewardModule = nullptr;
+	UPROPERTY()
+	TObjectPtr<UEquipTransformModule> EquipTransformModule = nullptr;
 
 	UPROPERTY()
 	TWeakObjectPtr<UGameManager> GameManager = nullptr;

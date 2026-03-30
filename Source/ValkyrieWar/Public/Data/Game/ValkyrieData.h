@@ -13,7 +13,10 @@
 #include "Data/Game/SkillData.h"
 #include "Data/Game/ItemData.h"
 
+#include "Data/Module/EquipTransformModule.h"
+
 #include "GameSystem/Instance/Game/GameManager.h"
+
 #include "ValkyrieData.generated.h"
 
 /**
@@ -45,6 +48,8 @@ private:
 	TObjectPtr<UItemData> BaseWeapon;
 	UPROPERTY()
 	TMap<EEquipGroup, TObjectPtr<UItemData>> EquippedItem;
+	UPROPERTY()
+	FOffsetGroupData OffsetData;
 
 private:
 	//기본 데이터 세팅
@@ -59,6 +64,8 @@ public:
 
 	//저장된 데이터 로드 시(모듈에서 호출되는걸로 하자...)
 	void LoadData(uint64 InUID, const FValkyrieDataRow InTableData, UGameManager* InGameManager);
+
+	FEquipTransformDataRow GetCurrentWeaponOffset();
 
 	FORCEINLINE const uint64 GetUID() { return UID; }
 	FORCEINLINE const int32 GetDataID() { return TableData.DataId; }

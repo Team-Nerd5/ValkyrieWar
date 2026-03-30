@@ -30,6 +30,9 @@ void UValkyrieData::MakeData(const FValkyrieDataRow InTableData, UGameManager* I
 			{
 				Stat.Add(StatData.Attack, StatData.Defence, StatData.Health);
 			}
+
+			if(TableData.DataId > 0)
+				OffsetData = DataManager->GetEquipTransformModule()->GetDataListByValkyrieId(TableData.DataId);
 		}
 	}
 }
@@ -92,4 +95,16 @@ void UValkyrieData::LoadData(uint64 InUID, const FValkyrieDataRow InTableData, U
 {
 	UID = InUID;
 	MakeData(InTableData, InGameManager);
+}
+
+FEquipTransformDataRow UValkyrieData::GetCurrentWeaponOffset()
+{
+	if (UItemData* Weapon = GetEquippedItem(EEquipGroup::Weapon))
+	{
+		if (OffsetData.DataByItemId.Contains(Weapon->GetTableData().DataId))
+		{
+			return OffsetData.DataByItemId.FindChecked(Weapon->GetTableData().DataId);
+		}
+	}
+	return FEquipTransformDataRow();
 }

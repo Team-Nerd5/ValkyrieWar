@@ -115,6 +115,7 @@ enum class ETableDataType : uint8
 	UnitUpgradeStat,
 	Targeting,
 	GachaRandom,
+	EquipTransfrom,
 };
 
 UENUM(BlueprintType)
