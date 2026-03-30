@@ -256,7 +256,9 @@ void ALobbyPlayerController::OnGachaLevelShown()
 		UIManager->CloseUI<ULobbyWidget>(EUIType::Lobby);
 
 		//미리 띄우고...스킵 버튼 누르면 이벤트 처리
-		if (GachaResultWidget = UIManager->OpenUI<UGachaResultWidget>(EUIType::PopupGachaResult))
+		GachaResultWidget = UIManager->OpenUI<UGachaResultWidget>(EUIType::PopupGachaResult);
+
+		if(GachaResultWidget)
 		{
 			GachaResultWidget->SetResultData(GachaResultData);
 		}

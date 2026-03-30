@@ -5,6 +5,7 @@
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "GameSystem/Instance/Game/InventorySystem.h"
 
+#if WITH_EDITOR
 void UBattleCheatManager::EquipItem(int32 InDataId)
 {
 	//월드에서 현재 캐릭터 찾고
@@ -20,3 +21,4 @@ void UBattleCheatManager::EquipItem(int32 InDataId)
 		}
 	}
 }
+#endif

@@ -15,6 +15,8 @@ class VALKYRIEWAR_API UBattleCheatManager : public UCheatManager
 	GENERATED_BODY()
 
 public:
+#if WITH_EDITOR
 	UFUNCTION(exec)
 	void EquipItem(int32 InDataId);
+#endif
 };
