@@ -33,9 +33,15 @@ protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
+	virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+
 	// 아이템의 양 업데이트 할 때 바인드할 함수
 	UFUNCTION()
 	void OnAmountChanged(uint64 InUID);
+
+private:
+	void OnLongTouch();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -56,9 +62,15 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> EquippingCharacterIcon = nullptr;	// 캐릭터가 장착한 아이템을 표시하기 위한 캐릭터아이콘
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SetTouchDuration")
+	float LongTouchDuration = 0.0f;
 private:
 	UPROPERTY()
 	TObjectPtr<UItemData> CachedItemData = nullptr;
 
 	bool IsSelected = false;
+
+	FTimerHandle LongTouchTimerHandle;
+
+	
 };

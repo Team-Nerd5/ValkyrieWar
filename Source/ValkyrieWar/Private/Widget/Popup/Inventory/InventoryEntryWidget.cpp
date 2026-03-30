@@ -80,6 +80,30 @@ void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 	}
 }
 
+FReply UInventoryEntryWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
+{
+	// 왜 실행이 안되지...?
+
+	UE_LOG(LogTemp, Log, TEXT("OnTouchStarted"));
+
+	GetWorld()->GetTimerManager().SetTimer(
+		LongTouchTimerHandle,
+		this,
+		&UInventoryEntryWidget::OnLongTouch,
+		LongTouchDuration,
+		false
+	);
+	return FReply::Unhandled();
+}
+
+FReply UInventoryEntryWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
+{
+	// 이건 실행이 되는데...
+
+	UE_LOG(LogTemp, Log, TEXT("OnTouchEnded"));
+	return FReply::Unhandled();
+}
+
 void UInventoryEntryWidget::Init(UItemData* InData)
 {
 	if (!InData)
@@ -166,4 +190,9 @@ void UInventoryEntryWidget::OnAmountChanged(uint64 InUID)
 			Amount->SetText(FText::AsNumber(CachedItemData->GetAmount()));
 		}
 	}
+}
+
+void UInventoryEntryWidget::OnLongTouch()
+{
+	UE_LOG(LogTemp, Log, TEXT("OnLongTouch"));
 }
