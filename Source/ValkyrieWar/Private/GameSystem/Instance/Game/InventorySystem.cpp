@@ -226,6 +226,12 @@ void UInventorySystem::EquipItem(UItemData* InItem, UValkyrieData* InValkyrie)
 		InItem->Equip(InValkyrie->GetUID());
 		InValkyrie->EquipItem(InItem->GetEquipGroup(), InItem, GameManager);
 
+		//아이템 저장...
+		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+		{
+			SaveManager->AddSaveItem(InItem);
+		}
+
 		//인벤토리 아이템 개수가 바뀜
 		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 		{
