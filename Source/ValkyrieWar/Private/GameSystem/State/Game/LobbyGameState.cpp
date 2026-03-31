@@ -29,16 +29,18 @@ void ALobbyGameState::ChangeState(ELobbyState InState)
 		{
 			UIManager->OpenUI<ULobbyWidget>(EUIType::Lobby);
 		}
-		//컨트롤러..
-		
-		ChangeState(ELobbyState::Ready);
-		//캐릭터 생성/배치
+
 		break;
 	case ELobbyState::Ready:
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
-		{
-			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
-		}
+
+		GetWorldTimerManager().SetTimerForNextTick([this]()
+			{
+				if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+				{
+					UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
+				}
+			});		
+		
 		break;
 	case ELobbyState::Gacha:
 

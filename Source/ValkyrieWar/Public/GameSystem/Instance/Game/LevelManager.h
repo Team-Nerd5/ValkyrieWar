@@ -22,7 +22,7 @@ protected:
 	virtual void Deinitialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "LevelManager")
-	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap, bool bShowLoading);
+	void LoadLevelAsync(TSoftObjectPtr<UWorld> InMap);
 
 public:
 	void LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadData = false);

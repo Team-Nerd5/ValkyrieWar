@@ -31,12 +31,20 @@ void ULevelManager::Deinitialize()
 
 void ULevelManager::LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadData)
 {
+	if (bShowLoading)
+	{
+		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
+		{
+			UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
+		}
+	}
+
 	if (UGameManager* GameManager = Cast<UGameManager>(GetGameInstance()))
 	{
 		TSoftObjectPtr<UWorld> MapObject = GameManager->GetMapObject(InMapType);
 		if (!MapObject.IsNull())
 		{
-			LoadLevelAsync(MapObject, bShowLoading);
+			LoadLevelAsync(MapObject);
 
 			if (bIsLoadData)
 			{
@@ -53,20 +61,14 @@ void ULevelManager::LoadMap(EMapType InMapType, bool bShowLoading, bool bIsLoadD
 
 }
 
-void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap, bool bShowLoading)
+void ULevelManager::LoadLevelAsync(TSoftObjectPtr<UWorld> InMap)
 {
 	if (InMap.IsNull()) return;
 
 	TargetMap = InMap;
 	DataLoadProgress = 0.0f;
 
-	if (bShowLoading)
-	{
-		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
-		{
-			UIManager->OpenUI<ULoadingWidget>(EUIType::Loading);
-		}
-	}
+	
 }
 
 void ULevelManager::InitEvent()

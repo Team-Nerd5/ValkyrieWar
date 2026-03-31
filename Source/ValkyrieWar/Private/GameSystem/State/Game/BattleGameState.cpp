@@ -34,8 +34,6 @@ void ABattleGameState::ChangeState(EBattleState InState)
 				return;
 			}
 
-			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
-
 			APlayerController* PC = GetWorld()->GetFirstPlayerController();
 			if (PC)
 			{
@@ -45,6 +43,8 @@ void ABattleGameState::ChangeState(EBattleState InState)
 					VPC->SetBattleUI(BattleUI);
 				}
 			}
+
+			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
 		}
 		break;
 
@@ -69,8 +69,6 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		ShowBattleResult();
 		break;
 	case EBattleState::TimeOver:
-		// 결과 UI를 Draw로 열어줌
-		//?? Draw가 어디있음..?
 		StopStageTimer();
 		ShowBattleResult();
 		break;
