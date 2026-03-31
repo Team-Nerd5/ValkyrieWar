@@ -72,9 +72,16 @@ enum class EPoolTypes : uint8
 	Enemy_Archer,
 	Enemy_Mage,
 
-	//기본 화살
-	Arrow_Normal,
-	Magic_Normal,
+	//Projectile
+	EnemyUnit_BowAttack,
+	EnemyUnit_StaffAttack,
+	AllyUnit_BowAttack,
+	AllyUnit_StaffAttack,
+	Valkyrie_BowAttack,
+	Valkyrie_StaffAttack_1,
+	Valkyrie_StaffAttack_2,
+	Valkyrie_BowSkill_1,
+	Valkyrie_StaffSkill_1,
 };
 
 UENUM(BlueprintType)
