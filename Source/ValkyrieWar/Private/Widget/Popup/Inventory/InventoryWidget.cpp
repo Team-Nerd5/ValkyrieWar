@@ -9,6 +9,7 @@
 
 #include "Widget/HUD/TopMenuWidget.h"
 #include "Widget/Popup/Inventory/ItemListWidget.h"
+#include "Widget/Item/ItemInfo/ItemInfoWidget.h"
 
 
 
@@ -20,6 +21,8 @@ void UInventoryWidget::NativeConstruct()
 	{
 		EventSystem->Widget.OnUpdateInventory.AddDynamic(this, &UInventoryWidget::OnInventoryUpdate);
 		EventSystem->Widget.OnTabMenuSelected.AddDynamic(this, &UInventoryWidget::OnTabMenuChanged);
+		EventSystem->Widget.OnLongClickItemStart.AddDynamic(this, &UInventoryWidget::OnLongClickItemStart);
+		EventSystem->Widget.OnLongClickItemEnd.AddDynamic(this, &UInventoryWidget::OnLongClickItemEnd);
 	}
 }
 
@@ -29,6 +32,8 @@ void UInventoryWidget::NativeDestruct()
 	{
 		EventSystem->Widget.OnUpdateInventory.RemoveDynamic(this, &UInventoryWidget::OnInventoryUpdate);
 		EventSystem->Widget.OnTabMenuSelected.RemoveDynamic(this, &UInventoryWidget::OnTabMenuChanged);
+		EventSystem->Widget.OnLongClickItemStart.RemoveDynamic(this, &UInventoryWidget::OnLongClickItemStart);
+		EventSystem->Widget.OnLongClickItemEnd.RemoveDynamic(this, &UInventoryWidget::OnLongClickItemEnd);
 	}
 
 	Super::NativeDestruct();
@@ -42,6 +47,11 @@ void UInventoryWidget::NativeOnInitialized()
 	{
 		ItemListWidget->SetMenu(InventoryTabNameData);
 	}	
+
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UInventoryWidget::OpenUI()
@@ -107,5 +117,25 @@ void UInventoryWidget::OnTabMenuChanged(int32 InSelectedTab)
 		ItemListWidget->InitFilterIndex(InSelectedTab);
 		//탭 바뀌면 선택 아이템을 비워줌
 		ItemListWidget->OnItemSelected(nullptr);
+	}
+}
+
+void UInventoryWidget::OnLongClickItemStart(int32 InItemUID)
+{
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->Init(InItemUID);
+
+		// TODO: 터치 위치에 위젯 표시 및 위젯이 화면 밖으로 나가지 않도록 처리
+
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UInventoryWidget::OnLongClickItemEnd()
+{
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

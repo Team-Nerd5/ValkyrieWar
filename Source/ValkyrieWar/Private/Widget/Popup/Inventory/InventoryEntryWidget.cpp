@@ -45,6 +45,56 @@ void UInventoryEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 	}
 }
 
+FReply UInventoryEntryWidget::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	// NativeOnTouchStarted와 NativeOnMouseButtonDown 함수가 도저히 실행이 안되는데 이렇게 해도 되나요...?
+	// -> 일단 이렇게하면 마우스로는 클릭이 되는데..
+
+	GetWorld()->GetTimerManager().SetTimer(
+		LongTouchTimerHandle,
+		this,
+		&UInventoryEntryWidget::OnLongTouchStart,
+		LongTouchDuration,
+		false
+	);
+	return FReply::Handled();
+}
+
+FReply UInventoryEntryWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
+{
+	// 왜 실행이 안되지...?
+
+	UE_LOG(LogTemp, Log, TEXT("OnTouchStarted"));
+
+	GetWorld()->GetTimerManager().SetTimer(
+		LongTouchTimerHandle,
+		this,
+		&UInventoryEntryWidget::OnLongTouchStart,
+		LongTouchDuration,
+		false
+	);
+	return FReply::Handled();
+}
+
+FReply UInventoryEntryWidget::NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
+{
+	UE_LOG(LogTemp, Log, TEXT("OnTouchMoved"));
+
+	GetWorld()->GetTimerManager().ClearTimer(LongTouchTimerHandle);
+
+	return FReply::Handled();
+}
+
+FReply UInventoryEntryWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
+{
+	// 이건 실행이 되는데...
+
+	GetWorld()->GetTimerManager().ClearTimer(LongTouchTimerHandle);
+	OnLongTouchEnd();
+
+	return FReply::Handled();
+}
+
 void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 {
 	if (!CachedItemData)
@@ -78,30 +128,6 @@ void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 
 		IsSelected = bIsSelected;
 	}
-}
-
-FReply UInventoryEntryWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
-{
-	// 왜 실행이 안되지...?
-
-	UE_LOG(LogTemp, Log, TEXT("OnTouchStarted"));
-
-	GetWorld()->GetTimerManager().SetTimer(
-		LongTouchTimerHandle,
-		this,
-		&UInventoryEntryWidget::OnLongTouch,
-		LongTouchDuration,
-		false
-	);
-	return FReply::Unhandled();
-}
-
-FReply UInventoryEntryWidget::NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
-{
-	// 이건 실행이 되는데...
-
-	UE_LOG(LogTemp, Log, TEXT("OnTouchEnded"));
-	return FReply::Unhandled();
 }
 
 void UInventoryEntryWidget::Init(UItemData* InData)
@@ -192,7 +218,18 @@ void UInventoryEntryWidget::OnAmountChanged(uint64 InUID)
 	}
 }
 
-void UInventoryEntryWidget::OnLongTouch()
+void UInventoryEntryWidget::OnLongTouchStart()
 {
-	UE_LOG(LogTemp, Log, TEXT("OnLongTouch"));
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnLongClickItemStart.Broadcast(CachedItemData->GetUID());
+	}
+}
+
+void UInventoryEntryWidget::OnLongTouchEnd()
+{
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Widget.OnLongClickItemEnd.Broadcast();
+	}
 }

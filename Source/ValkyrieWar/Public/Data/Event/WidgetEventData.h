@@ -33,6 +33,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnEquipItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickUnEquip, EEquipGroup, InEquipGroup);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickEquip, UItemData*, InItemData);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLongClickItemStart, int32, InItemUID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLongClickItemEnd);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSkillSlotReady, int32, SkillIndex, USkillData*, SkillData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSkillCooldownStarted, int32, InSkillIndex, float, InCooldownDuration, float, InEndTime);
 
@@ -67,6 +70,9 @@ public:
 	FOnUnEquipItem OnUnEquipItem;
 	FOnClickUnEquip OnClickUnEquip;
 	FOnClickEquip OnClickEquip;
+
+	FOnLongClickItemStart OnLongClickItemStart;
+	FOnLongClickItemEnd OnLongClickItemEnd;
 
 	//-----------------------------삭제 예정---------------------------
 	// 인벤토리 아이템 선택 취소용

@@ -31,17 +31,20 @@ protected:
 	virtual void NativeDestruct() override;
 
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
-	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
+	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	virtual FReply NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 	virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	virtual void NativeOnItemSelectionChanged(bool bIsSelected) override;
 
 	// 아이템의 양 업데이트 할 때 바인드할 함수
 	UFUNCTION()
 	void OnAmountChanged(uint64 InUID);
 
 private:
-	void OnLongTouch();
+	void OnLongTouchStart();
+	void OnLongTouchEnd();
 
 protected:
 	UPROPERTY(meta = (BindWidget))

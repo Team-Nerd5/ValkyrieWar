@@ -48,9 +48,18 @@ protected:
 	UFUNCTION()
 	void OnTabMenuChanged(int32 InSelectedTab);
 
+	UFUNCTION()
+	void OnLongClickItemStart(int32 InItemUID);
+
+	UFUNCTION()
+	void OnLongClickItemEnd();
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UItemListWidget> ItemListWidget = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UItemInfoWidget> ItemInfoWidget = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	TMap<EInventoryFilterType, FString> InventoryTabNameData;
