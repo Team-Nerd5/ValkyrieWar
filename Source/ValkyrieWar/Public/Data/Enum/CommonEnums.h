@@ -74,6 +74,7 @@ enum class EPoolTypes : uint8
 
 	//기본 화살
 	Arrow_Normal,
+	Magic_Normal,
 };
 
 UENUM(BlueprintType)
