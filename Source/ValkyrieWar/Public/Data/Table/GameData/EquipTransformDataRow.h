@@ -15,8 +15,6 @@ struct VALKYRIEWAR_API FEquipTransformDataRow : public FTableRowBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	int32 ValkyrieId = 0;
-	UPROPERTY(EditAnywhere)
 	int32 TransformGroupId = 0;
 	UPROPERTY(EditAnywhere)
 	int32 ItemId = 0;
