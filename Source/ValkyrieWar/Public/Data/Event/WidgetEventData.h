@@ -33,6 +33,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnEquipItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickUnEquip, EEquipGroup, InEquipGroup);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickEquip, UItemData*, InItemData);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSkillSlotReady, int32, SkillIndex, USkillData*, SkillData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSkillCooldownStarted, int32, InSkillIndex, float, InCooldownDuration, float, InEndTime);
 
 USTRUCT(BlueprintType)
 struct VALKYRIEWAR_API FWidgetEventData
@@ -71,4 +73,7 @@ public:
 	FOnUpdateInventorySelectedCancel OnUpdateInventorySelectedCancel;
 	// 인벤토리에서 띄운 팝업 숨기기용
 	FOnHiddenInventoryPopup OnHiddenInventoryPopup;
+
+	FOnSkillSlotReady OnSkillSlotReady;
+	FOnSkillCooldownStarted OnSkillCooldownStarted;
 };

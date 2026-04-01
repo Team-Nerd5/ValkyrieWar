@@ -44,6 +44,7 @@ public:
 	}
 	FORCEINLINE FTargetingDataRow const GetTargetingData() { return TargetingData; }
 	FORCEINLINE float const GetAttackRange() { return TableData.AttackRange; }
+	FORCEINLINE TSoftObjectPtr<UTexture2D> const GetSkillIcon() { return TableData.Icon; }
 
 	float GetCooldownDuration() const;
 

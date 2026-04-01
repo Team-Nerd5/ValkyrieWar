@@ -60,7 +60,7 @@ public:
 	void ChangeWeapon(UItemData* InEquip);
 #endif
 
-	void InitHpBarWidget();
+	void InitValkyrieWidget();
 
 	void EquipWeapon(UItemData* InWeapon);
 protected:
@@ -73,6 +73,7 @@ protected:
 
 	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
 	void BroadcastHpChanged();
+	void BroadcastSkillListReady();
 
 	// 컨트롤러 전환 함수
 	void SwitchToAIController();

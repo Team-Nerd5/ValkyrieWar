@@ -96,7 +96,7 @@ void AValkyrieCharacterController::BeginPlay()
 
 	if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(ControlledPawn))
 	{
-		ValkyrieChar->InitHpBarWidget();
+		ValkyrieChar->InitValkyrieWidget();
 	}
 }
 

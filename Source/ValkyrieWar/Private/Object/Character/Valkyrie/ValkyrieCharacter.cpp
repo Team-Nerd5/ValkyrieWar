@@ -113,9 +113,10 @@ void AValkyrieCharacter::ChangeWeapon(UItemData* InEquip)
 }
 #endif
 
-void AValkyrieCharacter::InitHpBarWidget()
+void AValkyrieCharacter::InitValkyrieWidget()
 {
 	BroadcastHpChanged();
+	BroadcastSkillListReady();
 }
 
 void AValkyrieCharacter::BeginPlay()
@@ -270,6 +271,17 @@ void AValkyrieCharacter::BroadcastHpChanged()
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Valkyrie.OnValkyrieHpChanged.Broadcast(StatAttributeSet->GetHealth(), StatAttributeSet->GetMaxHealth());
+	}
+}
+
+void AValkyrieCharacter::BroadcastSkillListReady()
+{
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		for (int i = 0; i < SkillDataList.Num(); i++)
+		{
+			EventSystem->Widget.OnSkillSlotReady.Broadcast(i, SkillDataList[i]);
+		}
 	}
 }
 
@@ -976,13 +988,19 @@ void AValkyrieCharacter::MarkSkillUsed(int32 InSkillIndex)
 
 	const float Cooldown = GetSkillCooldownDuration(InSkillIndex);
 	const float CurrentTime = GetCurrentWorldTime();
+	const float EndTime = CurrentTime + Cooldown;
 
-	SkillNextUsableTime[InSkillIndex] = CurrentTime + Cooldown;
+	SkillNextUsableTime[InSkillIndex] = EndTime;
 
 	UE_LOG(LogTemp, Log, TEXT("[Valkyrie] Skill %d used. Cooldown=%.2f NextUsableTime=%.2f"),
 		InSkillIndex,
 		Cooldown,
 		SkillNextUsableTime[InSkillIndex]);
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Widget.OnSkillCooldownStarted.Broadcast(InSkillIndex, Cooldown, EndTime);
+	}
 }
 
 bool AValkyrieCharacter::IsSkillOnCooldown(int32 InSkillIndex) const
