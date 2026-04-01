@@ -25,12 +25,12 @@ void UBattleWidget::NativeConstruct()
 		AttackButton->OnClicked.AddUniqueDynamic(this, &UBattleWidget::OnClickAttack);
 	
 	if(SkillButton_1)
-		SkillButton_1->OnClicked.AddDynamic(this, &UBattleWidget::OnClickSkill_1);
+		SkillButton_1->OnClicked.AddUniqueDynamic(this, &UBattleWidget::OnClickSkill_1);
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnSkillSlotReady.AddDynamic(this, &UBattleWidget::SetSkillIcon);
-		WorldEventSystem->Widget.OnSkillCooldownStarted.AddDynamic(this, &UBattleWidget::HandleSkillCooldownStarted);
+		WorldEventSystem->Widget.OnSkillSlotReady.AddUniqueDynamic(this, &UBattleWidget::SetSkillIcon);
+		WorldEventSystem->Widget.OnSkillCooldownStarted.AddUniqueDynamic(this, &UBattleWidget::HandleSkillCooldownStarted);
 	}
 
 	if (SkillCooldownOverlay_1)

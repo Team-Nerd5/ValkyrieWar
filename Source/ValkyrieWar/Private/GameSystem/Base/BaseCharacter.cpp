@@ -129,16 +129,6 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
                 &Payload,
                 *AbilitySystemComponent
             );
-
-            TArray<FGameplayCueData> Cues = SkillDataList[InSkillIndex]->GetCue(EGameplayCueOrder::OnNotify);
-            for (const FGameplayCueData Cue : Cues)
-            {
-                FGameplayCueParameters CueParams;
-                CueParams.Location = GetActorLocation() + Cue.Offset;
-
-                AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
-            }
-
             break;
         }
     }

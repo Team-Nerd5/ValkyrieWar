@@ -17,6 +17,7 @@
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
 #include "GameSystem/Base/BaseAnimInstance.h"
+#include "GameSystem/Base/BaseProjectile.h"
 #include "GameSystem/State/Game/BattleGameState.h"
 #include "GameSystem/State/Player/ValkyriePlayerState.h"
 
@@ -763,6 +764,15 @@ void AValkyrieCharacter::OnSkillNotify()
 		TArray<AActor*> SkillTargets;
 		CollectSkillTargets(UsingSkillIndex, SkillTargets);
 
+		TArray<FGameplayCueData> Cues = SkillDataList[UsingSkillIndex]->GetCue(EGameplayCueOrder::OnNotify);
+		for (const FGameplayCueData Cue : Cues)
+		{
+			FGameplayCueParameters CueParams;
+			CueParams.Location = GetActorLocation() + Cue.Offset;
+
+			AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+		}
+
 		for (AActor* Target : SkillTargets)
 		{
 			if (!IsValidAttackTargetActor(Target))
@@ -771,7 +781,7 @@ void AValkyrieCharacter::OnSkillNotify()
 			}
 
 			ApplySkill(UsingSkillIndex, Target);
-		}
+		}	
 
 		UsingSkillIndex = 0;
 	}
