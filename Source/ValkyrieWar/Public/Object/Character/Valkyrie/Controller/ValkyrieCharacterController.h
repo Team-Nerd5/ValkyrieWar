@@ -145,6 +145,9 @@ protected:
 
 	void SetCameraTargetPawn(APawn* InPawn);
 
+	bool CanMoveToDirection(const FVector& WorldDirection) const;
+	void StopBlockedMovement(const FVector& BlockedDirection) const;
+
 private:
 	FVector DragOffset = FVector::ZeroVector;
 	FVector CurrentTargetViewOffset = FVector::ZeroVector;

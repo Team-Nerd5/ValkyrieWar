@@ -141,6 +141,75 @@ void AValkyrieCharacterController::SetCameraTargetPawn(APawn* InPawn)
 	CameraTargetPawn = InPawn;
 }
 
+bool AValkyrieCharacterController::CanMoveToDirection(const FVector& WorldDirection) const
+{
+	if (!ControlledPawn.IsValid() || !BoundsVolume || !BoundsVolume->GetBoundsBox())
+	{
+		return true;
+	}
+
+	const FVector Direction2D = FVector(WorldDirection.X, WorldDirection.Y, 0.0f).GetSafeNormal();
+	if (Direction2D.IsNearlyZero())
+	{
+		return true;
+	}
+
+	// "조금 앞" 위치를 가정해서 바운드 체크
+	// 너무 크면 부자연스럽고, 너무 작으면 경계에서 미세하게 떨릴 수 있으니 적당한 값 사용
+	const float PredictDistance = 30.0f;
+
+	const FVector PredictedPawnLoc =
+		ControlledPawn->GetActorLocation() + (Direction2D * PredictDistance);
+
+	// 카메라가 실제로 따라갈 기준 위치
+	const FVector PredictedBaseCamLoc =
+		PredictedPawnLoc + CurrentTargetViewOffset + CurrentLookAheadOffset + DragOffset;
+
+	const FVector Origin = BoundsVolume->GetActorLocation();
+	const FVector Extent = BoundsVolume->GetBoundsBox()->GetScaledBoxExtent();
+
+	const bool bInsideX =
+		PredictedBaseCamLoc.X >= (Origin.X - Extent.X) &&
+		PredictedBaseCamLoc.X <= (Origin.X + Extent.X);
+
+	const bool bInsideY =
+		PredictedBaseCamLoc.Y >= (Origin.Y - Extent.Y) &&
+		PredictedBaseCamLoc.Y <= (Origin.Y + Extent.Y);
+
+	return bInsideX && bInsideY;
+}
+
+void AValkyrieCharacterController::StopBlockedMovement(const FVector& BlockedDirection) const
+{
+	AValkyrieCharacter* Valkyrie = Cast<AValkyrieCharacter>(ControlledPawn.Get());
+	if (!Valkyrie)
+	{
+		return;
+	}
+
+	UCharacterMovementComponent* MoveComp = Valkyrie->GetCharacterMovement();
+	if (!MoveComp)
+	{
+		return;
+	}
+
+	const FVector Direction2D = FVector(BlockedDirection.X, BlockedDirection.Y, 0.0f).GetSafeNormal();
+	if (Direction2D.IsNearlyZero())
+	{
+		return;
+	}
+
+	FVector Velocity = MoveComp->Velocity;
+	const float Dot = FVector::DotProduct(Velocity, Direction2D);
+
+	// 막힌 방향으로 가고 있는 속도만 제거
+	if (Dot > 0.0f)
+	{
+		Velocity -= Direction2D * Dot;
+		MoveComp->Velocity = Velocity;
+	}
+}
+
 void AValkyrieCharacterController::ToggleControlMode()
 {
 	if (AValkyriePlayerState* PS = GetValkyriePlayerState())
@@ -426,14 +495,46 @@ void AValkyrieCharacterController::OnTouchReleased()
 
 void AValkyrieCharacterController::Move(FVector2D InMoveDir)
 {
+	if (!ControlledPawn.IsValid())
+	{
+		return;
+	}
+
 	const FRotator YawRotation(0, CameraRotate.Yaw, 0);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (ControlledPawn.IsValid())
+	const float ForwardValue = -InMoveDir.Y;
+	const float RightValue = InMoveDir.X;
+
+	// Forward 축 처리
+	if (!FMath::IsNearlyZero(ForwardValue))
 	{
-		ControlledPawn->AddMovementInput(ForwardDirection, -InMoveDir.Y);
-		ControlledPawn->AddMovementInput(RightDirection, InMoveDir.X);
+		const FVector MoveDir = ForwardDirection * FMath::Sign(ForwardValue);
+
+		if (CanMoveToDirection(MoveDir))
+		{
+			ControlledPawn->AddMovementInput(ForwardDirection, ForwardValue);
+		}
+		else
+		{
+			StopBlockedMovement(MoveDir);
+		}
+	}
+
+	// Right 축 처리
+	if (!FMath::IsNearlyZero(RightValue))
+	{
+		const FVector MoveDir = RightDirection * FMath::Sign(RightValue);
+
+		if (CanMoveToDirection(MoveDir))
+		{
+			ControlledPawn->AddMovementInput(RightDirection, RightValue);
+		}
+		else
+		{
+			StopBlockedMovement(MoveDir);
+		}
 	}
 }
 
