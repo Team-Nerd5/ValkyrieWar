@@ -869,7 +869,7 @@ void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTarget
 		return;
 	}
 
-	if (SplashTargetAmount <= 0 || SplashRange <= 0.f)
+	if (!bDrawDebug && SplashTargetAmount < 0 || SplashRange <= 0.f)
 	{
 		return;
 	}
@@ -1353,12 +1353,12 @@ void AUnitCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
 	// 스플래시 규칙 확인
 	const FTargetingDataRow& TargetingData = AttackData->GetTargetingData();
 
-	if (TargetingData.SplashTargetAmount <= 0)
+	if (!bDrawDebug && TargetingData.SplashTargetAmount <= 0)
 	{
 		return;
 	}
 
-	if (TargetingData.SplashRange <= 0.f)
+	if (!bDrawDebug && TargetingData.SplashRange <= 0.f)
 	{
 		return;
 	}

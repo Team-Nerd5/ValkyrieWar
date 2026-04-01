@@ -162,7 +162,7 @@ protected:
 	TObjectPtr<UUnitBrainComponent> Brain;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
-	bool bDrawDebug = false;
+	bool bDrawDebug = true;
 
 	// ===== Speed tuning =====
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Speed")
