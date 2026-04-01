@@ -3,6 +3,8 @@
 
 #include "GameSystem/Base/BaseCharacter.h"
 #include "GameSystem/Base/BaseGameplayAbility.h"
+#include "GameSystem/Base/BaseAnimInstance.h"
+#include "GameSystem/Base/BaseProjectile.h"
 
 #include "GameSystem/Instance/Game/DataManager.h"
 #include "GameSystem/Instance/World/ObjectPoolSubsystem.h"
@@ -158,6 +160,59 @@ void ABaseCharacter::BeginPlay()
     if (AbilitySystemComponent)
     {
         AbilitySystemComponent->InitAbilityActorInfo(this, this);
+    }
+}
+
+void ABaseCharacter::SetLocomotionBlendSpace()
+{
+    if (LocomotionBS)
+    {
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
+            {
+                BaseInstance->SetInstacne(LocomotionBS, this);
+            }
+        }
+    }
+}
+
+void ABaseCharacter::InitProjectilePool()
+{
+    if (AttackData && AttackData->GetAttackType() == EAttackType::Projectile)
+    {
+        if (FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
+        {
+            if (ProjectileData->EPoolTypes != EPoolTypes::None && !ProjectileData->SpawnObject.IsNull())
+            {
+                if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+                {
+                    UClass* ProjectileClass = ProjectileData->SpawnObject.LoadSynchronous();
+                    Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileClass, 10);
+                }
+            }           
+        }
+    }
+
+    if (SkillDataList.Num() > 0)
+    {
+        for (USkillData* SkillData : SkillDataList)
+        {
+            if (!SkillData || SkillData->GetAttackType() != EAttackType::Projectile)
+                continue;
+
+            if (FProjectileDataRow* ProjectileData = SkillData->GetProjectileData())
+            {
+                if (ProjectileData->EPoolTypes != EPoolTypes::None && !ProjectileData->SpawnObject.IsNull())
+                {
+                    if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
+                    {
+                        UClass* ProjectileClass = ProjectileData->SpawnObject.LoadSynchronous();
+                        Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileClass, 1);
+                    }
+                }
+            }
+        }        
     }
 }
 

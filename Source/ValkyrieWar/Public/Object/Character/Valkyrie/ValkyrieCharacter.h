@@ -66,6 +66,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void SetLocomotionBlendSpace() override;
+
 	void UpdateWeaponMesh();
 
 	void BindAttributeDelegates();

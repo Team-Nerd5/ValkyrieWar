@@ -40,8 +40,6 @@ public:
 
 	void SetComputedEnemyData(UUnitData* InBaseData, const FComputedEnemyStat& InComputedStat);
 
-	void SetLocomotionBlendSpace();
-
 	inline UUnitBrainComponent* GetBrain() const { return Brain; }
 
 	void SetOwnerSpawner(ABaseUnitSpawner* InSpawner);
@@ -87,6 +85,8 @@ protected:
 
 	virtual void TryUseSkillOrAttack() override;
 
+	virtual void SetLocomotionBlendSpace() override;
+
 	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
 
 	void DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const;
@@ -125,7 +125,6 @@ private:
 
 	bool FireProjectileAttack();
 	bool GetProjectileSpawnTransform(FVector& OutLocation, FRotator& OutRotation) const;
-	void InitProjectilePoolIfNeeded();
 
 	void CollectSplashTargets(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, TArray<AActor*>& OutTargets) const;
 	bool IsValidAttackTargetActor(const AActor* TargetActor) const;

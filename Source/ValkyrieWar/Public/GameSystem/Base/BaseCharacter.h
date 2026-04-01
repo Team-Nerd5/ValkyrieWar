@@ -64,6 +64,10 @@ protected:
 	/*자동 전투 시 스킬 or 일반 공격 판단*/
 	virtual void TryUseSkillOrAttack() {}
 
+	virtual void SetLocomotionBlendSpace();
+
+	void InitProjectilePool();
+
 	void CreateAttackAbility();
 
 	void CreateSkillAbility();

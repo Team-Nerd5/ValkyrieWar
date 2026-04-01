@@ -16,7 +16,6 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 
 #include "GameSystem/Base/BaseGameplayAbility.h"
-#include "GameSystem/Base/BaseProjectile.h"
 #include "GameSystem/Base/BaseAnimInstance.h"
 #include "GameSystem/State/Game/BattleGameState.h"
 #include "GameSystem/State/Player/ValkyriePlayerState.h"
@@ -138,6 +137,21 @@ void AValkyrieCharacter::BeginPlay()
 	}
 }
 
+void AValkyrieCharacter::SetLocomotionBlendSpace()
+{
+	if (EquippedWeapon)
+	{
+		if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
+		{
+			UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
+
+			if (NewBS)
+				LocomotionBS = NewBS;			
+		}
+	}
+	Super::SetLocomotionBlendSpace();
+}
+
 void AValkyrieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -164,24 +178,7 @@ void AValkyrieCharacter::EquipWeapon(UItemData* InWeapon)
 			AttackData = DataManager->GetAttackModule()->GetAttackData(EquippedWeapon->GetAttackID());;
 		}
 
-		if (EquippedWeapon)
-		{
-			if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
-			{
-				UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
-				if (NewBS)
-					LocomotionBS = NewBS;
-
-				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-				if (AnimInstance)
-				{
-					if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
-					{
-						BaseInstance->SetInstacne(LocomotionBS, this);
-					}
-				}
-			}
-		}
+		SetLocomotionBlendSpace();
 	}
 
 	UpdateWeaponMesh();	
@@ -848,26 +845,7 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	EquippedWeapon = Data->GetEquippedItem(EEquipGroup::Weapon);
 
-	if (EquippedWeapon)
-	{
-		if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
-		{
-			UBlendSpace* NewBS = GameManager->GetValkyrieBlendSpace(EquippedWeapon->GetWeaponType());
-			if (NewBS)
-			{
-				LocomotionBS = NewBS;
-
-				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-				if (AnimInstance)
-				{
-					if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
-					{
-						BaseInstance->SetInstacne(LocomotionBS, this);
-					}					
-				}
-			}
-		}
-	}
+	SetLocomotionBlendSpace();
 
 	//기본 무기에 따른 공격/스킬 적용
 	AttackData = InData->GetAttackData();
@@ -880,18 +858,11 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 		UE_LOG(LogTemp, Warning, TEXT("Attack Cool"));
 	}
 
-	//데이터 풀 타입 있는지도 체크...
-	if (FProjectileDataRow* ProjectileData = AttackData->GetProjectileData())
-	{
-		if (UObjectPoolSubsystem* Pool = UGameBaseLibrary::GetObjectPoolSystem(this))
-		{			
-			Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileData->SpawnObject.LoadSynchronous(), 5);
-		}
-	}	
-
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
 	InitSkillCooldowns();
+
+	InitProjectilePool();
 
 	UpdateWeaponMesh();
 	//BroadcastHpChanged();

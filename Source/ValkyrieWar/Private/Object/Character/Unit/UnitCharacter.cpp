@@ -121,20 +121,6 @@ void AUnitCharacter::SetComputedEnemyData(UUnitData* InBaseData, const FComputed
 	ApplyUnitData(InBaseData);
 }
 
-void AUnitCharacter::SetLocomotionBlendSpace()
-{
-	if (LocomotionBS)
-	{
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-		{
-			if (UBaseAnimInstance* BaseInstance = Cast<UBaseAnimInstance>(AnimInstance))
-			{
-				BaseInstance->SetInstacne(LocomotionBS, this);
-			}
-		}
-	}
-}
-
 void AUnitCharacter::SetOwnerSpawner(ABaseUnitSpawner* InSpawner)
 {
 	OwnerSpawner = InSpawner;
@@ -579,7 +565,7 @@ void AUnitCharacter::ApplyUnitData(UUnitData* InData)
 	SkillDataList = InData->GetSkillData();
 	CreateSkillAbility();
 
-	InitProjectilePoolIfNeeded();
+	InitProjectilePool();
 
 	SetHealthBarColor();
 }
@@ -836,30 +822,6 @@ bool AUnitCharacter::GetProjectileSpawnTransform(FVector& OutLocation, FRotator&
 	}
 
 	return true;
-}
-
-void AUnitCharacter::InitProjectilePoolIfNeeded()
-{
-	if (!AttackData) return;
-	if (AttackData->GetAttackType() != EAttackType::Projectile) return;
-
-	const FProjectileDataRow* ProjectileData = AttackData->GetProjectileData();
-	if (!ProjectileData) return;
-	if (ProjectileData->EPoolTypes == EPoolTypes::None) return;
-	if (ProjectileData->SpawnObject.IsNull()) return;
-
-	if (UObjectPoolSubsystem* Pool = GetPool())
-	{
-		UClass* ProjectileClass = ProjectileData->SpawnObject.LoadSynchronous();
-		if (!ProjectileClass)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[UnitCharacter] Projectile class load failed."));
-			return;
-		}
-
-		// 같은 PoolType / 같은 클래스라면 내부에서 중복 방어되도록 ObjectPoolSubsystem 쪽에서 처리하는 게 제일 좋음
-		Pool->InitPool<ABaseProjectile>(ProjectileData->EPoolTypes, ProjectileClass, 10);
-	}
 }
 
 void AUnitCharacter::CollectSplashTargets(AActor* MainTarget, int32 SplashTargetAmount, float SplashRange, TArray<AActor*>& OutTargets) const
@@ -1125,6 +1087,11 @@ void AUnitCharacter::TryUseSkillOrAttack()
 {
 	// 현재 유닛의 경우는 스킬이 없으므로 바로 ExecuteAttack 호출
 	ExecuteAttack();
+}
+
+void AUnitCharacter::SetLocomotionBlendSpace()
+{
+	Super::SetLocomotionBlendSpace();
 }
 
 void AUnitCharacter::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
