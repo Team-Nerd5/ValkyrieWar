@@ -15,10 +15,10 @@ struct VALKYRIEWAR_API FGameplayCueData
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	EGameplayCueOrder CueOrder = EGameplayCueOrder::OnNotify;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	FGameplayTag Tag;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	FVector Offset = FVector::ZeroVector;
 };
