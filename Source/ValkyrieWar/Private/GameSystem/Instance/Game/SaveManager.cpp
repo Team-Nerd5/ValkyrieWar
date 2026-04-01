@@ -464,3 +464,13 @@ void USaveManager::AddGoods(EGoodsType InGoodsType, int64 InAmount)
 		SaveInternal(ESaveType::Goods);		
 	}
 }
+
+void USaveManager::SaveMainValkyrie(uint64 InUID)
+{
+	if (Account)
+	{
+		Account->SelectedValkyrie = InUID;
+
+		SaveInternal(ESaveType::Account);
+	}
+}

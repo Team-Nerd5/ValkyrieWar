@@ -103,6 +103,8 @@ public:
 
 	void AddGoods(EGoodsType InGoodsType, int64 InAmount);
 
+	void SaveMainValkyrie(uint64 InUID);
+
 	void SaveValkyrie(UValkyrieData* InData);
 
 	void SaveUnit(UUnitData* InData);

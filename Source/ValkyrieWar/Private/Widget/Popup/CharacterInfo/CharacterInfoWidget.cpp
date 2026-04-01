@@ -169,9 +169,14 @@ void UCharacterInfoWidget::OnClickSetMain()
 		if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
 		{
 			GameManager->SelectVakyrie(SelectedValkyrie->GetUID());
+			if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+			{
+				SaveManager->SaveMainValkyrie(SelectedValkyrie->GetUID());
+			}
 		}
 
 		MainValkyrie = SelectedValkyrie;
+
 	}
 
 	//메인 관련 버튼, UI 갱신
