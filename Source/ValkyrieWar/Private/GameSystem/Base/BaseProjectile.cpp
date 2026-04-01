@@ -84,6 +84,7 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 	Effect->ResetSystem();
 	Effect->Activate(true);
 
+	
 	StatAttributeSet->SetHealth(0.0f);
 	StatAttributeSet->SetMaxHealth(0.0f);
 	StatAttributeSet->SetDefense(0.0f);
@@ -94,6 +95,11 @@ void ABaseProjectile::SetData(FGameplayTag InTag, FGameplayAbilitySpec InSpec, F
 //
 void ABaseProjectile::SetAttack(float InAttack)
 {
+	if (!StatAttributeSet)
+	{
+		StatAttributeSet = NewObject<UStatAttributeSet>(this);
+		AbilitySystemComponent->AddAttributeSetSubobject<UStatAttributeSet>(StatAttributeSet);
+	}
 	StatAttributeSet->SetAttack(InAttack);
 }
 
