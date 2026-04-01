@@ -141,7 +141,7 @@ protected:
 	TObjectPtr<AActor> SpawnPointActor = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
-	FVector2D SpawnHalfExtent = FVector2D(200.f, 3000.f);
+	FVector2D SpawnHalfExtent = FVector2D(200.f, 700.f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	bool bAutoStart = true;
