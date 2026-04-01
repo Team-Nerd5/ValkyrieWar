@@ -474,6 +474,70 @@ void UBattleDirectorSubsystem::NotifyUnitMoved(AUnitCharacter* Unit)
     UpdateUnitCell(Unit);
 }
 
+AActor* UBattleDirectorSubsystem::GetNearestAttackTargetForValkyrie(
+    const FVector& From,
+    ETeamType MyTeam,
+    float TargetSearchRadius
+) const
+{
+    if (AUnitCharacter* EnemyUnit = GetNearestEnemyUnitByLocation(From, MyTeam, TargetSearchRadius))
+    {
+        return EnemyUnit;
+    }
+
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
+    return GetNearestWallAnchorTo(From, EnemyTeam);
+}
+
+AUnitCharacter* UBattleDirectorSubsystem::GetNearestEnemyUnitByLocation(
+    const FVector& From,
+    ETeamType MyTeam,
+    float TargetSearchRadius
+) const
+{
+    const ETeamType EnemyTeam = (MyTeam == ETeamType::Ally) ? ETeamType::Enemy : ETeamType::Ally;
+
+    const FIntPoint Center = WorldToCell2D(From);
+
+    const float Cell = FMath::Max(10.f, GridCellSize);
+    const int32 NeedRadius = FMath::CeilToInt(TargetSearchRadius / Cell);
+    const int32 CellRadius = FMath::Clamp(NeedRadius, 1, FMath::Max(1, MaxCellRadius));
+
+    const TMap<FIntPoint, TArray<TWeakObjectPtr<AUnitCharacter>>>& EnemyGrid = GetGridConst(EnemyTeam);
+
+    AUnitCharacter* Best = nullptr;
+    float BestSq = FLT_MAX;
+    const float SearchRadiusSq = TargetSearchRadius * TargetSearchRadius;
+
+    for (int32 dy = -CellRadius; dy <= CellRadius; ++dy)
+    {
+        for (int32 dx = -CellRadius; dx <= CellRadius; ++dx)
+        {
+            const FIntPoint Key(Center.X + dx, Center.Y + dy);
+
+            const TArray<TWeakObjectPtr<AUnitCharacter>>* List = EnemyGrid.Find(Key);
+            if (!List) continue;
+
+            for (const TWeakObjectPtr<AUnitCharacter>& W : *List)
+            {
+                AUnitCharacter* Enemy = W.Get();
+                if (!Enemy || Enemy->IsDead()) continue;
+
+                const float DistSq = FVector::DistSquared(From, Enemy->GetActorLocation());
+                if (DistSq > SearchRadiusSq) continue;
+
+                if (DistSq < BestSq)
+                {
+                    BestSq = DistSq;
+                    Best = Enemy;
+                }
+            }
+        }
+    }
+
+    return Best;
+}
+
 void UBattleDirectorSubsystem::GatherEnemyCandidates(AUnitCharacter* Attacker, TArray<AUnitCharacter*>& OutCandidates) const
 {
     OutCandidates.Reset();

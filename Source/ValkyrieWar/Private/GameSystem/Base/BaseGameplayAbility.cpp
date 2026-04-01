@@ -10,6 +10,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Data/Game/SkillData.h"
 
 UBaseGameplayAbility::UBaseGameplayAbility()
 {
@@ -38,6 +39,12 @@ void UBaseGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInf
     if (InAttackData)
     {
         UpdateData(InAttackData->GetAbilityTag(), InAttackData->GetEffectList());
+    }
+
+    USkillData* SkillData = Cast<USkillData>(GetCurrentSourceObject());
+    if (SkillData)
+    {
+        UpdateData(SkillData->GetAbilityTag(), SkillData->GetEffectList());
     }
 }
 

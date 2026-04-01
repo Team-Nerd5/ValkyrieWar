@@ -26,3 +26,20 @@ void USkillData::MakeData(const FSkillDataRow InTableData, UGameManager* InGameM
 		}
 	}
 }
+
+float USkillData::GetCooldownDuration() const
+{
+	float MaxCooldown = 0.0f;
+
+	for (const TObjectPtr<USkillEffectData>& EffectData : EffectList)
+	{
+		if (!EffectData)
+		{
+			continue;
+		}
+
+		MaxCooldown = FMath::Max(MaxCooldown, EffectData->GetDuration());
+	}
+
+	return MaxCooldown;
+}

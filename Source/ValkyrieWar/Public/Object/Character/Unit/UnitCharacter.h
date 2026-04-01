@@ -85,6 +85,8 @@ protected:
 
 	virtual void ExecuteSkill(int32 InSkillIndex) override;
 
+	virtual void TryUseSkillOrAttack() override;
+
 	void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
 
 	void DrawDebugSplashRange(const FVector& Center, float Radius, AActor* MainTarget) const;

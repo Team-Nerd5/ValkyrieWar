@@ -9,6 +9,7 @@
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
+#include "GameSystem/State/Player/ValkyriePlayerState.h"
 
 void UModeChangeButtonWidget::NativePreConstruct()
 {
@@ -64,9 +65,9 @@ void UModeChangeButtonWidget::ToggleAutoMode()
 {
 	if (APlayerController* PC = GetOwningPlayer())
 	{
-		if (AValkyrieCharacterController* VPC = Cast<AValkyrieCharacterController>(PC))
+		if (AValkyriePlayerState* PS = PC->GetPlayerState<AValkyriePlayerState>())
 		{
-			VPC->ToggleControlMode();
+			PS->ToggleControlMode();
 		}
 	}
 }

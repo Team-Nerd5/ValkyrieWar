@@ -1121,6 +1121,12 @@ void AUnitCharacter::ExecuteSkill(int32 InSkillIndex)
 	//스킬 몽타주 실행
 }
 
+void AUnitCharacter::TryUseSkillOrAttack()
+{
+	// 현재 유닛의 경우는 스킬이 없으므로 바로 ExecuteAttack 호출
+	ExecuteAttack();
+}
+
 void AUnitCharacter::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
 {
 	UpdateHealthBar();

@@ -53,6 +53,18 @@ public:
 
     void NotifyUnitMoved(AUnitCharacter* Unit);
 
+    AActor* GetNearestAttackTargetForValkyrie(
+        const FVector& From,
+        ETeamType MyTeam,
+        float SearchRadius
+    ) const;
+
+    AUnitCharacter* GetNearestEnemyUnitByLocation(
+        const FVector& From,
+        ETeamType MyTeam,
+        float SearchRadius
+    ) const;
+
 private:
     // ===============================
     // 팀 관리

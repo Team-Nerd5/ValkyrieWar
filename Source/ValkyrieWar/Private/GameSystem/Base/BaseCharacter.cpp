@@ -107,20 +107,47 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
 {
     if (!AbilitySystemComponent) return;
 
-    if (SkillDataList.Num() > (InSkillIndex + 1)) return;
+    if (SkillDataList.Num() < (InSkillIndex + 1)) return;
 
     FGameplayEventData Payload;
     Payload.Instigator = this;
     Payload.Target = InTargetActor;
     Payload.EventTag = SkillDataList[InSkillIndex]->GetAbilityTag();
 
-    AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
+    //AbilitySystemComponent->HandleGameplayEvent(Payload.EventTag, &Payload);
+
+    for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
+    {
+        if (Spec.GetDynamicSpecSourceTags().HasTagExact(SkillDataList[InSkillIndex]->GetAbilityTag()))
+        {
+            AbilitySystemComponent->TriggerAbilityFromGameplayEvent(
+                Spec.Handle,
+                AbilitySystemComponent->AbilityActorInfo.Get(),
+                SkillDataList[InSkillIndex]->GetAbilityTag(),
+                &Payload,
+                *AbilitySystemComponent
+            );
+
+            TArray<FGameplayCueData> Cues = SkillDataList[InSkillIndex]->GetCue(EGameplayCueOrder::OnNotify);
+            for (const FGameplayCueData Cue : Cues)
+            {
+                FGameplayCueParameters CueParams;
+                CueParams.Location = GetActorLocation() + Cue.Offset;
+
+                AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+            }
+
+            break;
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("ApplySkill! %s"), *InTargetActor->GetFName().ToString());
 }
 
 void ABaseCharacter::UpdateTarget(AActor* InTarget)
 {
     CurrentTarget = InTarget;
-    ExecuteAttack();
+    TryUseSkillOrAttack();
 }
 
 // Called when the game starts or when spawned
@@ -150,11 +177,25 @@ void ABaseCharacter::CreateAttackAbility()
 
 void ABaseCharacter::CreateSkillAbility()
 {
-    if (SkillDataList.Num() > 0)
+    if (!AbilitySystemComponent)
     {
-        for (USkillData* SkillData : SkillDataList)
+        return;
+    }
+
+    SkillSpecHandles.Empty();
+    SkillSpecHandles.SetNum(SkillDataList.Num());
+
+    for (int32 i = 0; i < SkillDataList.Num(); ++i)
+    {
+        USkillData* SkillData = SkillDataList[i];
+        if (!SkillData)
         {
-            
+            continue;
         }
+
+        FGameplayAbilitySpec Spec(UBaseGameplayAbility::StaticClass(), 1, i, SkillData);
+        Spec.GetDynamicSpecSourceTags().AddTag(SkillData->GetAbilityTag());
+
+        SkillSpecHandles[i] = AbilitySystemComponent->GiveAbility(Spec);
     }
 }

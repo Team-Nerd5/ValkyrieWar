@@ -61,6 +61,8 @@ protected:
 	virtual void ExecuteAttack() {}
 	/*스킬 자체를 시작*/
 	virtual void ExecuteSkill(int32 InSkillIndex) {}
+	/*자동 전투 시 스킬 or 일반 공격 판단*/
+	virtual void TryUseSkillOrAttack() {}
 
 	void CreateAttackAbility();
 
@@ -99,6 +101,10 @@ protected:
 
 	UPROPERTY()
 	FGameplayAbilitySpec AttackSpec;
+
+	UPROPERTY()
+	TArray<FGameplayAbilitySpecHandle> SkillSpecHandles;
+
 	UPROPERTY()
 	TArray<FGameplayAbilitySpec> SkillSpecs;
 

@@ -46,6 +46,7 @@ public:
 	}
 
 	FORCEINLINE FTargetingDataRow const GetTargetingData() { return TargetingData; }
+	FORCEINLINE float const GetAttackRange() { return TableData.AttackRange; }
 private:
 	UPROPERTY()
 	FAttackDataRow TableData;

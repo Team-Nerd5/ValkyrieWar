@@ -1,15 +1,14 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "Perception/AIPerceptionTypes.h"
 #include "ValkyrieAIController.generated.h"
 
-/**
- * 
- */
+class UBlackboardComponent;
+class UBehaviorTreeComponent;
+class UBehaviorTree;
+class UBattleDirectorSubsystem;
+
 UCLASS()
 class VALKYRIEWAR_API AValkyrieAIController : public AAIController
 {
@@ -21,32 +20,27 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Sight")
-	float AISightRadius = 1000.f;
+protected:
+	UPROPERTY()
+	TObjectPtr<UBlackboardComponent> BlackboardComp = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Sight")
-	float AILoseSightRadius = 1200.f;
+	UPROPERTY()
+	TObjectPtr<UBehaviorTreeComponent> BehaviorTreeComp = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Sight")
-	float AISightAngle = 180.f;
+	// 에디터에서 할당
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	TObjectPtr<UBehaviorTree> BTAsset = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	TObjectPtr<class UBlackboardComponent> BlackboardComp;
+	// 발키리가 "근처 적"을 판단할 반경
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Target")
+	float EnemyDetectRadius = 700.0f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	TObjectPtr<class UBehaviorTreeComponent> BehaviorTreeComp;
+	// 블랙보드 키 이름
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI|Blackboard")
+	FName TargetActorKeyName = TEXT("TargetActor");
 
-	//에디터에서 할당
-	UPROPERTY(EditAnywhere, Category = "AI")
-	TObjectPtr<class UBehaviorTree> BTAsset;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI") // 감각
-	TObjectPtr<class UAIPerceptionComponent> AIPerceptionComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	TObjectPtr<class UAISenseConfig_Sight> SightConfig;
-
-	UFUNCTION()
-	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
+	UPROPERTY()
+	TObjectPtr<UBattleDirectorSubsystem> BattleDirector = nullptr;
 };

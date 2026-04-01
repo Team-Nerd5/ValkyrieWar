@@ -15,19 +15,20 @@
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/State/Game/BattleGameState.h"
+#include "GameSystem/State/Player/ValkyriePlayerState.h"
 
 #include "Object/Character/Valkyrie/ValkyrieCharacter.h"
 #include "Object/Character/Valkyrie/Controller/CameraBoundsVolume.h"
 #include "Object/Cheat/BattleCheatManager.h"
 #include "Widget/HUD/BattleWidget.h"
 
-
 AValkyrieCharacterController::AValkyrieCharacterController()
 {
+	bAutoManageActiveCameraTarget = false;
+
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 
-	// 기본값 설정
 	ManualPanSpeed = 1.0f;
 	AutoPanSpeed = 1.5f;
 
@@ -49,13 +50,22 @@ void AValkyrieCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!FollowCamera.IsValid())
+	{
+		FollowCamera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass());
+	}
+
+	if (FollowCamera.IsValid())
+	{
+		SetViewTarget(FollowCamera.Get());
+	}
+
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Battle.OnBattleStateChanged.AddDynamic(this, &AValkyrieCharacterController::ChageGameState);
 	}
 	ChageGameState(EBattleState::Init);
 
-	// 입력 모드 설정
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
@@ -67,8 +77,20 @@ void AValkyrieCharacterController::BeginPlay()
 	{
 		BoundsVolume = Cast<ACameraBoundsVolume>(FoundActors[0]);
 	}
-	CurrentControlMode = EInputControlMode::Auto;
-	SetControlMode(EInputControlMode::Manual);
+
+	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		EventSystem->Battle.OnBattleModeChanged.AddDynamic(this, &AValkyrieCharacterController::HandleControlModeChanged);
+
+		if (AValkyriePlayerState* PS = GetValkyriePlayerState())
+		{
+			HandleControlModeChanged(PS->GetControlMode());
+		}
+		else
+		{
+			HandleControlModeChanged(EInputControlMode::Manual);
+		}
+	}
 
 	ChageGameState(EBattleState::Play);
 
@@ -78,18 +100,24 @@ void AValkyrieCharacterController::BeginPlay()
 	}
 }
 
-void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
+AValkyriePlayerState* AValkyrieCharacterController::GetValkyriePlayerState() const
 {
-	if (CurrentControlMode == InNewMode) return;
+	return GetPlayerState<AValkyriePlayerState>();
+}
 
-	CurrentControlMode = InNewMode;
+void AValkyrieCharacterController::HandleControlModeChanged(EInputControlMode NewMode)
+{
+	CachedControlMode = NewMode;
 
-	if (CurrentControlMode == EInputControlMode::Manual)
+	if (CachedControlMode == EInputControlMode::Manual)
 	{
 		CurrentTargetViewOffset = ManualViewOffset;
 		ActivateTouchInterface(MyTouchInterface);
 
-		if (BattleUI) BattleUI->SetJoyPadVisibility(true);
+		if (BattleUI)
+		{
+			BattleUI->SetJoyPadVisibility(true);
+		}
 	}
 	else
 	{
@@ -97,7 +125,10 @@ void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 		DragOffset = FVector::ZeroVector;
 		ActivateTouchInterface(nullptr);
 
-		if (BattleUI) BattleUI->SetJoyPadVisibility(false);
+		if (BattleUI)
+		{
+			BattleUI->SetJoyPadVisibility(false);
+		}
 	}
 
 	StopMovement();
@@ -105,20 +136,16 @@ void AValkyrieCharacterController::SetControlMode(EInputControlMode InNewMode)
 	bIsInputActive = false;
 }
 
+void AValkyrieCharacterController::SetCameraTargetPawn(APawn* InPawn)
+{
+	CameraTargetPawn = InPawn;
+}
+
 void AValkyrieCharacterController::ToggleControlMode()
 {
-	if (CurrentControlMode == EInputControlMode::Manual)
+	if (AValkyriePlayerState* PS = GetValkyriePlayerState())
 	{
-		SetControlMode(EInputControlMode::Auto);
-	}
-	else
-	{
-		SetControlMode(EInputControlMode::Manual);
-	}
-
-	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-	{
-		WorldEventSystem->Battle.OnBattleModeChanged.Broadcast(CurrentControlMode);
+		PS->ToggleControlMode();
 	}
 }
 
@@ -144,11 +171,9 @@ void AValkyrieCharacterController::SetupInputComponent()
 		}
 	}
 }
-
 void AValkyrieCharacterController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-
 	UpdateCameraPosition(DeltaTime);
 
 	if (BattleUI)
@@ -162,21 +187,28 @@ void AValkyrieCharacterController::OnPossess(APawn* aPawn)
 	Super::OnPossess(aPawn);
 
 	ControlledPawn = aPawn;
+	SetCameraTargetPawn(aPawn);
 
-	FollowCamera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass());
-
-	SetViewTargetWithBlend(FollowCamera.Get());
+	if (FollowCamera.IsValid())
+	{
+		SetViewTarget(FollowCamera.Get());
+	}
 }
 
 void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 {
-	if (!FollowCamera.IsValid() || !ControlledPawn) return;
+	APawn* TargetPawn = CameraTargetPawn.Get();
 
-	bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
-	bool bIsMovingInput = bIsInputActive || bIsJoypadActive;
+	if (!FollowCamera.IsValid() || !TargetPawn)
+	{
+		return;
+	}
+
+	const bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
+	const bool bIsMovingInput = bIsInputActive || bIsJoypadActive;
 
 	bool bIsAttackingOrSkill = false;
-	if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(ControlledPawn))
+	if (AValkyrieCharacter* ValkyrieChar = Cast<AValkyrieCharacter>(TargetPawn))
 	{
 		if (UAnimInstance* AnimInst = ValkyrieChar->GetMesh()->GetAnimInstance())
 		{
@@ -184,7 +216,6 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		}
 	}
 
-	// 카메라 복귀 스위치 판별
 	if (bIsMovingInput || bIsAttackingOrSkill)
 	{
 		bIsReturningToCenter = true;
@@ -201,7 +232,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	if (bIsReturningToCenter)
 	{
-		float Speed = (bIsMovingInput || bIsAttackingOrSkill) ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
+		const float Speed = (bIsMovingInput || bIsAttackingOrSkill) ? MovingCenterInterpSpeed : AutoCenterInterpSpeed;
 		DragOffset = FMath::VInterpTo(DragOffset, FVector::ZeroVector, InDeltaTime, Speed);
 
 		if (DragOffset.IsNearlyZero(1.0f))
@@ -211,8 +242,7 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 		}
 	}
 
-	FVector CharLoc = ControlledPawn->GetActorLocation();
-	FVector CharVelocity = ControlledPawn->GetVelocity();
+	FVector CharVelocity = TargetPawn->GetVelocity();
 	CharVelocity.Z = 0.0f;
 
 	FVector TargetLookAhead = CharVelocity * VelocityLeadScale;
@@ -220,49 +250,22 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	CurrentLookAheadOffset = FMath::VInterpTo(CurrentLookAheadOffset, TargetLookAhead, InDeltaTime, LookAheadInterSpeed);
 
+	const FVector TotalOffset = DragOffset + CurrentLookAheadOffset;
+	const FVector TargetCamLoc = TargetPawn->GetActorLocation() + CurrentTargetViewOffset + TotalOffset;
 
-	FVector TotalOffset = DragOffset + CurrentLookAheadOffset;
+	const FVector CurrentCamLoc = FollowCamera->GetActorLocation();
+	const float LagSpeed = (CachedControlMode == EInputControlMode::Manual) ? ManualLagSpeed : AutoLagSpeed;
+	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, LagSpeed);
 
-	FVector CameraForward = CameraRotate.Vector();
-	FVector TargetCamLoc = ControlledPawn->GetActorLocation() + AutoViewOffset + TotalOffset;
-
-	if (CurrentControlMode == EInputControlMode::Manual)
-	{
-		// 절대 월드 좌표로 적용
-		//FollowCamera->SetActorRotation(CameraRotate);
-		//FollowCamera->SetActorLocation(TargetCamLoc);
-
-		FVector CurrentCamLoc = FollowCamera->GetActorLocation();
-		FVector SmoothedLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, ManualLagSpeed);
-
-		FollowCamera->SetActorRotation(CameraRotate);
-		FollowCamera->SetActorLocation(SmoothedLoc);
-		
-		return;
-	}
-
-	float CurrentLagSpeed = AutoLagSpeed;
-
-	// 3. 현재 카메라 위치에서 목표 위치로 부드럽게 보간 (Lag 효과)
-	FVector CurrentCamLoc = FollowCamera->GetActorLocation();
-	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, CurrentLagSpeed);
-
-	// 4. 바운드 박스 영역 제한
 	if (BoundsVolume && BoundsVolume->GetBoundsBox())
 	{
-		FVector Origin = BoundsVolume->GetActorLocation();
-		FVector Extent = BoundsVolume->GetBoundsBox()->GetScaledBoxExtent();
+		const FVector Origin = BoundsVolume->GetActorLocation();
+		const FVector Extent = BoundsVolume->GetBoundsBox()->GetScaledBoxExtent();
 
-		float MinX = Origin.X - Extent.X;
-		float MaxX = Origin.X + Extent.X;
-		float MinY = Origin.Y - Extent.Y;
-		float MaxY = Origin.Y + Extent.Y;
-
-		NewCamLoc.X = FMath::Clamp(NewCamLoc.X, MinX, MaxX);
-		NewCamLoc.Y = FMath::Clamp(NewCamLoc.Y, MinY, MaxY);
+		NewCamLoc.X = FMath::Clamp(NewCamLoc.X, Origin.X - Extent.X, Origin.X + Extent.X);
+		NewCamLoc.Y = FMath::Clamp(NewCamLoc.Y, Origin.Y - Extent.Y, Origin.Y + Extent.Y);
 	}
 
-	// 5. 최종 월드 위치 및 회전 적용
 	FollowCamera->SetActorRotation(CameraRotate);
 	FollowCamera->SetActorLocation(NewCamLoc);
 }
@@ -271,23 +274,28 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 void AValkyrieCharacterController::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (!FollowCamera.IsValid())
+
+	if (!FollowCamera.IsValid() || !ControlledPawn.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Valkyrie Camera connection lost"));
 		return;
 	}
 
-	FVector CharLoc = ControlledPawn->GetActorLocation();
-	FVector FinalTargetLoc = CharLoc;
+	const FVector CharLoc = ControlledPawn->GetActorLocation();
+	const FVector FinalTargetLoc = CharLoc + CurrentTargetViewOffset;
 	FollowCamera->SetActorRotation(CameraRotate);
+	FollowCamera->SetActorLocation(FinalTargetLoc);
 }
 #endif
 
 void AValkyrieCharacterController::OnMove(const FInputActionValue& InValue)
 {
-	if (CurrentControlMode == EInputControlMode::Auto) return;
+	if (CachedControlMode == EInputControlMode::Auto)
+	{
+		return;
+	}
 
-	FVector2D MovementVector = InValue.Get<FVector2D>();
+	const FVector2D MovementVector = InValue.Get<FVector2D>();
 
 	if (!MovementVector.IsNearlyZero())
 	{
@@ -316,7 +324,7 @@ void AValkyrieCharacterController::OnInputStarted()
 
 	for (uint8 i = 0; i < 10; ++i)
 	{
-		bool bIsPressed;
+		bool bIsPressed = false;
 		GetInputTouchState((ETouchIndex::Type)i, X, Y, bIsPressed);
 		if (bIsPressed)
 		{
@@ -341,40 +349,63 @@ void AValkyrieCharacterController::OnInputStarted()
 
 void AValkyrieCharacterController::OnTouchTriggered()
 {
-	if (!bIsDragging) return;
+	if (!bIsDragging || !FollowCamera.IsValid())
+	{
+		return;
+	}
 
-	bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
+	const bool bIsJoypadActive = BattleUI && !BattleUI->GetJoyPadAxis().IsNearlyZero();
 	if (bIsInputActive || bIsJoypadActive)
 	{
-		float X, Y; bool bDummy;
+		float X = 0.0f;
+		float Y = 0.0f;
+		bool bDummy = false;
 		GetInputTouchState(CurrentDragTouchIndex, X, Y, bDummy);
-		if (!bDummy && GetMousePosition(X, Y)) {}
+		if (!bDummy)
+		{
+			GetMousePosition(X, Y);
+		}
 
 		PrevTouchLocation = FVector2D(X, Y);
 		return;
 	}
 
-	float X, Y; bool bDummy;
+	float X = 0.0f;
+	float Y = 0.0f;
+	bool bDummy = false;
 	GetInputTouchState(CurrentDragTouchIndex, X, Y, bDummy);
-	if (!bDummy && GetMousePosition(X, Y)) {}
+	if (!bDummy)
+	{
+		GetMousePosition(X, Y);
+	}
 
 	RefreshInteractionTime();
-	FVector2D CurrentTouchLocation = FVector2D(X, Y);
-	FVector2D Delta = PrevTouchLocation - CurrentTouchLocation;
 
-	if (Delta.SizeSquared() > 10000.0f) { PrevTouchLocation = CurrentTouchLocation; return; }
+	const FVector2D CurrentTouchLocation(X, Y);
+	const FVector2D Delta = PrevTouchLocation - CurrentTouchLocation;
+
+	if (Delta.SizeSquared() > 10000.0f)
+	{
+		PrevTouchLocation = CurrentTouchLocation;
+		return;
+	}
 
 	if (Delta.SizeSquared() > 1.0f)
 	{
-		float CurrentPanSpeed = (CurrentControlMode == EInputControlMode::Manual) ? ManualPanSpeed : AutoPanSpeed;
-		FVector CamForward = FollowCamera->GetActorForwardVector();
-		FVector CamRight = FollowCamera->GetActorRightVector();
-		FVector FlatForward = FVector(CamForward.X, CamForward.Y, 0.0f).GetSafeNormal();
-		FVector FlatRight = FVector(CamRight.X, CamRight.Y, 0.0f).GetSafeNormal();
+		const float CurrentPanSpeed =
+			(CachedControlMode == EInputControlMode::Manual)
+			? ManualPanSpeed
+			: AutoPanSpeed;
+
+		const FVector CamForward = FollowCamera->GetActorForwardVector();
+		const FVector CamRight = FollowCamera->GetActorRightVector();
+		const FVector FlatForward = FVector(CamForward.X, CamForward.Y, 0.0f).GetSafeNormal();
+		const FVector FlatRight = FVector(CamRight.X, CamRight.Y, 0.0f).GetSafeNormal();
 
 		DragOffset += FlatRight * (Delta.X * CurrentPanSpeed);
 		DragOffset -= FlatForward * (Delta.Y * CurrentPanSpeed);
 	}
+
 	PrevTouchLocation = CurrentTouchLocation;
 }
 
@@ -391,10 +422,7 @@ void AValkyrieCharacterController::Move(FVector2D InMoveDir)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	FVector WorldInputDirection = (ForwardDirection * -InMoveDir.Y) + (RightDirection * InMoveDir.X);
-	WorldInputDirection.Z = 0.0f;
-
-	if (ControlledPawn)
+	if (ControlledPawn.IsValid())
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, -InMoveDir.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InMoveDir.X);

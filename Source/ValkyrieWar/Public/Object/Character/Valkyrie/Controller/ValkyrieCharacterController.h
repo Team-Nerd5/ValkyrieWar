@@ -17,6 +17,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class AValkyriePlayerState;
 
 UCLASS()
 class VALKYRIEWAR_API AValkyrieCharacterController : public APlayerController
@@ -38,64 +39,73 @@ public:
 	// 바운드 볼륨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Bounds")
 	TObjectPtr<ACameraBoundsVolume> BoundsVolume = nullptr;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	float AutoCenterWaitTime = 3.0f; // 복귀 대기 시간
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	float AutoCenterInterpSpeed = 2.0f; // 복귀 속도
+	float AutoCenterWaitTime = 3.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
-	float MovingCenterInterpSpeed = 5.0f; // 이동 중 복귀 속도
+	float AutoCenterInterpSpeed = 2.0f;
 
-	UFUNCTION(BlueprintCallable, Category = "Camera Control")
-	void SetControlMode(EInputControlMode NewMode);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control")
+	float MovingCenterInterpSpeed = 5.0f;
 
+	// 외부에서는 PlayerState의 값을 바꾸도록 요청만
 	UFUNCTION(BlueprintCallable, Category = "Camera Control")
 	void ToggleControlMode();
 
-	// 수동, 자동 모드 변환
+	// 수동, 자동 모드별 카메라 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	FVector ManualViewOffset = FVector(-0, 700.0f, 1000.0f);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	FVector AutoViewOffset = FVector(-0, 700.0f, 1000.0f);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	float ManualLagSpeed = 5.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	float AutoLagSpeed = 2.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	float ManualPanSpeed = 1.0f; // 수동 모드 드래그 속도
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	float AutoPanSpeed = 1.0f; // 자동모드
 
-	//상태확인,변경
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float ManualPanSpeed = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
+	float AutoPanSpeed = 1.0f;
+
+	// PlayerState 원본값을 반영한 로컬 캐시
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Control | State")
-	EInputControlMode CurrentControlMode = EInputControlMode::Manual; // 현재
+	EInputControlMode CachedControlMode = EInputControlMode::Manual;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UTouchInterface> MyTouchInterface; // 터치 인터페이스 킬거임? 끌꺼임?
+	TObjectPtr<UTouchInterface> MyTouchInterface;
 
 	// 조이스틱 데드존
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneWidthRatio = 0.35f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|DeadZone")
 	float JoystickDeadZoneHeightRatio = 0.4f;
 
-	//카메라 리드
+	// 카메라 리드
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float LookAheaDistance = 700.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float VelocityLeadScale = 0.48f;
+
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float LookAheadInterSpeed = 3.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Camera|Lead")
 	float MaxLeadDistance = 1200.0f;
 
 	FVector CurrentLookAheadOffset = FVector::ZeroVector;
+
 	UPROPERTY(EditAnywhere)
 	FRotator CameraRotate = FRotator(-55, -90, 0);
 
 	FORCEINLINE void SetBattleUI(class UBattleWidget* InWidget) { BattleUI = InWidget; }
+
 protected:
 	UPROPERTY()
 	TObjectPtr<class UBattleWidget> BattleUI = nullptr;
@@ -116,17 +126,27 @@ protected:
 	void OnInputStarted();
 	void OnTouchTriggered();
 	void OnTouchReleased();
-	//다중 터치꼬임 방지용
+
+	// 다중 터치 꼬임 방지용
 	ETouchIndex::Type CurrentDragTouchIndex = ETouchIndex::Touch1;
 
 	void Move(FVector2D InMoveDir);
 
 	UFUNCTION()
 	void ChageGameState(EBattleState InState);
+
+	void RefreshInteractionTime();
+	void UpdateCameraPosition(float InDeltaTime);
+
+	AValkyriePlayerState* GetValkyriePlayerState() const;
+
+	UFUNCTION()
+	void HandleControlModeChanged(EInputControlMode NewMode);
+
+	void SetCameraTargetPawn(APawn* InPawn);
+
 private:
-	
 	FVector DragOffset = FVector::ZeroVector;
-	//현재 좌표 저장
 	FVector CurrentTargetViewOffset = FVector::ZeroVector;
 	FVector2D PrevTouchLocation = FVector2D::ZeroVector;
 
@@ -135,15 +155,15 @@ private:
 	bool bIsDragging = false;
 	bool bIsTouch = false;
 	bool bIsReturningToCenter = false;
-	void RefreshInteractionTime();
-	void UpdateCameraPosition(float InDeltaTime);
 
 	UPROPERTY()
-	TObjectPtr<APawn> ControlledPawn = nullptr;
+	TWeakObjectPtr<APawn> ControlledPawn;
 
-	public:
+	UPROPERTY()
+	TWeakObjectPtr<APawn> CameraTargetPawn;
+
+public:
 #if WITH_EDITOR
-		/*에디터에서 값 변경 시 반영용*/
-		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 };
