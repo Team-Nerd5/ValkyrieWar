@@ -12,7 +12,6 @@
 #include "Widget/Item/ItemInfo/ItemInfoWidget.h"
 
 
-
 void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -124,10 +123,7 @@ void UInventoryWidget::OnLongClickItemStart(int32 InItemUID)
 {
 	if (ItemInfoWidget)
 	{
-		ItemInfoWidget->Init(InItemUID);
-
-		// TODO: 터치 위치에 위젯 표시 및 위젯이 화면 밖으로 나가지 않도록 처리
-
+		ItemInfoWidget->Init(InItemUID, this);
 		ItemInfoWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 }

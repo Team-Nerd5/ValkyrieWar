@@ -57,9 +57,9 @@ FReply UInventoryEntryWidget::NativeOnPreviewMouseButtonDown(const FGeometry& In
 		LongTouchDuration,
 		false
 	);
-	return FReply::Handled();
+	return FReply::Unhandled();
 }
-
+/*
 FReply UInventoryEntryWidget::NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
 {
 	// 왜 실행이 안되지...?
@@ -75,12 +75,11 @@ FReply UInventoryEntryWidget::NativeOnTouchStarted(const FGeometry& InGeometry, 
 	);
 	return FReply::Handled();
 }
-
+*/
 FReply UInventoryEntryWidget::NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent)
 {
-	UE_LOG(LogTemp, Log, TEXT("OnTouchMoved"));
-
 	GetWorld()->GetTimerManager().ClearTimer(LongTouchTimerHandle);
+	OnLongTouchEnd();
 
 	return FReply::Handled();
 }

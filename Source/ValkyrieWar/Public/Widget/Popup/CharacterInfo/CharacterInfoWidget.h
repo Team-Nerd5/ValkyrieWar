@@ -47,6 +47,12 @@ protected:
 
 	void UpdateStat();
 
+	UFUNCTION()
+	void OnLongClickItemStart(int32 InItemUID);
+
+	UFUNCTION()
+	void OnLongClickItemEnd();
+
 public:
 	virtual void OpenUI() override;
 	virtual void CloseUI() override;
@@ -78,6 +84,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UValkyrieStatWidget> StatWidget = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UItemInfoWidget> ItemInfoWidget = nullptr;
 private:
 
 	UPROPERTY()

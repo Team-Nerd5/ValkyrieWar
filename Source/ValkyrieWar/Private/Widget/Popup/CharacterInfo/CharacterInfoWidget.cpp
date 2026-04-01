@@ -12,6 +12,7 @@
 #include "Widget/Popup/Inventory/ItemListWidget.h"
 #include "Widget/Popup/CharacterInfo/ValkyrieListWidget.h"
 #include "Widget/Item/CharacterInfo/ValkyrieStatWidget.h"
+#include "Widget/Item/ItemInfo/ItemInfoWidget.h"
 
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -26,6 +27,8 @@ void UCharacterInfoWidget::NativeConstruct()
 		EventSystem->Widget.OnValkyrieSelected.AddUniqueDynamic(this, &UCharacterInfoWidget::OnValkyrieSelected);
 		EventSystem->Widget.OnClickUnEquip.AddUniqueDynamic(this, &UCharacterInfoWidget::OnClickUnEquip);
 		EventSystem->Widget.OnClickEquip.AddUniqueDynamic(this, &UCharacterInfoWidget::OnClickEquip);
+		EventSystem->Widget.OnLongClickItemStart.AddUniqueDynamic(this, &UCharacterInfoWidget::OnLongClickItemStart);
+		EventSystem->Widget.OnLongClickItemEnd.AddUniqueDynamic(this, &UCharacterInfoWidget::OnLongClickItemEnd);
 	}
 
 	if (SetMainButton)
@@ -42,6 +45,8 @@ void UCharacterInfoWidget::NativeDestruct()
 		EventSystem->Widget.OnValkyrieSelected.RemoveDynamic(this, &UCharacterInfoWidget::OnValkyrieSelected);
 		EventSystem->Widget.OnClickUnEquip.RemoveDynamic(this, &UCharacterInfoWidget::OnClickUnEquip);
 		EventSystem->Widget.OnClickEquip.RemoveDynamic(this, &UCharacterInfoWidget::OnClickEquip);
+		EventSystem->Widget.OnLongClickItemStart.RemoveDynamic(this, &UCharacterInfoWidget::OnLongClickItemStart);
+		EventSystem->Widget.OnLongClickItemEnd.RemoveDynamic(this, &UCharacterInfoWidget::OnLongClickItemEnd);
 	}
 	if (SetMainButton)
 		SetMainButton->OnClicked.RemoveDynamic(this, &UCharacterInfoWidget::OnClickSetMain);
@@ -56,6 +61,10 @@ void UCharacterInfoWidget::NativeOnInitialized()
 	if (ItemListWidget)
 	{
 		ItemListWidget->SetMenu(CharacterInfoTabNameData);
+	}
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -295,5 +304,22 @@ void UCharacterInfoWidget::UpdateStat()
 	if (StatWidget)
 	{
 		StatWidget->SetStatValue(SelectedValkyrie->GetStat(), EquipStat);
+	}
+}
+
+void UCharacterInfoWidget::OnLongClickItemStart(int32 InItemUID)
+{
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->Init(InItemUID, this);
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UCharacterInfoWidget::OnLongClickItemEnd()
+{
+	if (ItemInfoWidget)
+	{
+		ItemInfoWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

@@ -4,11 +4,16 @@
 #include "Widget/Item/ItemInfo/ItemInfoWidget.h"
 
 #include "GameSystem/Instance/Game/DataManager.h"
+
 #include "Data/Module/ItemModule.h"
 #include "Data/Module/ValkyrieModule.h"
 #include "Data/Game/ItemData.h"
 
-void UItemInfoWidget::Init(int32 InItemUID)
+#include "Components/CanvasPanelSlot.h"
+
+#include "Blueprint/WidgetLayoutLibrary.h"
+
+void UItemInfoWidget::Init(int32 InItemUID, UWidget* ContextWidget)
 {
 	UDataManager* DataManager = GetWorld()->GetGameInstance()->GetSubsystem<UDataManager>();
 	if (!DataManager)
@@ -21,6 +26,8 @@ void UItemInfoWidget::Init(int32 InItemUID)
 		return;
 
 	EquipItemInfo(ItemData);
+	SetvisibleInfo(ItemData->GetItemGroup());
+	SetPosition(ItemData->GetUID(), ContextWidget);
 }
 
 void UItemInfoWidget::EquipItemInfo(UItemData* InItemData)
@@ -51,6 +58,12 @@ void UItemInfoWidget::EquipItemInfo(UItemData* InItemData)
 			{
 				if (UValkyrieData* ValkyrieData = ValkyrieModule->GetExistValkyrie(InItemData->GetEquipCharacter()))
 					ItemEquippedCharacter->SetText(FText::FromString(ValkyrieData->GetValkyrieName()));
+				else
+					ItemEquippedCharacter->SetText(FText::FromString(FString::Printf(TEXT("장착 가능"))));
+			}
+			else
+			{
+				ItemEquippedCharacter->SetText(FText::FromString(FString::Printf(TEXT("장착 가능"))));
 			}
 		}
 
@@ -69,10 +82,54 @@ void UItemInfoWidget::SetvisibleInfo(EItemGroup InItemGroup)
 	switch (InItemGroup)
 	{
 	case EItemGroup::Equip:
+		if (EquippedCharacterBox)
+			EquippedCharacterBox->SetVisibility(ESlateVisibility::Visible);
+		if (EquipGroupBox)
+			EquipGroupBox->SetVisibility(ESlateVisibility::Visible);
+		if (HealthBox)
+			HealthBox->SetVisibility(ESlateVisibility::Visible);
+		if (AttackBox)
+			AttackBox->SetVisibility(ESlateVisibility::Visible);
+		if (DefenceBox)
+			DefenceBox->SetVisibility(ESlateVisibility::Visible);
 		break;
 	case EItemGroup::GrowthItem:
+		if (EquippedCharacterBox)
+			EquippedCharacterBox->SetVisibility(ESlateVisibility::Hidden);
+		if (EquipGroupBox)
+			EquipGroupBox->SetVisibility(ESlateVisibility::Hidden);
+		if (HealthBox)
+			HealthBox->SetVisibility(ESlateVisibility::Hidden);
+		if (AttackBox)
+			AttackBox->SetVisibility(ESlateVisibility::Hidden);
+		if (DefenceBox)
+			DefenceBox->SetVisibility(ESlateVisibility::Hidden);
 		break;
 	default:
 		break;
+	}
+}
+
+void UItemInfoWidget::SetPosition(int32 InItemUID, UWidget* ContextWidget)
+{
+	if (!ContextWidget)
+		return;
+
+	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot))
+	{
+		CanvasSlot->SetAlignment(FVector2D(1.0f, 0.0f));
+
+		FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(ContextWidget);
+
+		FVector2D ViewportSize = UWidgetLayoutLibrary::GetViewportSize(ContextWidget);
+		float DPIScale = UWidgetLayoutLibrary::GetViewportScale(ContextWidget);
+		FVector2D ScaleViewportSize = ViewportSize / DPIScale;
+		FVector2D WidgetSize = GetDesiredSize();
+
+		float ClampX = FMath::Clamp(MousePosition.X, WidgetSize.X, ScaleViewportSize.X);
+		float ClampY = FMath::Clamp(MousePosition.Y, 0.0f, ScaleViewportSize.Y - WidgetSize.Y);
+		FVector2D TouchPosition(ClampX - 30.0f, ClampY);
+
+		CanvasSlot->SetPosition(TouchPosition);
 	}
 }

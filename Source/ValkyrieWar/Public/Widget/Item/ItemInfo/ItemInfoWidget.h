@@ -21,14 +21,35 @@ class VALKYRIEWAR_API UItemInfoWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void Init(int32 InItemUID);
+	void Init(int32 InItemUID, UWidget* ContextWidget);
 
 private:
 	void EquipItemInfo(UItemData* InItemData);
 
 	void SetvisibleInfo(EItemGroup InItemGroup);
 
+	void SetPosition(int32 InItemUID, UWidget* ContextWidget);
+
 protected:
+	// 텍스트 상위 박스
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> NameBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> SellPriceBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> AmountBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> EquippedCharacterBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> EquipGroupBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> HealthBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> AttackBox = nullptr;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UHorizontalBox> DefenceBox = nullptr;
+
+
 	// 공통으로 표시
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> ItemName = nullptr;
