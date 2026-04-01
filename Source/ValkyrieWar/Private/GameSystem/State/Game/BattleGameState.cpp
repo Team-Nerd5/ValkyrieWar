@@ -9,6 +9,7 @@
 #include "GameSystem/Instance/World/WorldEventSystem.h"
 #include "GameSystem/Instance/World/SpawnUpgradeSubsystem.h"
 #include "GameSystem/Instance/Game/LevelManager.h"
+#include "GameSystem/State/Player/ValkyriePlayerState.h"
 
 #include "Object/Character/Valkyrie/Controller/ValkyrieCharacterController.h"
 
@@ -178,6 +179,10 @@ void ABattleGameState::CheckTimeOver()
 
 void ABattleGameState::ShowBattleResult()
 {
+	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	{
+		WorldEventSystem->Battle.OnBattleModeChanged.Broadcast(EInputControlMode::Manual);
+	}
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
