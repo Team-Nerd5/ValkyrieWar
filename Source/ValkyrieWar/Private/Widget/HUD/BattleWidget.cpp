@@ -20,10 +20,10 @@ void UBattleWidget::NativeConstruct()
 	}
 
 	if (AttackButton)	
-		AttackButton->OnClicked.AddDynamic(this, &UBattleWidget::OnClickAttack);
+		AttackButton->OnClicked.AddUniqueDynamic(this, &UBattleWidget::OnClickAttack);
 	
 	if(SkillButton_1)
-		SkillButton_1->OnClicked.AddDynamic(this, &UBattleWidget::OnClickSkill_1);
+		SkillButton_1->OnClicked.AddUniqueDynamic(this, &UBattleWidget::OnClickSkill_1);
 }
 
 void UBattleWidget::NativeDestruct()

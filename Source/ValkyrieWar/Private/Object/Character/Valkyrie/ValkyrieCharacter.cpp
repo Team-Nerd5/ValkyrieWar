@@ -822,6 +822,7 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	if (!StatAttributeSet)
 	{
+		AbilitySystemComponent->RemoveAllSpawnedAttributes();
 		StatAttributeSet = NewObject<UStatAttributeSet>(this);
 		AbilitySystemComponent->AddAttributeSetSubobject<UStatAttributeSet>(StatAttributeSet);
 	}
