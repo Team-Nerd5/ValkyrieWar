@@ -25,8 +25,6 @@ public:
 	FORCEINLINE TSoftObjectPtr<UAnimMontage> GetAnimMontage() { return TableData.AnimMontage; }
 	FORCEINLINE TArray<USkillEffectData*> GetEffectList() { return EffectList; }
 	FORCEINLINE FGameplayTag GetAbilityTag() { return TableData.AbilityTag; }
-	FORCEINLINE FVector GetLocationOffset() { return TableData.PositionOffset; }
-	FORCEINLINE FQuat GetRotatinOffset() { return FQuat(TableData.RotateOffset); }
 	FORCEINLINE EAttackType GetAttackType() { return TableData.AttackType; }
 	FORCEINLINE TArray<FGameplayCueData> const GetCue(EGameplayCueOrder InOrder)
 	{

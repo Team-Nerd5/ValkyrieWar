@@ -26,10 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditAnywhere)
-	FVector PositionOffset = FVector::ZeroVector;		//무기 포지션 오프셋
-	UPROPERTY(EditAnywhere)
-	FRotator RotateOffset = FRotator::ZeroRotator;
-	UPROPERTY(EditAnywhere)
 	EAttackType AttackType = EAttackType::Melee;
 	UPROPERTY(EditAnywhere)
 	int32 ProjectileId = 0;
