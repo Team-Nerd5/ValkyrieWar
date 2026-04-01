@@ -110,8 +110,11 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 						{
 							CurrentCamera = Cast<ACameraActor>(Actor);
 							// MyCam 사용
-
 							SetViewTargetWithBlend(CurrentCamera, 0.0f);
+							if (PlayerCameraManager)
+							{
+								PlayerCameraManager->UpdateCamera(0.0f);
+							}
 						}
 					}
 				}
