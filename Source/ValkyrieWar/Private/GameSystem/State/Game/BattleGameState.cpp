@@ -164,10 +164,6 @@ void ABattleGameState::CheckTimeOver()
 	if (UWorldEventSystem* EventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
 		EventSystem->Battle.OnInGameTimeChanged.Broadcast(Remaining);
-
-		// 테스트용
-		// TODO: 발키리가 적 유닛 공격하여 사망 가능할 시 아래 코드 제거
-		EventSystem->Battle.OnManaAdd.Broadcast(10);
 	}
 
 	if (Remaining <= 0.f)
