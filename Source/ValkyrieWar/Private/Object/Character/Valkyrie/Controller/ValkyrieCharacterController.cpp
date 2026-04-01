@@ -250,21 +250,29 @@ void AValkyrieCharacterController::UpdateCameraPosition(float InDeltaTime)
 
 	CurrentLookAheadOffset = FMath::VInterpTo(CurrentLookAheadOffset, TargetLookAhead, InDeltaTime, LookAheadInterSpeed);
 
-	const FVector TotalOffset = DragOffset + CurrentLookAheadOffset;
-	const FVector TargetCamLoc = TargetPawn->GetActorLocation() + CurrentTargetViewOffset + TotalOffset;
+	const FVector BaseCamLoc = TargetPawn->GetActorLocation() + CurrentTargetViewOffset + CurrentLookAheadOffset;
 
-	const FVector CurrentCamLoc = FollowCamera->GetActorLocation();
-	const float LagSpeed = (CachedControlMode == EInputControlMode::Manual) ? ManualLagSpeed : AutoLagSpeed;
-	FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, TargetCamLoc, InDeltaTime, LagSpeed);
+	FVector DesiredCamLoc = BaseCamLoc + DragOffset;
 
 	if (BoundsVolume && BoundsVolume->GetBoundsBox())
 	{
 		const FVector Origin = BoundsVolume->GetActorLocation();
 		const FVector Extent = BoundsVolume->GetBoundsBox()->GetScaledBoxExtent();
 
-		NewCamLoc.X = FMath::Clamp(NewCamLoc.X, Origin.X - Extent.X, Origin.X + Extent.X);
-		NewCamLoc.Y = FMath::Clamp(NewCamLoc.Y, Origin.Y - Extent.Y, Origin.Y + Extent.Y);
+		const float PaddingX = 0.0f;
+		const float PaddingY = 0.0f;
+
+		DesiredCamLoc.X = FMath::Clamp(DesiredCamLoc.X, Origin.X - Extent.X + PaddingX, Origin.X + Extent.X - PaddingX);
+		DesiredCamLoc.Y = FMath::Clamp(DesiredCamLoc.Y, Origin.Y - Extent.Y + PaddingY, Origin.Y + Extent.Y - PaddingY);
+
+		// Clamp된 결과를 기준으로 DragOffset 자체를 다시 맞춤
+		DragOffset = DesiredCamLoc - BaseCamLoc;
 	}
+
+	const FVector CurrentCamLoc = FollowCamera->GetActorLocation();
+	const float LagSpeed = (CachedControlMode == EInputControlMode::Manual) ? ManualLagSpeed : AutoLagSpeed;
+
+	const FVector NewCamLoc = FMath::VInterpTo(CurrentCamLoc, DesiredCamLoc, InDeltaTime, LagSpeed);
 
 	FollowCamera->SetActorRotation(CameraRotate);
 	FollowCamera->SetActorLocation(NewCamLoc);
