@@ -17,35 +17,28 @@ void UGachaWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-    if (Btn_Summon_1x)
+    if (Btn_Summon_1)
     {
-        Btn_Summon_1x->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon1x);
+        Btn_Summon_1->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon1x);
     }
-    if (Btn_Summon_10x)
+    if (Btn_Summon_10)
     {
-        Btn_Summon_10x->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_Summon_10->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
-    if (Btn_WhatIs_CeliGacha)
-    {
-        //Btn_WhatIs_CeliGacha->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
-    }
+
 }
 
 void UGachaWidget::NativeDestruct()
 {
     Super::NativeDestruct();
 
-    if (Btn_Summon_1x)
+    if (Btn_Summon_1)
     {
-        Btn_Summon_1x->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon1x);
+        Btn_Summon_1->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon1x);
     }
-    if (Btn_Summon_10x)
+    if (Btn_Summon_10)
     {
-        Btn_Summon_10x->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
-    }
-    if (Btn_WhatIs_CeliGacha)
-    {
-        //Btn_WhatIs_CeliGacha->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_Summon_10->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
     }
 }
 
@@ -62,11 +55,23 @@ void UGachaWidget::OpenUI()
     //가챠 가격 정보를 안만들어서... 우선 숫자 입력
     if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
     {
-        if (Btn_Summon_1x)
-            Btn_Summon_1x->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice));
+        if (Btn_Summon_1)
+            Btn_Summon_1->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice));
 
-        if (Btn_Summon_10x)
-            Btn_Summon_10x->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice * 10));
+        if (Btn_Summon_10)
+            Btn_Summon_10->SetIsEnabled(DataManager->GetGoodsModule()->IsEnough(EGoodsType::Gem, GachaPrice * 10));
+    }
+
+    if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+    {
+        uint64 current = SaveManager->GetGachaAmount();
+        int32 ceilValue = SaveManager->GetCeilValue();
+
+        if (CeilProgressText)
+            CeilProgressText->SetText(FText::Format(FText::FromString(TEXT("{0}/{1}")), current, ceilValue));
+
+        if (CeilProgressBar)
+            CeilProgressBar->SetPercent(static_cast<float>(current) / ceilValue);
     }
 }
 
@@ -84,10 +89,4 @@ void UGachaWidget::OnClickSummon10x()
     {
         EventSystem->Lobby.OnLoadGacha.Broadcast(10, SelectedGroupId);
     }
-}
-
-void UGachaWidget::OnClickWhatIs_CeliGacha()
-{
-    //???설명인데 무슨 버튼을?
-    UE_LOG(LogTemp, Warning, TEXT("천장 가챠 설명 버튼 바인딩"));
 }

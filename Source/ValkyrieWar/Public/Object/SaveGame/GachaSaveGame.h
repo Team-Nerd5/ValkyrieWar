@@ -16,7 +16,7 @@ class VALKYRIEWAR_API UGachaSaveGame : public USaveGame
 
 public:
 	UPROPERTY()
-	int32 CeilValue = 0;
+	int32 CeilValue = 200;
 
 	UPROPERTY()
 	uint64 GachaCount = 0;

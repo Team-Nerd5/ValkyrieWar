@@ -15,19 +15,16 @@ class VALKYRIEWAR_API UGachaWidget : public UBaseWidget
 protected:
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UButton> Btn_Summon_1x; // 1회 소환 
+    TObjectPtr<class UButton> Btn_Summon_1; // 1회 소환 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UButton> Btn_Summon_10x; // 10회 소환 
+    TObjectPtr<class UButton> Btn_Summon_10; // 10회 소환 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UButton> Btn_WhatIs_CeliGacha; // 천장 가챠 시스템 설명 
+    TObjectPtr<class UProgressBar> CeilProgressBar; // 천장 가챠 프로그레스 바 
 
     UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UProgressBar> PB_GachaCount; // 천장 가챠 프로그레스 바 
-
-    UPROPERTY(meta = (BindWidget))
-    TObjectPtr<class UTextBlock> Text_GachaCount; // 가챠 횟수
+    TObjectPtr<class UTextBlock> CeilProgressText; // 가챠 횟수
 
     int32 SelectedGroupId = 0;
 
@@ -43,7 +40,4 @@ protected:
 
     UFUNCTION()
     void OnClickSummon10x();
-
-    UFUNCTION()
-    void OnClickWhatIs_CeliGacha();
 };

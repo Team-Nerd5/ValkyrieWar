@@ -44,6 +44,10 @@ protected:
 	void OnGachaLevelShown();
 	UFUNCTION()
 	void OnLobbyLevelShown();
+	UFUNCTION()
+	void OnLobbyLevelUnloaded();
+	UFUNCTION()
+	void OnGachaLevelHidden();
 
 	void ShowLobbyCharacter();
 
@@ -51,6 +55,8 @@ protected:
 
 	//가챠
 	void SetGachaResult(int32 InAmount, int32 InGachaGroupId);
+
+	void SetCeilGachaResult();
 
 	int32 GetMasteryItemAmount(EGradeType InGrade);
 
@@ -82,6 +88,8 @@ protected:
 	void OnUnEquipItem();
 
 private:
+
+	bool bIsGachaProcessing = false;
 	int32 CurrentGachaIndex = 0;
 
 	UPROPERTY()

@@ -109,4 +109,9 @@ public:
 
 	void SaveUnit(UUnitData* InData);
 	void SaveUnits(TArray<FUnitDataStruct> InData);
+
+	void AddGacha(int32 InAmount);
+	void UseCeilGacha();
+	int32 GetCeilValue();
+	uint64 GetGachaAmount();
 };

@@ -150,9 +150,16 @@ void ALobbyPlayerController::OnLobbyLevelLoaded()
 
 	if (ULevelStreaming* GachaLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap")))
 	{
-		UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("GachaMap"), FLatentActionInfo(), false);
+		if (GachaLevel->IsLevelLoaded() && GachaLevel->IsLevelVisible())
+		{
+			GachaLevel->OnLevelHidden.AddUniqueDynamic(this, &ALobbyPlayerController::OnGachaLevelHidden);
+			UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("GachaMap"), FLatentActionInfo(), false);
+		}
+		else
+		{
+			SetActorCamera(FName("Lobby"));
+		}
 	}
-	SetActorCamera(FName("Lobby"));
 }
 
 void ALobbyPlayerController::OnLobbyLevelShown()
@@ -186,6 +193,19 @@ void ALobbyPlayerController::OnLobbyLevelShown()
 	ChangeGameState(ELobbyState::Ready);
 }
 
+void ALobbyPlayerController::OnLobbyLevelUnloaded()
+{
+	ChangeGameState(ELobbyState::Gacha);
+
+	SetActorCamera(FName("GachaMap"));
+}
+
+void ALobbyPlayerController::OnGachaLevelHidden()
+{
+	SetActorCamera(FName("Lobby"));
+	bIsGachaProcessing = false;
+}
+
 void ALobbyPlayerController::ShowLobbyCharacter()
 {
 	if (UGameManager* GameManager = GetWorld()->GetGameInstance<UGameManager>())
@@ -212,6 +232,11 @@ void ALobbyPlayerController::ChangeLobbyCharacter(UValkyrieData* InNewValkyrie)
 
 void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId)
 {
+	if (bIsGachaProcessing)
+		return;
+
+	bIsGachaProcessing = true;
+
 	CurrentGachaIndex = 0;
 	GachaResultWidget = nullptr;
 	GachaResultData.Empty();
@@ -222,11 +247,23 @@ void ALobbyPlayerController::LoadGachaLevel(int32 InAmount, int32 InGachaGroupId
 		DataManager->GetGoodsModule()->Add(EGoodsType::Gem, -InAmount * 100);
 	}
 
+	//우선 천장게이지 확인
+	//천장이면 확정하나 만들어주고 어마운트 하나 뺌
+	if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+	{
+		if (SaveManager->GetGachaAmount() >= SaveManager->GetCeilValue())
+		{
+			SetCeilGachaResult();
+			InAmount--;
+
+			SaveManager->UseCeilGacha();
+		}
+	}
+
+	//뽑기는 미리 완료 후 저장
 	SetGachaResult(InAmount, InGachaGroupId);
 
-	//미리 뽑기는 완료함
-
-	// 스트리밍 레벨 객체를 먼저 가져옵니다.
+	//가챠 레벨 로드
 	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("GachaMap"));
 
 	if (StreamingLevel)
@@ -244,12 +281,13 @@ void ALobbyPlayerController::OnGachaLevelLoaded()
 {
 	if (ULevelStreaming* LobbyLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("Lobby")))
 	{
-		UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("Lobby"), FLatentActionInfo(), false);
+		if (LobbyLevel->IsLevelLoaded() && LobbyLevel->IsLevelVisible())
+		{
+			LobbyLevel->OnLevelHidden.AddUniqueDynamic(this, &ALobbyPlayerController::OnLobbyLevelUnloaded);
+
+			UGameplayStatics::UnloadStreamLevel(GetWorld(), FName("Lobby"), FLatentActionInfo(), false);
+		}
 	}
-
-	ChangeGameState(ELobbyState::Gacha);
-
-	SetActorCamera(FName("GachaMap"));
 }
 
 void ALobbyPlayerController::OnGachaLevelShown()
@@ -314,6 +352,53 @@ void ALobbyPlayerController::SetGachaResult(int32 InAmount, int32 InGachaGroupId
 				GachaResultData.Add(NewValkyrie);
 			}
 		}
+
+		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
+		{
+			SaveManager->AddGacha(InAmount);
+		}
+	}
+}
+
+void ALobbyPlayerController::SetCeilGachaResult()
+{
+	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
+	{
+		//픽업이나 이런거 없어서 그냥 5성급중 하나..겹치면 아이템 나옴..ㅋ
+		int32 GeneratedData = URandomGenerateHelper::GetRandomValkyrieInGrade(DataManager, EGradeType::Legend);
+
+		if (DataManager->GetValkyrieModule()->HasValkyrie(GeneratedData))
+		{
+			//아이템 데이터 생성
+			FValkyrieDataRow ValkyrieTableData = DataManager->GetValkyrieModule()->GetTableData(GeneratedData);
+			FItemDataRow BaseWeapon = DataManager->GetItemModule()->GetTableDataById(ValkyrieTableData.BaseWeaponId);
+			if (BaseWeapon.DataId > 0)
+			{
+				FItemDataRow MasteryItem = DataManager->GetItemModule()->GetMasteryItem(BaseWeapon.WeaponType);
+				if (ValkyrieTableData.DataId > 0 && BaseWeapon.DataId > 0)
+				{
+					if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+					{
+						int32 ItemAmount = GetMasteryItemAmount(ValkyrieTableData.BaseGrade);
+
+						UItemData* NewItem = NewObject<UItemData>(this);
+						NewItem->MakeData(MasteryItem, GetGameInstance<UGameManager>());
+						NewItem->AddAmount(ItemAmount);
+						GachaResultData.Add(NewItem);
+
+						//인벤토리에 추가
+						Inventory->AddItem(MasteryItem.DataId, ItemAmount);
+					}
+				}
+			}
+		}
+		else
+		{
+			//발키리 데이터 생성
+			UValkyrieData* NewValkyrie = UGameDataFactory::GenerateValkyrie(GeneratedData, GetGameInstance());
+			//캐릭터 모듈에도 추가... 저장도
+			GachaResultData.Add(NewValkyrie);
+		}
 	}
 }
 
@@ -349,14 +434,13 @@ void ALobbyPlayerController::ShowNextGacha()
 	if(CurrentGachaIndex < GachaResultData.Num())
 		CurrentGachaIndex++;
 
-
 	if (CurrentGachaIndex == GachaResultData.Num())
 	{
 		//결과 위젯에서 결과 띄워줌
 		if (GachaResultWidget)
 		{
 			GachaResultWidget->ShowGachaResults();
-		}
+		}		
 	}
 	else
 	{

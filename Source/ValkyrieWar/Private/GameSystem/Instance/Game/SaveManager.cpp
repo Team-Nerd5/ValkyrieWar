@@ -260,6 +260,48 @@ void USaveManager::SaveUnits(TArray<FUnitDataStruct> InData)
 	}
 }
 
+void USaveManager::AddGacha(int32 InAmount)
+{
+	if (Gacha)
+	{
+		Gacha->GachaCount += InAmount;
+	}
+	SaveInternal(ESaveType::Gacha);
+}
+
+void USaveManager::UseCeilGacha()
+{
+	if (Gacha)
+	{
+		if (Gacha->GachaCount >= Gacha->CeilValue)
+		{
+			Gacha->GachaCount -= Gacha->CeilValue;
+
+			SaveInternal(ESaveType::Gacha);
+		}
+	}
+}
+
+int32 USaveManager::GetCeilValue()
+{
+	if (Gacha)
+	{
+		return Gacha->CeilValue;
+	}
+
+	return 200;
+}
+
+uint64 USaveManager::GetGachaAmount()
+{
+	if (Gacha)
+	{
+		return Gacha->GachaCount;
+	}
+
+	return 0;
+}
+
 #pragma region Add save data
 void USaveManager::AddSaveItem(UItemData* InItem)
 {
