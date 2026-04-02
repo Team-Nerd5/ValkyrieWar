@@ -55,7 +55,7 @@ public:
 
 	// 수동, 자동 모드별 카메라 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
-	FVector ManualViewOffset = FVector(-0, 700.0f, 1000.0f);
+	FVector ManualViewOffset = FVector(-0, 700.0f, 500.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Control | Settings")
 	FVector AutoViewOffset = FVector(-0, 700.0f, 1000.0f);
