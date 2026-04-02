@@ -160,7 +160,8 @@ inline void UObjectPoolSubsystem::Release(EPoolTypes InType, T* InActor)
 	if (!PoolData)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[Subsystem(Return)] PoolData가 없습니다"));
-		InActor->Destroy();
+		//애초에 타입이 없는걸 넣어주면 안됨... 그렇다고 지워버리면 더 문제
+		//InActor->Destroy();
 		return;		
 	}
 #pragma endregion

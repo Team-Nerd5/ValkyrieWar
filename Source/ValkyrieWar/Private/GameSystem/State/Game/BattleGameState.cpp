@@ -79,6 +79,7 @@ void ABattleGameState::ChangeState(EBattleState InState)
 		if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 		{
 			UIManager->CloseUI<UBattleWidget>(EUIType::Battle);
+			UIManager->CloseAllPopupUI();
 		}		
 		if (ULevelManager* LevelManager = GetGameInstance()->GetSubsystem<ULevelManager>())
 		{

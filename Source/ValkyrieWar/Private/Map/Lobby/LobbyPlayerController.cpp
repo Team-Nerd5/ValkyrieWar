@@ -175,6 +175,9 @@ void ALobbyPlayerController::OnLobbyLevelShown()
 				{
 					UStageListPanelWidget* StageWidget = UIManager->OpenUI<UStageListPanelWidget>(EUIType::PopupStageList);
 					StageWidget->OpenStageList(NextStage);
+
+					DataManager->GetStageInfoModule()->SetCurrentStage(0);
+					DataManager->GetStageInfoModule()->SetNextStage();
 				}
 			}
 		}
