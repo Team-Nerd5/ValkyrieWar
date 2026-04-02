@@ -132,10 +132,11 @@ void ABaseUnitSpawner::StopSpawning()
 				{
 					Pool->Release<AUnitCharacter>(Unit->GetMyPoolType(), Unit);
 				}
-				else
-				{
-					Unit->Destroy();
-				}
+				//배열 반복문에서 배열 개수 변경시키면 안됨
+				//else
+				//{
+				//	Unit->Destroy();
+				//}
 			}
 		}
 	}
