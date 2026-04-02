@@ -49,7 +49,7 @@ void UBattleWidget::NativeConstruct()
 			SkillCooldownUiTimerHandle,
 			this,
 			&UBattleWidget::UpdateSkillCooldownUI,
-			0.05f,
+			0.1f,
 			true
 		);
 	}
@@ -66,6 +66,26 @@ void UBattleWidget::NativeDestruct()
 	if (GetWorld())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SkillCooldownUiTimerHandle);
+	}
+
+	SkillCooldownEndTimes.Reset();
+	SkillCooldownDurations.Reset();
+
+	// UI 초기화
+	if (SkillButton_1)
+	{
+		SkillButton_1->SetIsEnabled(true);
+	}
+
+	if (SkillCooldownOverlay_1)
+	{
+		SkillCooldownOverlay_1->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	if (SkillCooldownText_1)
+	{
+		SkillCooldownText_1->SetVisibility(ESlateVisibility::Hidden);
+		SkillCooldownText_1->SetText(FText::GetEmpty());
 	}
 
 	Super::NativeDestruct();
