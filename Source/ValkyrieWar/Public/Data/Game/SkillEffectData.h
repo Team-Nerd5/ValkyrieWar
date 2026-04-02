@@ -29,7 +29,7 @@ public:
 	FORCEINLINE TEnumAsByte<EGameplayModOp::Type> GetOp() { return TableData.Op; }
 	FORCEINLINE bool UseSourceAttribute() { return TableData.bUseSourceAttribute; }
 	FORCEINLINE FGameplayAttribute GetSourceAttribute() { return TableData.SourceAttribute; }
-
+	FORCEINLINE float GetDamagePec() { return TableData.DamageIncreasePerValue; }
 private:
 	UPROPERTY()
 	FSkillEffectDataRow TableData;

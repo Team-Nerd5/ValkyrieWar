@@ -60,14 +60,23 @@ void UBaseGameplayAbility::ApplyAbilityToTarget(AActor* InTargetActor)
 
     FGameplayEffectContextHandle Context = MakeEffectContext(CurrentSpecHandle, CurrentActorInfo);
 
-    for (UGameplayEffect* Effect : CachedEffects)
+    for (int32 i = 0; i < CachedEffects.Num(); i++)
     {
-        if (!Effect) continue;       
+        UGameplayEffect* Effect = CachedEffects[i];
+
+        if (!Effect) continue;
 
         FGameplayEffectSpec Spec(Effect, Context, 1.0f);
 
+        //데미지 증가율 저장
+        FGameplayTag DamageTag = FGameplayTag::RequestGameplayTag(FName("Data.DamageIncrease"));
+        Spec.SetSetByCallerMagnitude(DamageTag, CachedDamagePer[i]);
         //적용
         TargetASC->ApplyGameplayEffectSpecToSelf(Spec);
+    }
+    for (UGameplayEffect* Effect : CachedEffects)
+    {
+        
     }
 }
 
@@ -139,6 +148,7 @@ void UBaseGameplayAbility::UpdateData(FGameplayTag InAbilityTag, TArray<USkillEf
         }
 
         //캐시 목록에 추가
-        CachedEffects.Add(NewEffect);
+        CachedEffects.Add(NewEffect);        
+        CachedDamagePer.Add(EffectData->GetDamagePec());
     }
 }

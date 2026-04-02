@@ -36,4 +36,7 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UGameplayEffect>> CachedEffects;
+
+	UPROPERTY()
+	TArray<float> CachedDamagePer;
 };

@@ -76,5 +76,6 @@ enum class EGameplayCueOrder : uint8
 {
 	OnExecute,		//실행 시점에 동작(사전 이펙트 등)
 	OnNotify,		//타격 시점
+	OnNotifyTarget,
 	InProjectile,	//발사체에 실어서 발사체 피격 액터 위치에 전달
 };

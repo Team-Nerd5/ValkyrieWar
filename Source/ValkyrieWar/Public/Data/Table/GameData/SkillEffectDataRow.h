@@ -37,6 +37,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bUseDamageCalc = false;
 
+    UPROPERTY(EditAnywhere)
+    float DamageIncreasePerValue = 50.0f;
+
     // 수치 설정 (Modifier용)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bUseDamageCalc==false"))
     FGameplayAttribute TargetAttribute; // 바뀔 타겟 스탯

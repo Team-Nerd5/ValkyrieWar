@@ -92,7 +92,7 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
             );
 
             TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotify);
-            for (const FGameplayCueData Cue : Cues)
+            for (const FGameplayCueData& Cue : Cues)
             {
                 FGameplayCueParameters CueParams;
                 CueParams.Location = GetActorLocation() + Cue.Offset;
@@ -100,6 +100,14 @@ void ABaseCharacter::ApplyAttack(AActor* InTargetActor)
                 AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
             }
 
+            Cues = AttackData->GetCue(EGameplayCueOrder::OnNotifyTarget);
+            for (const FGameplayCueData& Cue : Cues)
+            {
+                FGameplayCueParameters CueParams;
+                CueParams.Location = InTargetActor->GetActorLocation() + Cue.Offset;
+
+                AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
+            }
             break;
         }
     }
@@ -131,6 +139,15 @@ void ABaseCharacter::ApplySkill(int32 InSkillIndex, AActor* InTargetActor)
             );
             break;
         }
+    }
+
+    TArray<FGameplayCueData> Cues = AttackData->GetCue(EGameplayCueOrder::OnNotifyTarget);
+    for (const FGameplayCueData& Cue : Cues)
+    {
+        FGameplayCueParameters CueParams;
+        CueParams.Location = InTargetActor->GetActorLocation() + Cue.Offset;
+
+        AbilitySystemComponent->ExecuteGameplayCue(Cue.Tag, CueParams);
     }
 
     UE_LOG(LogTemp, Log, TEXT("ApplySkill! %s"), *InTargetActor->GetFName().ToString());

@@ -52,10 +52,15 @@ void USkillDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExe
 
     float Armor = 0.f;
     ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().DefenseDef, EvaluationParameters, Armor);
-
+     
     //데미지 공식: Attack * (100 / (100 + Armor))
     float DamageReduction = (Armor >= 0.0f) ? (100.0f / (100.0f + Armor)) : 1.0f;
     float FinalDamage = AttackPower * DamageReduction;
+
+    FGameplayTag DataTag = FGameplayTag::RequestGameplayTag(FName("Data.DamageIncrease"));
+    float DamageIncrease = Spec.GetSetByCallerMagnitude(DataTag, false, 0.0f) * 0.01f + 1.0f;
+
+    FinalDamage *= DamageIncrease;
 
     if (FinalDamage > 0.f)
     {
