@@ -69,4 +69,8 @@ protected:
 	TObjectPtr<UTextBlock> ItemStat_Attack = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> ItemStat_Defence = nullptr;
+
+private:
+	UPROPERTY()
+	TWeakObjectPtr<class UCanvasPanelSlot> CachedCanvasSlot = nullptr;
 };

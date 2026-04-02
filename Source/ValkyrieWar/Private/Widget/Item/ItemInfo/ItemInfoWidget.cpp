@@ -114,10 +114,14 @@ void UItemInfoWidget::SetPosition(int32 InItemUID, UWidget* ContextWidget)
 {
 	if (!ContextWidget)
 		return;
-
-	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot))
+	if (!CachedCanvasSlot.IsValid() || CachedCanvasSlot.Get() != Slot)
 	{
-		CanvasSlot->SetAlignment(FVector2D(1.0f, 0.0f));
+		CachedCanvasSlot = Cast<UCanvasPanelSlot>(Slot);
+	}
+
+	if (CachedCanvasSlot.IsValid())
+	{
+		CachedCanvasSlot->SetAlignment(FVector2D(1.0f, 0.0f));
 
 		FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(ContextWidget);
 
@@ -130,6 +134,6 @@ void UItemInfoWidget::SetPosition(int32 InItemUID, UWidget* ContextWidget)
 		float ClampY = FMath::Clamp(MousePosition.Y, 0.0f, ScaleViewportSize.Y - WidgetSize.Y);
 		FVector2D TouchPosition(ClampX - 30.0f, ClampY);
 
-		CanvasSlot->SetPosition(TouchPosition);
+		CachedCanvasSlot->SetPosition(TouchPosition);
 	}
 }
