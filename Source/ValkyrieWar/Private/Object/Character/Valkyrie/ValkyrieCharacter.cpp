@@ -37,7 +37,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "AIController.h"
-
+#include "BehaviorTree/BlackboardComponent.h"
 
 AValkyrieCharacter::AValkyrieCharacter()
 {
@@ -494,6 +494,39 @@ void AValkyrieCharacter::ExecuteSkill(int32 InSkillIndex)
 	MarkSkillUsed(InSkillIndex);
 }
 
+AActor* AValkyrieCharacter::GetMainTargetByControlMode(float InRange) const
+{
+	if (bIsAutoBattle)
+	{
+		if (AActor* AutoTarget = GetAutoModeMainTarget())
+		{
+			if (IsValidAttackTargetActor(AutoTarget))
+			{
+				return AutoTarget;
+			}
+		}
+	}
+
+	return FindBestMeleeMainTarget(InRange);
+}
+
+AActor* AValkyrieCharacter::GetAutoModeMainTarget() const
+{
+	AAIController* AICon = Cast<AAIController>(GetController());
+	if (!AICon)
+	{
+		return nullptr;
+	}
+
+	UBlackboardComponent* BB = AICon->GetBlackboardComponent();
+	if (!BB)
+	{
+		return nullptr;
+	}
+
+	return Cast<AActor>(BB->GetValueAsObject(TEXT("TargetActor")));
+}
+
 AActor* AValkyrieCharacter::FindBestMeleeMainTarget(float InRange) const
 {
 	UWorld* World = GetWorld();
@@ -555,36 +588,6 @@ AActor* AValkyrieCharacter::FindBestMeleeMainTarget(float InRange) const
 	return BestTarget;
 }
 
-void AValkyrieCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
-{
-	OutTargets.Reset();
-
-	if (!AttackData)
-	{
-		return;
-	}
-
-	AActor* MainTarget = FindBestMeleeMainTarget(AttackData->GetAttackRange());
-	if (!IsValidAttackTargetActor(MainTarget))
-	{
-		return;
-	}
-
-	OutTargets.Add(MainTarget);
-
-	const FTargetingDataRow& TargetingData = AttackData->GetTargetingData();
-
-	if (TargetingData.SplashTargetAmount > 0 && TargetingData.SplashRange > 0.f)
-	{
-		CollectSplashTargets(
-			MainTarget,
-			TargetingData.SplashTargetAmount,
-			TargetingData.SplashRange,
-			OutTargets
-		);
-	}
-}
-
 void AValkyrieCharacter::CollectSkillTargets(int32 InSkillIndex, TArray<AActor*>& OutTargets) const
 {
 	OutTargets.Reset();
@@ -600,15 +603,57 @@ void AValkyrieCharacter::CollectSkillTargets(int32 InSkillIndex, TArray<AActor*>
 		return;
 	}
 
-	AActor* MainTarget = FindBestMeleeMainTarget(SkillData->GetAttackRange());
+	AActor* MainTarget = GetMainTargetByControlMode(SkillData->GetAttackRange());
+
+	if (!IsValidAttackTargetActor(MainTarget))
+	{
+		return;
+	}
+
+	CollectTargetsFromMainTarget(
+		MainTarget,
+		SkillData->GetTargetingData(),
+		OutTargets
+	);
+}
+
+void AValkyrieCharacter::CollectAttackTargets(TArray<AActor*>& OutTargets) const
+{
+	OutTargets.Reset();
+
+	if (!AttackData)
+	{
+		return;
+	}
+
+	AActor* MainTarget = GetMainTargetByControlMode(AttackData->GetAttackRange());
+
+	if (!IsValidAttackTargetActor(MainTarget))
+	{
+		return;
+	}
+
+	CollectTargetsFromMainTarget(
+		MainTarget,
+		AttackData->GetTargetingData(),
+		OutTargets
+	);
+}
+
+void AValkyrieCharacter::CollectTargetsFromMainTarget(
+	AActor* MainTarget,
+	const FTargetingDataRow& TargetingData,
+	TArray<AActor*>& OutTargets
+) const
+{
+	OutTargets.Reset();
+
 	if (!IsValidAttackTargetActor(MainTarget))
 	{
 		return;
 	}
 
 	OutTargets.Add(MainTarget);
-
-	const FTargetingDataRow& TargetingData = SkillData->GetTargetingData();
 
 	if (TargetingData.SplashTargetAmount > 0 && TargetingData.SplashRange > 0.f)
 	{

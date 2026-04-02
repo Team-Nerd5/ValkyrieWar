@@ -83,7 +83,14 @@ protected:
 
 	
 protected: // 타겟팅
+	AActor* GetMainTargetByControlMode(float InRange) const;
+	AActor* GetAutoModeMainTarget() const;
 	AActor* FindBestMeleeMainTarget(float InRange) const;
+	void CollectTargetsFromMainTarget(
+		AActor* MainTarget,
+		const FTargetingDataRow& TargetingData,
+		TArray<AActor*>& OutTargets
+	) const;
 	void CollectAttackTargets(TArray<AActor*>& OutTargets) const;
 	void CollectSkillTargets(int32 InSkillIndex, TArray<AActor*>& OutTargets) const;
 	void CollectSplashTargets(
