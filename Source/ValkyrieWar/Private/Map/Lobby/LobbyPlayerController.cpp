@@ -83,7 +83,7 @@ void ALobbyPlayerController::ChangeGameState(ELobbyState InState)
 	}
 }
 
-void ALobbyPlayerController::SetActorCamera(FName InLevelName)
+void ALobbyPlayerController::SetActorCamera(FName InLevelName, FName InTag)
 {
 	CurrentCamera = nullptr;
 
@@ -102,20 +102,32 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 				{
 					if (Actor->IsA(ACameraActor::StaticClass()))
 					{
-						if (Actor->ActorHasTag("CharacterInfo"))
+						if (InTag.IsNone())
 						{
-							CharacterInfoCamera = Cast<ACameraActor>(Actor);
+							if (Actor->ActorHasTag("CharacterInfo"))
+							{
+								CharacterInfoCamera = Cast<ACameraActor>(Actor);
+							}
+							else
+							{
+								CurrentCamera = Cast<ACameraActor>(Actor);
+								// MyCam 사용
+								SetViewTargetWithBlend(CurrentCamera, 0.0f);
+								if (PlayerCameraManager)
+								{
+									PlayerCameraManager->UpdateCamera(0.0f);
+								}
+							}
 						}
 						else
 						{
-							CurrentCamera = Cast<ACameraActor>(Actor);
-							// MyCam 사용
-							SetViewTargetWithBlend(CurrentCamera, 0.0f);
-							if (PlayerCameraManager)
+							if (Actor->ActorHasTag(InTag))
 							{
-								PlayerCameraManager->UpdateCamera(0.0f);
+								CurrentCamera = Cast<ACameraActor>(Actor);
+								SetViewTargetWithBlend(CurrentCamera, 0.0f);
 							}
 						}
+						
 					}
 				}
 			}
@@ -127,6 +139,7 @@ void ALobbyPlayerController::SetActorCamera(FName InLevelName)
 
 void ALobbyPlayerController::LoadLobbyLevel()
 {
+	SetActorCamera(FName("LobbyBase"), FName("Dummy"));
 	// 스트리밍 레벨 객체를 먼저 가져옵니다.
 	ULevelStreaming* StreamingLevel = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("Lobby"));
 
@@ -335,7 +348,7 @@ void ALobbyPlayerController::SetGachaResult(int32 InAmount, int32 InGachaGroupId
 
 							UItemData* NewItem = NewObject<UItemData>(this);
 							NewItem->MakeData(MasteryItem, GetGameInstance<UGameManager>());
-							NewItem->AddAmount(ItemAmount);
+							NewItem->AddAmount(ItemAmount - 1);
 							GachaResultData.Add(NewItem);
 
 							//인벤토리에 추가

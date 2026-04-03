@@ -169,11 +169,11 @@ void UInventorySystem::UseItem(UItemData* InItem, int32 InAmount)
 	}
 #pragma endregion
 
-	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	UItemData* ChangedItem = DataManager->GetItemModule()->AddItem(InItem->GetTableData().DataId, -InAmount);
 
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		if(ItemExists)
+		if(ChangedItem)
 			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
 		else
 			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();
@@ -198,14 +198,14 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 
 	int32 Price = InItem->GetTableData().SellPrice;
 
-	bool ItemExists = DataManager->GetItemModule()->AddItemAmount(InItem->GetUID(), -InAmount);
+	UItemData* ChangedItem = DataManager->GetItemModule()->AddItem(InItem->GetTableData().DataId, -InAmount);
 
 	DataManager->GetGoodsModule()->Add(EGoodsType::Gold, Price * InAmount);
 
 	//인벤토리 업데이트
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		if (ItemExists)
+		if (ChangedItem)
 			WorldEventSystem->Widget.OnInventoryItemAmountChanged.Broadcast(InItem->GetUID());
 		else
 			WorldEventSystem->Widget.OnUpdateInventory.Broadcast();

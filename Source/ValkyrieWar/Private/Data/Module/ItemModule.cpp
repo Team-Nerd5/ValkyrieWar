@@ -73,13 +73,14 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount, uint64 
 //아이템류는 중복저장하면 안됨(장비는 가능)
 UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 {
-	FItemDataRow TableData = GetTableDataById(InDataId);
+	
 	uint64 ItemUID = GetExistItemUID(InDataId);
 	if (ItemUID > 0)
 	{
 		UItemData* Item = GetItem(ItemUID);
-		if(Item->GetItemGroup() == EItemGroup::Equip)
+		if (Item->GetItemGroup() == EItemGroup::Equip)
 		{
+			FItemDataRow TableData = GetTableDataById(InDataId);
 			return AddNewItem(TableData, InAmount);
 		}
 		else
@@ -88,7 +89,20 @@ UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 			if (Item->GetAmount() <= 0)
 			{
 				OwnItems.Remove(ItemUID);
+
+				if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+				{
+					SaveManager->RemoveSaveItem(ItemUID);
+				}
+
 				SetList();
+
+				return nullptr;
+			}
+
+			if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+			{
+				SaveManager->AddSaveItem(Item);
 			}
 
 			return Item;
@@ -96,39 +110,11 @@ UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 	}
 	else
 	{
+		FItemDataRow TableData = GetTableDataById(InDataId);
 		return AddNewItem(TableData, InAmount);
-	}	
+	}
 }
 
-//장비 판매 시 이 함수 호출(아이템 이 남아있으면 return true)
-bool UItemModule::AddItemAmount(uint64 InUID, int32 InAmount)
-{
-	UItemData* TargetItem = GetItem(InUID);
-
-	if (!TargetItem) return false;
-
-	TargetItem->AddAmount(InAmount);
-
-	if (TargetItem->GetAmount() <= 0)
-	{
-		OwnItems.Remove(InUID);
-
-		if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
-		{
-			SaveManager->RemoveSaveItem(InUID);
-		}
-
-		SetList();
-		return false;
-	}
-
-	//Save하면 개수 변화도 가능
-	if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
-	{
-		SaveManager->AddSaveItem(TargetItem);
-	}
-	return true;
-}
 UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)
 {
 	if (InTableData.DataId > 0 && GameManager.IsValid())

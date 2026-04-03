@@ -19,13 +19,12 @@ void UGachaWidget::NativeConstruct()
 
     if (Btn_Summon_1)
     {
-        Btn_Summon_1->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon1x);
+        Btn_Summon_1->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon1);
     }
     if (Btn_Summon_10)
     {
-        Btn_Summon_10->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_Summon_10->OnClicked.AddDynamic(this, &UGachaWidget::OnClickSummon10);
     }
-
 }
 
 void UGachaWidget::NativeDestruct()
@@ -34,11 +33,11 @@ void UGachaWidget::NativeDestruct()
 
     if (Btn_Summon_1)
     {
-        Btn_Summon_1->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon1x);
+        Btn_Summon_1->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon1);
     }
     if (Btn_Summon_10)
     {
-        Btn_Summon_10->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10x);
+        Btn_Summon_10->OnClicked.RemoveDynamic(this, &UGachaWidget::OnClickSummon10);
     }
 }
 
@@ -75,18 +74,26 @@ void UGachaWidget::OpenUI()
     }
 }
 
-void UGachaWidget::OnClickSummon1x()
+void UGachaWidget::OnClickSummon1()
 {
     if (EventSystem)
     {
         EventSystem->Lobby.OnLoadGacha.Broadcast(1, SelectedGroupId);
     }
+    if(Btn_Summon_1)
+        Btn_Summon_1->SetIsEnabled(false);
+    if (Btn_Summon_10)
+        Btn_Summon_10->SetIsEnabled(false);
 }
 
-void UGachaWidget::OnClickSummon10x()
+void UGachaWidget::OnClickSummon10()
 {
     if (EventSystem)
     {
         EventSystem->Lobby.OnLoadGacha.Broadcast(10, SelectedGroupId);
     }
+    if (Btn_Summon_1)
+        Btn_Summon_1->SetIsEnabled(false);
+    if (Btn_Summon_10)
+        Btn_Summon_10->SetIsEnabled(false);
 }

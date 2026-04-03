@@ -36,8 +36,8 @@ protected:
     virtual void OpenUI() override;
 
     UFUNCTION()
-    void OnClickSummon1x();
+    void OnClickSummon1();
 
     UFUNCTION()
-    void OnClickSummon10x();
+    void OnClickSummon10();
 };

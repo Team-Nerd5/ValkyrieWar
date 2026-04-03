@@ -27,7 +27,7 @@ protected:
 	UFUNCTION()
 	void ChangeGameState(ELobbyState InState);
 
-	void SetActorCamera(FName InLevelName);
+	void SetActorCamera(FName InLevelName, FName InTag = FName("None"));
 
 	UFUNCTION()
 	void LoadLobbyLevel();

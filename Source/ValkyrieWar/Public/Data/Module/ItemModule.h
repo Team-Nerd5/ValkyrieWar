@@ -35,13 +35,6 @@ public:
 	/// <param name="InAmount"></param>
 	UItemData* AddItem(int32 InDataId, int32 InAmount = 1);
 
-	/// <summary>
-	/// 아이템 개수 변경(추가, 삭제)
-	/// </summary>
-	/// <param name="InUID"></param>
-	/// <param name="InAmount"></param>
-	bool AddItemAmount(uint64 InUID, int32 InAmount);
-
 
 	FORCEINLINE TArray<UItemData*> GetItems() { return OwnItemList; }
 	UItemData* GetItem(uint64 InUID)

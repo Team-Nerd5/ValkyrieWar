@@ -38,13 +38,10 @@ void UInventoryWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	CurrentFilterType = EInventoryFilterType::All;
-
 	if (ItemListWidget)
 	{
 		ItemListWidget->SetMenu(InventoryTabNameData);
-	}
-	InitItemList();
+	}	
 }
 
 void UInventoryWidget::OpenUI()
@@ -52,6 +49,8 @@ void UInventoryWidget::OpenUI()
 	UIType = EUIType::PopupInventory;
 
 	Super::OpenUI();
+
+	InitItemList();
 
 	CurrentFilterType = EInventoryFilterType::All;
 	if (ItemListWidget)
