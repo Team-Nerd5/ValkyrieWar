@@ -260,19 +260,19 @@ void UCharacterInfoWidget::OnClickEquip(UItemData* InItemData)
 		{
 			HelmetItem->SetEquip(InItemData->GetIcon());
 		}
-	}
-	if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
-	{
-		Inventory->EquipItem(InItemData, SelectedValkyrie);
-	}
 
-	if (EventSystem)
-	{
-		//무기 메쉬 변경
-		EventSystem->Widget.OnEquipItem.Broadcast(InItemData);
-	}
+		if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+		{
+			Inventory->EquipItem(InItemData, SelectedValkyrie);
+		}
 
-	UpdateStat();
+		if (EventSystem && InItemData->GetEquipGroup() == EEquipGroup::Weapon)
+		{
+			EventSystem->Widget.OnEquipItem.Broadcast(InItemData);
+		}
+
+		UpdateStat();
+	}	
 }
 
 void UCharacterInfoWidget::UpdateStat()
