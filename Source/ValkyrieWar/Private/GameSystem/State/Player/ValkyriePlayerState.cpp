@@ -12,11 +12,6 @@ AValkyriePlayerState::AValkyriePlayerState()
 
 void AValkyriePlayerState::SetControlMode(EInputControlMode NewMode)
 {
-	if (CurrentControlMode == NewMode)
-	{
-		return;
-	}
-
 	CurrentControlMode = NewMode;
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{

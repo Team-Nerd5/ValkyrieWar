@@ -43,6 +43,11 @@ void ABattleGameState::ChangeState(EBattleState InState)
 				{
 					VPC->SetBattleUI(BattleUI);
 				}
+
+				if (AValkyriePlayerState* PS = PC->GetPlayerState<AValkyriePlayerState>())
+				{
+					PS->SetControlMode(EInputControlMode::Manual);
+				}
 			}
 
 			UIManager->CloseUI<ULoadingWidget>(EUIType::Loading);
@@ -176,9 +181,12 @@ void ABattleGameState::CheckTimeOver()
 
 void ABattleGameState::ShowBattleResult()
 {
-	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
-		WorldEventSystem->Battle.OnBattleModeChanged.Broadcast(EInputControlMode::Manual);
+		if (AValkyriePlayerState* PS = PC->GetPlayerState<AValkyriePlayerState>())
+		{
+			PS->SetControlMode(EInputControlMode::Manual);
+		}
 	}
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())

@@ -22,7 +22,6 @@ public:
 
 	void ToggleControlMode();
 
-protected:
 	void SetControlMode(EInputControlMode NewMode);
 
 private:
