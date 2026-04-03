@@ -13,7 +13,7 @@ void UBattlePauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetIsFocusable(true);
+	//SetIsFocusable(true);
 
 	if (Btn_Return)
 	{

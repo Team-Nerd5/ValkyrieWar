@@ -72,7 +72,7 @@ void UUIManager::NotifyInputModeChange()
 	{
 		// Popup이 없을 때는 Game Only 모드
 		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetShowMouseCursor(false);
+		PC->SetShowMouseCursor(true);
 	}
 }
 
