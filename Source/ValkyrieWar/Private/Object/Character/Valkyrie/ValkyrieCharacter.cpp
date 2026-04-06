@@ -893,6 +893,19 @@ void AValkyrieCharacter::SetData(UValkyrieData* InData)
 
 	FStatValueData Stat = Data->GetStat();
 
+	if (UItemData* EquipWeapon = Data->GetEquippedItem(EEquipGroup::Weapon))
+	{
+		Stat.Add(EquipWeapon->GetStat());
+	}
+	if (UItemData* EquipArmor = Data->GetEquippedItem(EEquipGroup::Armor))
+	{
+		Stat.Add(EquipArmor->GetStat());
+	}
+	if (UItemData* EquipHelmet = Data->GetEquippedItem(EEquipGroup::Helmet))
+	{
+		Stat.Add(EquipHelmet->GetStat());
+	}
+
 	StatAttributeSet->SetAttack(Stat.Attack);
 	StatAttributeSet->SetDefense(Stat.Defence);
 	StatAttributeSet->SetHealth(Stat.Health);
