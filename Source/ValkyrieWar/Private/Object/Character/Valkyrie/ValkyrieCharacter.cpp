@@ -861,7 +861,7 @@ void AValkyrieCharacter::OnSkillNotify()
 				TotalAttack += EquippedWeapon->GetStat().Attack;
 			}
 			Projectile->SetAttack(TotalAttack);
-			Projectile->SetData(SkillDataList[UsingSkillIndex]->GetAbilityTag(), AttackSpec, *SkillDataList[UsingSkillIndex]->GetProjectileData(), SkillDataList[UsingSkillIndex]->GetCue(EGameplayCueOrder::InProjectile));
+			Projectile->SetData(SkillDataList[UsingSkillIndex]->GetAbilityTag(), SkillSpecs[UsingSkillIndex], *SkillDataList[UsingSkillIndex]->GetProjectileData(), SkillDataList[UsingSkillIndex]->GetCue(EGameplayCueOrder::InProjectile));
 		}
 	}
 }

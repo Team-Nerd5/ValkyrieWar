@@ -246,6 +246,7 @@ void ABaseCharacter::CreateSkillAbility()
 
     SkillSpecHandles.Empty();
     SkillSpecHandles.SetNum(SkillDataList.Num());
+    SkillSpecs.Empty();
 
     for (int32 i = 0; i < SkillDataList.Num(); ++i)
     {
@@ -257,6 +258,7 @@ void ABaseCharacter::CreateSkillAbility()
 
         FGameplayAbilitySpec Spec(UBaseGameplayAbility::StaticClass(), 1, i, SkillData);
         Spec.GetDynamicSpecSourceTags().AddTag(SkillData->GetAbilityTag());
+        SkillSpecs.Emplace(Spec);
 
         SkillSpecHandles[i] = AbilitySystemComponent->GiveAbility(Spec);
     }
