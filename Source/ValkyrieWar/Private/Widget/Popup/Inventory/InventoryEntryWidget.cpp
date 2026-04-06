@@ -55,18 +55,18 @@ void UInventoryEntryWidget::NativeOnItemSelectionChanged(bool bIsSelected)
 		SelectImage->SetVisibility(bIsSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Hidden);
 	}
 
-	if (IsSelected && !bIsSelected)
-	{
-		//선택되어 있다가 꺼짐
-		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
-		{
-			WorldEventSystem->Widget.OnInventoryItemSelected.Broadcast(nullptr);
-		}
+	//if (IsSelected && !bIsSelected)
+	//{
+	//	//선택되어 있다가 꺼짐
+	//	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
+	//	{
+	//		WorldEventSystem->Widget.OnInventoryItemSelected.Broadcast(nullptr);
+	//	}
 
-		IsSelected = bIsSelected;
+	//	IsSelected = bIsSelected;
 
-		return;
-	}
+	//	return;
+	//}
 
 	if (bIsSelected)
 	{

@@ -100,7 +100,7 @@ void UItemListWidget::NativeConstruct()
 	Super::NativeConstruct();
 	if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))
 	{
-		WorldEventSystem->Widget.OnInventoryItemSelected.AddDynamic(this, &UItemListWidget::OnItemSelected);
+		WorldEventSystem->Widget.OnInventoryItemSelected.AddUniqueDynamic(this, &UItemListWidget::OnItemSelected);
 	}
 }
 

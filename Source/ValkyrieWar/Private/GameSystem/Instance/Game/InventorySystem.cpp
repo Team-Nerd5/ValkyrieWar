@@ -198,7 +198,7 @@ void UInventorySystem::SellItem(UItemData* InItem, int32 InAmount)
 
 	int32 Price = InItem->GetTableData().SellPrice;
 
-	UItemData* ChangedItem = DataManager->GetItemModule()->AddItem(InItem->GetTableData().DataId, -InAmount);
+	UItemData* ChangedItem = DataManager->GetItemModule()->SellItem(InItem->GetUID(), -InAmount);
 
 	DataManager->GetGoodsModule()->Add(EGoodsType::Gold, Price * InAmount);
 

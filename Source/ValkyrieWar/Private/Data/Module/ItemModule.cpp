@@ -72,8 +72,7 @@ void UItemModule::LoadItem(uint64 InUID, int32 InDataId, int32 InAmount, uint64 
 
 //아이템류는 중복저장하면 안됨(장비는 가능)
 UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
-{
-	
+{	
 	uint64 ItemUID = GetExistItemUID(InDataId);
 	if (ItemUID > 0)
 	{
@@ -113,6 +112,33 @@ UItemData* UItemModule::AddItem(int32 InDataId, int32 InAmount)
 		FItemDataRow TableData = GetTableDataById(InDataId);
 		return AddNewItem(TableData, InAmount);
 	}
+}
+
+UItemData* UItemModule::SellItem(uint64 InUID, int32 InAmount)
+{
+	UItemData* Item = GetItem(InUID);
+
+	Item->AddAmount(InAmount);
+	if (Item->GetAmount() <= 0)
+	{
+		OwnItems.Remove(InUID);
+
+		if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+		{
+			SaveManager->RemoveSaveItem(InUID);
+		}
+
+		SetList();
+
+		return nullptr;
+	}
+
+	if (USaveManager* SaveManager = GameManager->GetSubsystem<USaveManager>())
+	{
+		SaveManager->AddSaveItem(Item);
+	}
+
+	return Item;
 }
 
 UItemData* UItemModule::AddNewItem(FItemDataRow InTableData, int32 InAmount)

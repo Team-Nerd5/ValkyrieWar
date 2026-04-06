@@ -35,6 +35,9 @@ public:
 	/// <param name="InAmount"></param>
 	UItemData* AddItem(int32 InDataId, int32 InAmount = 1);
 
+	//보유한 아이템을 추가
+	UItemData* SellItem(uint64 InUID, int32 InAmount = 1);
+
 
 	FORCEINLINE TArray<UItemData*> GetItems() { return OwnItemList; }
 	UItemData* GetItem(uint64 InUID)
