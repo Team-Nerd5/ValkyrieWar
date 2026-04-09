@@ -3,6 +3,7 @@
 
 #include "GameSystem/State/Game/BattleGameState.h"
 #include "GameSystem/Instance/Game/UIManager.h"
+#include "GameSystem/Instance/Game/InventorySystem.h"
 #include "GameSystem/Library/GameBaseLibrary.h"
 #include "GameSystem/Library/RandomGenerateHelper.h"
 
@@ -191,7 +192,7 @@ void ABattleGameState::ShowBattleResult()
 
 	if (UUIManager* UIManager = GetGameInstance()->GetSubsystem<UUIManager>())
 	{
-		TArray<int32> RewardId;
+		TArray<int32> RewardIds;
 
 		//이겼고, 보상 있으면 넣어줌
 		if (State == EBattleState::Win)
@@ -204,14 +205,33 @@ void ABattleGameState::ShowBattleResult()
 				{
 					TArray<FStageRewardDataRow> Rewards;
 					DataManager->GetStageRewardModule()->GetStageRewardRowsByGroupId(RewardGroupId, Rewards);
-					RewardId = URandomGenerateHelper::GetStageRewards(Rewards);
+					RewardIds = URandomGenerateHelper::GetStageRewards(Rewards);
 				}
-			}
+
+				if (UInventorySystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySystem>())
+				{
+					for (const int32& RewardId : RewardIds)
+					{
+						FRewardDataRow RewardData = DataManager->GetRewardModule()->FindRewardByDataId(RewardId);
+						if (RewardData.DataId > 0)
+						{
+							if (RewardData.RewardType == ERewardType::Goods)
+							{
+								DataManager->GetGoodsModule()->Add(RewardData.RewardDataId, RewardData.Amount);
+							}
+							else
+							{
+								Inventory->AddItem(RewardData.RewardDataId, RewardData.Amount);
+							}
+						}
+					}
+				}
+			}					
 		}
 
 		if (UBattleResultWidget* ResultWidget = UIManager->OpenUI<UBattleResultWidget>(EUIType::PopupBattleResult))
 		{
-			ResultWidget->SetBattleResult(State, RewardId);
+			ResultWidget->SetBattleResult(State, RewardIds);
 		}
 
 		UGameplayStatics::SetGamePaused(this, true);

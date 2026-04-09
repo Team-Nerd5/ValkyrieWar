@@ -69,6 +69,16 @@ void UGoodsModule::Add(EGoodsType InType, int64 InAmount)
 	}
 }
 
+void UGoodsModule::Add(int32 InDataId, int64 InAmount)
+{
+	FGoodsDataRow GoodsData = GetTableDataById(InDataId);
+
+	if (GoodsData.DataId <= 0)
+		return;
+
+	Add(GoodsData.GoodsType, InAmount);
+}
+
 bool UGoodsModule::IsEnough(EGoodsType InType, uint64 InCheckAmount)
 {
 	uint64* Amount = GoodsAmount.Find(InType);

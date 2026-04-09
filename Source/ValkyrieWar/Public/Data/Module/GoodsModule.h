@@ -22,6 +22,7 @@ public:
 
 	void Update(EGoodsType InType, uint64 InAmount);
 	void Add(EGoodsType InType, int64 InAmount);
+	void Add(int32 InDataId, int64 InAmount);
 	bool IsEnough(EGoodsType InType, uint64 InCheckAmount);
 
 	FORCEINLINE uint64 Get(EGoodsType InType)

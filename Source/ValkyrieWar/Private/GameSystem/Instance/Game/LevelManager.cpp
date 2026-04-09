@@ -124,6 +124,10 @@ void ULevelManager::OnDataLoadCompleted()
 					DataManager->GetUnitModule()->LoadUnit(NewData);
 				}
 				SaveManager->SaveUnits(CreatedUnits);
+
+				//최초 재화
+				DataManager->GetGoodsModule()->Add(EGoodsType::Gem, 3000);
+				DataManager->GetGoodsModule()->Add(EGoodsType::Gold, 5000);
 			}
 			
 		}
