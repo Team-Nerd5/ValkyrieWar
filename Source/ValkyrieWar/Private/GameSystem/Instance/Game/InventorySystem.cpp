@@ -249,13 +249,7 @@ void UInventorySystem::UnEquipItem(UItemData* InItem, UValkyrieData* InValkyrie)
 		if (InValkyrie->IsEquipped(InItem->GetEquipGroup()))
 		{
 			InValkyrie->UnEquipItem(InItem->GetEquipGroup(), GameManager);
-		}
-
-		//아이템 저장...
-		if (USaveManager* SaveManager = GetGameInstance()->GetSubsystem<USaveManager>())
-		{
-			SaveManager->AddSaveItem(InItem);
-		}
+		}				
 
 		//인벤토리 아이템 개수가 바뀜
 		if (UWorldEventSystem* WorldEventSystem = UGameBaseLibrary::GetWorldEventSystem(this))

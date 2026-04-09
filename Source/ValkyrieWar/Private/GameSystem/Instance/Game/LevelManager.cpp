@@ -134,6 +134,7 @@ void ULevelManager::OnDataLoadCompleted()
 	}
 
 	//로드된 장비들을 캐릭터에 장착처리 시킴
+	//이걸 여기서..?
 	if (UDataManager* DataManager = GetGameInstance()->GetSubsystem<UDataManager>())
 	{
 		TArray<UItemData*> Items = DataManager->GetItemModule()->GetItems();

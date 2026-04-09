@@ -79,6 +79,12 @@ void UValkyrieData::UnEquipItem(EEquipGroup InEquipGroup, UGameManager* InGameMa
 	UItemData* Equipping = EquippedItem.FindChecked(InEquipGroup);
 	Equipping->Equip(0);
 
+	//빼준 장비도 저장해야함...
+	if (USaveManager* SaveManager = InGameManager->GetSubsystem<USaveManager>())
+	{
+		SaveManager->AddSaveItem(Equipping);
+	}
+
 	EquippedItem.Remove(InEquipGroup);
 
 	//TODO : 장비 스탯 업데이트
